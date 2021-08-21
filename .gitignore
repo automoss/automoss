@@ -1,0 +1,9 @@
+# Django
+__pycache__
+db.sqlite3
+
+# VS Code
+.vscode/*
+
+# Dot-env
+automoss/.env
