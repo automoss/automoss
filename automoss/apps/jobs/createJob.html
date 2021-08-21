@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <h1>Create Job</h1>
+
+        <input type="file" id="fileInput">
+        <br>
+        <button onclick="upload()">Upload</button>
+
+    </body>
+
+    <script>
+        function upload()
+        {
+            var file = document.getElementById("fileInput");
+            console.log("Name: " + file.files.item(0).name);
+        }
+    </script>
+</html>
