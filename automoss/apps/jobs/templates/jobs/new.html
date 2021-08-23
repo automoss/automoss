@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block "main" %}
+
+<h1>Create Job</h1>
+
+<input type="file" id="submission" name="submission" accept=".zip">
+<br>
+<button onclick="upload()">Upload</button>
+<br>
+<label id="progress"></label>
+
+<script>
+
+  function upload()
+  {
+    extract();
+  }
+
+  function extract()
+  {
+      var file = document.getElementById("fileInput");
+
+      document.getElementById("progress").innerText = "extracting";
+
+  }
+
+  function preProcess()
+  {
+
+  }
+
+  function compress()
+  {
+
+  }
+
+
+</script>
+
+{% endblock "main" %}

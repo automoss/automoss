@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block "main" %}
+  <h1>Jobs Index Page</h1>
+  <p>Welcome to the Jobs Index Page!</p>
+  <p>Dynamically Rendered Job List:</p>
+  <ul>
+      {% for id, job in jobs %}
+      <li> <a href="{% url "jobs:reports:index" id %}">{{ job }}</a> </li>
+      {% endfor %}
+  </ul>
+{% endblock "main" %}

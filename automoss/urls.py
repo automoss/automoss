@@ -17,7 +17,8 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
+    # Jobs
     path('jobs/', include('automoss.apps.jobs.urls')),
-    path('', include('automoss.apps.jobs.urls')),
+    # Admin
     path('admin/', admin.site.urls),
 ]
