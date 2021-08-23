@@ -7,10 +7,15 @@ For more information on this file, see
 https://docs.djangoproject.com/en/3.2/howto/deployment/wsgi/
 """
 
+import subprocess
 import os
 
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'automoss.settings')
+
+
+os.system('redis-cli shutdown')  # shut Redis down
+subprocess.Popen('redis-server')  # start the Redis server
 
 application = get_wsgi_application()
