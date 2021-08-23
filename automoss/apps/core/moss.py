@@ -9,6 +9,12 @@ import aiohttp
 
 
 class MossAPIWrapper:
+
+    _SUPPORTED_LANGUAGES = ['c', 'cc', 'java', 'ml', 'pascal', 'ada', 'lisp',
+                            'scheme', 'haskell', 'fortran', 'ascii', 'vhdl', 'perl',
+                            'matlab', 'python', 'mips', 'prolog', 'spice', 'vb',
+                            'csharp', 'a8086', 'javascript', 'plsql', 'verilog']
+
     def __init__(self, user_id):
         self.user_id = user_id
         self.socket = socket.socket()
@@ -41,6 +47,9 @@ class MossAPIWrapper:
         self._send_string(f'show {num_to_show}')
 
     def set_language(self, language):
+        if language not in self._SUPPORTED_LANGUAGES:
+            raise UnsupportedLanguage(language)
+
         self._send_string(f'language {language}')
 
     def upload_base_file(self, file_path, language):
@@ -148,3 +157,80 @@ class MossResult:
 
     def json(self):
         return {'url': self.url}
+
+
+class MossException(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class UnsupportedLanguage(MossException):
+    def __init__(self, language, **kwargs):
+        super().__init__(f'Unsupported language: {language}', **kwargs)
+
+
+class MOSS:
+    def __init__(self, user_id):
+        self.user_id = user_id
+
+    def supported_languages(self):
+        return MossAPIWrapper._SUPPORTED_LANGUAGES
+
+    def generate(self, language='c', files=None,
+                 base_files=None, is_directory=False, experimental=False,
+                 max_matches_until_ignore=1000000, num_to_show=1000000, comment=''):
+        """Basic interface for generating a report from MOSS"""
+
+        # TODO auto detect language
+
+        # Returns report
+        if language not in self.supported_languages():
+            raise UnsupportedLanguage(language)
+
+        url = None
+        try:
+            moss = MossAPIWrapper(self.user_id)
+            moss.connect()  # TODO retries
+
+            if files is None and not is_directory:  # No files supplied
+                raise MossException  # No files supplied
+
+            if base_files is None:
+                base_files = []
+
+            # Set options
+            moss.set_directory(is_directory)
+            moss.set_experimental(experimental)
+            moss.set_max_matches(max_matches_until_ignore)
+            moss.set_num_to_show(num_to_show)
+            moss.set_language(language)
+
+            data = moss.read()
+
+            # Double check on server-side that language is accepted
+            if data == 'no':
+                raise UnsupportedLanguage(language)  # Unsupported language
+            elif data != 'yes':
+                pass
+
+            # Upload base files
+            for base_file in base_files:
+                moss.upload_base_file(base_file, language)
+
+            # Upload submissions
+            for index, path in enumerate(files, start=1):
+                moss.upload_file(path, language, index)
+
+            # Read and return data
+            url = moss.generate_url(comment)
+
+            # TODO check for errors
+            # b'Error: No files uploaded to compare.\n'
+
+        finally:  # Close session as soon as possible
+            moss.close()
+
+        if not url:
+            raise MossException('Unable to extract URL')
+
+        return MossResult(url)
