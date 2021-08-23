@@ -28,8 +28,8 @@ def upload_to_moss(user_id, language='c', files=None, base_files=None,
         moss = MossAPIWrapper(user_id)
         moss.connect()  # TODO retries
 
-        if files is None and not is_directory:  # No files supplied
-            raise MossException  # No files supplied
+        if files is None:  # No files supplied
+            raise MossException
 
         if base_files is None:
             base_files = []
@@ -49,16 +49,17 @@ def upload_to_moss(user_id, language='c', files=None, base_files=None,
         elif data != 'yes':
             pass
 
-        # TODO Upload base files
-        # for base_file in base_files:
-        #     moss.upload_base_file(base_file, language)
+        # TODO determine progress
+
+        # Upload base files
+        for base_file in base_files:
+            moss.upload_raw_base_file(
+                base_file['name'], base_file['file'].encode(), language)
 
         # Upload submissions
         for index, file_info in enumerate(files, start=1):
             moss.upload_raw_file(
                 file_info['name'], file_info['file'].encode(), language, index)
-            print('upload', index)
-            # TODO progress?
 
         # Read and return data
         url = moss.generate_url(comment)
