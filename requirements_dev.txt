@@ -1,2 +1,5 @@
 django
 python-dotenv
+celery
+redis
+numpy
