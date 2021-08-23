@@ -60,7 +60,9 @@ ROOT_URLCONF = 'automoss.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        # Global templates directory
         'DIRS': [ BASE_DIR / 'automoss' / 'templates'],
+        # Search local application templates directories
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
