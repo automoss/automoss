@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block "main" %}
+  <h1>Report Index Page</h1>
+  <p>Welcome to the Reports Index Page!</p>
+  <p>Dynamically Report ID: <strong>{{ id }}</strong></p>
+  <a class="btn btn-primary" href="{% url "jobs:index" %}" role="button">Back</a>
+{% endblock "main" %}
