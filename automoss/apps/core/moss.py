@@ -52,15 +52,9 @@ class MossAPIWrapper:
 
         self._send_string(f'language {language}')
 
-    def upload_base_file(self, file_path, language):
-        self.upload_file(file_path, language, 0)
+    def upload_raw_file(self, file_path, bytes, language, file_id):
 
-    def upload_file(self, file_path, language, file_id):
-        # TODO remove language param?
-        if not os.path.exists(file_path):
-            raise FileNotFoundError  # File does not exist
-
-        size = os.path.getsize(file_path)
+        size = len(bytes)
 
         # Replace whitespace with _
         file_name = re.sub('\s+', '_', file_path).replace('\\', '/')
@@ -69,8 +63,17 @@ class MossAPIWrapper:
         self._send_string(f'file {file_id} {language} {size} {file_name}')
 
         # Send actual file info
+        self._send_raw(bytes)
+
+    def upload_raw_base_file(self, file_path, bytes, language):
+        self.upload_raw_base_file(file_path, bytes, 0)
+
+    def upload_base_file(self, file_path, language):
+        self.upload_file(file_path, language, 0)
+
+    def upload_file(self, file_path, language, file_id):
         with open(file_path, 'rb') as f:
-            self._send_raw(f.read())
+            self.upload_raw_file(file_path, f.read(), language, file_id)
 
     def generate_url(self, comment=''):
         # Send final query
