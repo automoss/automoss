@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block "main" %}
+
+<h1>Create Job</h1>
+
+<input type="file" id="fileInput">
+<br>
+<button onclick="upload()">Upload</button>
+
+<script>
+  function extract()
+  {
+      var file = document.getElementById("fileInput");
+      console.log("Name: " + file.files.item(0).name);
+  }
+</script>
+
+{% endblock "main" %}
