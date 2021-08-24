@@ -1,32 +1,201 @@
 {% extends "base.html" %}
 
 {% block "main" %}
-  <h1>Jobs Index Page</h1>
-  <p>Welcome to the Jobs Index Page!</p>
-  <p>Dynamically Rendered Job List:</p>
-  <ul>
-    <table class="table">
-  <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">Job Title</th>
-      <th scope="col">Date Created</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for job in jobs %}
-      <tr>
-        <th scope="row">{{ forloop.counter }}</th>
-        <td>
-        {% if job.mossreport_set.first %}
-          <a href="{% url "jobs:reports:index" job.job_id %}">{{ job.comment }}</a>
-        {% else %}
-          {{ job.comment }}
-        {% endif %}
-        </td>
-        <td>{{ job.start_date }}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
+<div class="row">
+	<div class="col-lg-12">
+		<div class="input-group">
+			<input class="form-control me-2" type="search" placeholder="Search..." aria-label="Search">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newJob">New Job</button>
+			</span>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="newJob" tabindex="-1" aria-labelledby="newJobLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<form id="new-job-form">
+				{% csrf_token %}
+
+				<div class="modal-header">
+					<h5 class="modal-title" id="newJobLabel">Create New Job</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+					<div class="modal-body">
+						<!-- Name -->
+						<div class="form-group">
+							<label for="job-name">Name:</label><br>
+							<input id="job-name" type="text" class="form-control">
+						</div><br>
+
+						<!-- Submission file -->
+						<div class="form-group">
+							<label for="job-submission-files">Submission files (.zip):</label><br>
+							<input id="job-submission-files" type="file" class="form-control-file" accept=".zip">
+						</div><br>
+					
+						<!-- Language -->
+						<div class="form-group">
+							<label for="job-language">Language:</label><br>
+							<select id="job-language" class="form-control">
+								<option>C</option>
+								<option>C++</option>
+								<option>Java</option>
+								<option>C#</option>
+								<option>Python</option>
+								<option>Visual Basic</option>
+								<option>Javascript</option>
+								<option>FORTRAN</option>
+								<option>ML</option>
+								<option>Haskell</option>
+								<option>Lisp</option>
+								<option>Scheme</option>
+								<option>Pascal</option>
+								<option>Modula2</option>
+								<option>Ada</option>
+								<option>Perl</option>
+								<option>TCL</option>
+								<option>Matlab</option>
+								<option>VHDL</option>
+								<option>Verilog</option>
+								<option>Spice</option>
+								<option>MIPS assembly</option>
+								<option>a8086 assembly</option>
+								<option>HCL2</option>
+							</select>
+						</div><br>
+
+						<!-- Max until ignored -->
+						<div class="form-group">
+							<label for="job-max-until-ignored">Max until ignored:</label><br>
+							<input id="job-max-until-ignored" type="number" placeholder="1000000">
+						</div><br>
+
+						<!-- Max displayed matches -->
+						<div class="form-group">
+							<label for="job-max-displayed-matches">Max displayed matches:</label><br>
+							<input id="job-max-displayed-matches" type="number" placeholder="1000000">
+						</div><br>		
+					</div>	
+				<div class="modal-footer">
+					<label id="progress">Progress...</label>
+					<button type="submit" class="btn btn-primary">Create Job</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<table class="table">
+
+	<!-- Column headings -->
+	<thead>
+		<tr>
+			<th scope="col">#</th>
+			<th scope="col">Name</th>
+			<th scope="col">Date Created</th>
+			<th scope="col">Status</th>
+		</tr>
+	</thead>
+	
+	<!-- Jobs -->
+	<tbody>
+	{% if jobs %}
+		{% for job in jobs %}
+		<tr>
+			<th scope="row">{{ forloop.counter }}</th>
+			<td>
+				{% if job.mossreport_set.first %}
+				<a href="{% url "jobs:reports:index" job.job_id %}">{{ job.comment }}</a>
+				
+				{% else %}
+					{{ job.comment }}
+				{% endif %}
+			</td>
+			<td>
+				{{ job.start_date }}
+			</td>
+			<td>
+				status
+			</td>
+		</tr>
+		{% endfor %}
+	{% endif %}
+	</tbody>
+
 </table>
+
+{% if not jobs %}
+<div class="container text-center">No jobs have been created yet!</div>
+{% endif %}
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"
+    integrity="sha512-xQBQYt9UcgblF6aCMrwU1NkVA7HCXaSN2oq0so80KO+y68M+n64FOcqgav4igHe6D5ObBLIf68DWv+gfBowczg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+
+    let form = document.getElementById('new-job-form')
+
+    // TODO increase list
+    let validExtensions = ['py']
+
+    function validFile(name) {
+        let extension = name.split('.').pop();
+        return validExtensions.includes(extension);
+    }
+
+    // https://stackoverflow.com/a/50472925
+    form.onsubmit = async (e) => {
+
+		e.preventDefault();
+		
+        // Construct new form with relevant data
+        let data = new FormData(form);
+
+        // Read zip file
+        let input = form.querySelector('input[type="file"]')
+
+        let zipFile = input.files[0];
+        if (!zipFile) {
+            // TODO - display error, no files
+            return;
+        }
+        JSZip.loadAsync(zipFile).then(function (zip) {
+            console.log(zip);
+
+            let files = [];
+            zip.forEach(function (relativePath, file) {
+                files.push(file)
+            });
+
+            Promise.all(files.map(async (zipEntry) => {
+                console.log(zipEntry.name);
+
+                if (validFile(zipEntry.name)) {
+                    let blob = await zipEntry.async('blob')
+                    data.append('files', blob, btoa(zipEntry.name))
+                    console.log('valid file:', zipEntry.name);
+                } else {
+                    console.log('invalid file:', zipEntry.name);
+                }
+
+            })).then(function (d) {
+                console.log(data)
+                fetch('new', {
+                    method: 'POST',
+                    body: data,
+                }).then(result => {
+                    // do something with the result
+                    console.log("Completed with result:", result);
+                })
+            })
+
+        });
+    };
+
+</script>
+
 {% endblock "main" %}
