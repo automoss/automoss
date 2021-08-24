@@ -1,3 +1,5 @@
 from django.contrib import admin
+from .models import MOSSReport, GeneratedReport
 
-# Register your models here.
+admin.site.register(MOSSReport)
+admin.site.register(GeneratedReport)

@@ -7,3 +7,12 @@ db.sqlite3
 
 # Dot-env
 automoss/.env
+
+# Migrations
+migrations/
+
+# Media
+media/
+
+# Redis
+dump.rdb
