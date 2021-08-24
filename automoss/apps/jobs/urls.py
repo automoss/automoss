@@ -6,7 +6,7 @@ app_name = 'jobs'
 
 urlpatterns = [
     # Submit new job
-    path('new/', views.new, name='new'),
+    path('new', views.new, name='new'),
 
     # Reports
     path('<uuid:job_id>/report/', include('automoss.apps.reports.urls')),

@@ -16,11 +16,10 @@ def index(request):
 def new(request):
     if request.method == 'POST':
 
-        # DB - Create job
         # TODO read params from request
-        new_job = Job(language='PY', max_until_ignored=1000,
+        # DB - Create job
+        new_job = Job.objects.create(language='PY', max_until_ignored=1000,
                       max_displayed_matches=1000)
-        new_job.save()
 
         job_id = new_job.job_id
 
