@@ -4,3 +4,4 @@ whitenoise
 celery
 redis
 numpy
+aiohttp
