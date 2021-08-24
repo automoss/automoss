@@ -15,15 +15,15 @@ class MOSSReport(models.Model):
     """ Class to model MOSS Report Entity
     """
     # Job report belongs to
-    job = models.ForeignKey(Job, on_delete=models.CASCADE, limit_choices_to={'status': "COM"})
+    job = models.OneToOneField(Job, on_delete=models.CASCADE, limit_choices_to={'status': "COM"})
     # Date report was created
     created_date = models.DateTimeField(default=now)
     # MOSS URL of report
     url = models.URLField(default=None)
     # Date url expires
     url_expire_date = models.DateTimeField(default=get_datetime_from_now)
-    # Report HTML file on the server
-    file = models.FileField(upload_to=get_path)
+    # Report HTML file on the server (not required for now. TODO Change to required)
+    file = models.FileField(upload_to=get_path, null=True, blank=True)
 
     def __str__(self):
         """ Report to string method
