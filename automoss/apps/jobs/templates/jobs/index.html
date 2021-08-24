@@ -18,7 +18,7 @@
       <tr>
         <th scope="row">{{ forloop.counter }}</th>
         <td>
-        {% if job.mossreport_set.first %}
+        {% if job.mossreport %}
           <a href="{% url "jobs:reports:index" job.job_id %}">{{ job.comment }}</a>
         {% else %}
           {{ job.comment }}
