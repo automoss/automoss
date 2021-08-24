@@ -52,9 +52,12 @@ class MossAPIWrapper:
 
         self._send_string(f'language {language}')
 
-    def upload_raw_file(self, file_path, bytes, language, file_id):
+    def upload_raw_file(self, file_path, bytes, language, file_id, use_basename=False):
 
         size = len(bytes)
+
+        if use_basename:
+            file_path = os.path.basename(file_path)
 
         # Replace whitespace with _
         file_name = re.sub('\s+', '_', file_path).replace('\\', '/')
@@ -65,15 +68,15 @@ class MossAPIWrapper:
         # Send actual file info
         self._send_raw(bytes)
 
-    def upload_raw_base_file(self, file_path, bytes, language):
-        self.upload_raw_base_file(file_path, bytes, 0)
+    def upload_raw_base_file(self, file_path, bytes, language, use_basename=False):
+        self.upload_raw_base(file_path, bytes, language, 0, use_basename)
 
-    def upload_base_file(self, file_path, language):
-        self.upload_file(file_path, language, 0)
+    def upload_base_file(self, file_path, language, use_basename=False):
+        self.upload_file(file_path, language, 0, use_basename)
 
-    def upload_file(self, file_path, language, file_id):
+    def upload_file(self, file_path, language, file_id, use_basename=False):
         with open(file_path, 'rb') as f:
-            self.upload_raw_file(file_path, f.read(), language, file_id)
+            self.upload_raw_file(file_path, f.read(), language, file_id, use_basename)
 
     def generate_url(self, comment=''):
         # Send final query
@@ -181,7 +184,7 @@ class MOSS:
 
     def generate(self, language='c', files=None,
                  base_files=None, is_directory=False, experimental=False,
-                 max_matches_until_ignore=1000000, num_to_show=1000000, comment=''):
+                 max_matches_until_ignore=1000000, num_to_show=1000000, comment='', use_basename=False):
         """Basic interface for generating a report from MOSS"""
 
         # TODO auto detect language
@@ -195,8 +198,8 @@ class MOSS:
             moss = MossAPIWrapper(self.user_id)
             moss.connect()  # TODO retries
 
-            if files is None and not is_directory:  # No files supplied
-                raise MossException  # No files supplied
+            if files is None:  # No files supplied
+                raise MossException
 
             if base_files is None:
                 base_files = []
@@ -218,11 +221,11 @@ class MOSS:
 
             # Upload base files
             for base_file in base_files:
-                moss.upload_base_file(base_file, language)
+                moss.upload_base_file(base_file, language, use_basename)
 
             # Upload submissions
             for index, path in enumerate(files, start=1):
-                moss.upload_file(path, language, index)
+                moss.upload_file(path, language, index, use_basename)
 
             # Read and return data
             url = moss.generate_url(comment)
