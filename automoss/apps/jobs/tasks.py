@@ -1,5 +1,6 @@
 
 from .models import Job
+from ..reports.models import MOSSReport
 from django.core.files.uploadedfile import UploadedFile
 from ..core.moss import (
     MOSS,
@@ -16,6 +17,7 @@ def process_job(job_id):
     """Basic interface for generating a report from MOSS"""
 
     job = Job.objects.get(job_id=job_id)
+
     base_dir = os.path.join('media', str(job.job_id), 'uploads')
 
     paths = {
@@ -41,5 +43,10 @@ def process_job(job_id):
     )
 
     # TODO do something with result, e.g., write to DB
+
+    MOSSReport.objects.create(job=job, url=result.url)
+
+    job.status = 'COM'
+    job.save()
 
     return result.url
