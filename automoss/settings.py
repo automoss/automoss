@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'automoss.apps.jobs',
     'automoss.apps.reports',
     'automoss.apps.api',
+    'automoss.apps.users',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -108,6 +110,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+LOGIN_REDIRECT_URL = '/jobs'
+# Currently returns logged_out.html
+#LOGOUT_REDIRECT_URL = '/accounts/login'
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
