@@ -23,7 +23,7 @@ class MOSSReport(models.Model):
     # Date url expires
     url_expire_date = models.DateTimeField(default=get_datetime_from_now)
     # Report HTML file on the server
-    file = models.FileField(upload_to=get_path)
+    file = models.FileField(upload_to=get_path, default=None)
 
     def __str__(self):
         """ Report to string method
