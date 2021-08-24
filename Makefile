@@ -1,3 +1,8 @@
+
+install:
+	sudo apt-get install redis
+	pip3 install -r requirements_dev.txt
+
 run:
 	python manage.py runserver
 
