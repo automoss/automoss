@@ -12,8 +12,6 @@ def to_choices(dictionary):
     return list(dictionary.items())
 
 
-# MOSS Defaults
-
 # TODO ensure extensions are checked case insensitive
 LANGUAGES = {
     # CODE : (Name, moss_name, [extensions])
@@ -52,11 +50,9 @@ def nth_value(dictionary, index):
 
 
 DEFAULT_LANGUAGE = first(LANGUAGES)
-
 LANGUAGE_CHOICES = [(l, LANGUAGES[l][0]) for l in LANGUAGES]
 SUPPORTED_MOSS_LANGUAGES = nth_value(LANGUAGES, 1)
 VALID_EXTENSIONS = {l: LANGUAGES[l][2] for l in LANGUAGES}
-
 MAX_LANGUAGE_LENGTH = get_longest_key(LANGUAGES)
 
 
@@ -73,5 +69,10 @@ STATUS_CHOICES = to_choices(STATUSES)
 DEFAULT_STATUS = first(STATUSES)
 MAX_STATUS_LENGTH = get_longest_key(STATUSES)
 
-
 UUID_LENGTH = 32
+
+# Default MOSS settings
+DEFAULT_MOSS_LANGUAGE = LANGUAGES[DEFAULT_LANGUAGE][0]
+MAX_UNTIL_IGNORED = 1000000
+MAX_DISPLAYED_MATCHES = 1000000
+MAX_COMMENT_LENGTH = 64
