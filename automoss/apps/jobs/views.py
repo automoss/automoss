@@ -1,18 +1,18 @@
 import os
 
-from ..utils.encoding import base64_decode
+from django.contrib.auth.decorators import login_required
 from .tasks import process_job
 from django.shortcuts import render
 from django.http.response import JsonResponse
 
 from .models import Job
 
-
+@login_required
 def index(request):
-    context = {"jobs": Job.objects.all()}
+    context = {"jobs": request.user.mossuser.job_set.all()}
     return render(request, "jobs/index.html", context)
 
-
+@login_required
 def new(request):
     if request.method == 'POST':
 
@@ -25,7 +25,7 @@ def new(request):
         job_id = new_job.job_id
 
         # TODO get from database
-        moss_user_id = 1
+        moss_user_id = request.user.mossuser.moss_id
 
         base_dir = os.path.join('media', str(job_id), 'uploads')
 

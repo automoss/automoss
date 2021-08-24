@@ -1,6 +1,7 @@
 import uuid
 from django.utils.timezone import now
 from django.db import models
+from ..users.models import MOSSUser
 
 def get_default_comment():
     """ Returns default job comment """
@@ -10,6 +11,8 @@ def get_default_comment():
 class Job(models.Model):
     """ Class to model Job Entity
     """
+    # MOSS user that created the job
+    moss_user = models.ForeignKey(MOSSUser, on_delete=models.CASCADE)
     # Unique identifier used in routing
     job_id = models.CharField(primary_key=False, default=uuid.uuid4, max_length=32, editable=False, unique=True)
     # Language choice
