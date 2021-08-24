@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block "main"%}
+<div class="d-flex justify-content-center">
+<div class="m-2" style="max-width: 900px; min-width: 400px">
+    <div class="mb-4">
+    <h3>Login</h3>
+  </div>
+
+  {% if form.errors %}
+    <p>Your username and password didn't match. Please try again.</p>
+  {% endif %}
+
+  {% if next %}
+    {% if user.is_authenticated %}
+      <p>Your account doesn't have access to this page. To proceed,
+      please login with an account that has access.</p>
+    {% else %}
+      <p>Please login to see this page.</p>
+    {% endif %}
+  {% endif %}
+
+  <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+  <div class="mb-4">
+    <label for="id_username" class="form-label">Username: </label>
+    <input type="text" name="username" class="form-control" id="id_username">
+  </div>
+  <div class="mb-4">
+    <label for="id_password" class="form-label">Password: </label>
+    <input type="password" name="password" class="form-control" id="id_password">
+  </div>
+    <input type="submit" class="btn btn-primary" value="Sign In"/>
+    <input type="hidden" name="next" value="{{ next }}" />
+  </form>
+</div>
+</div>
+  {# Assumes you setup the password_reset view in your URLconf #}
+  <!-- <p><a href="{% url 'password_reset' %}">Lost password?</a></p>-->
+
+{% endblock %}
