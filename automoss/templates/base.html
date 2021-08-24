@@ -7,20 +7,19 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="{% static "bootstrap/css/bootstrap.min.css" %}" rel="stylesheet" crossorigin="anonymous">
+    <link href="{% static "bootstrap/css/lumen.css" %}" rel="stylesheet" crossorigin="anonymous">
     <script src="{% static "bootstrap/js/bootstrap.bundle.min.js" %}" crossorigin="anonymous"></script>
 </head>
 
 <body>
 	<div class="d-flex flex-column" style="min-height: 100vh;">
-		<nav class="navbar navbar-expand-md navbar-dark bg-dark">
+		<nav class="navbar navbar-expand navbar-dark bg-primary">
 			<div class="container-fluid">
-				<a class="navbar-brand" href="#">
-					<img src={% static "bootstrap/img/logo-small.png" %} height=30></img>
+				<a class="navbar-brand" href="/">
+					<label style="font-size: 30px;">AutoMOSS</label>
 				</a>
-				<!-- <a class="navbar-brand" href="#">AutoMOSS</a> -->
 				<a class="navbar-text navbar-right">
-					<button type="button" class="btn btn-secondary">Account</button>
+					<label style="color: white;">Welcome back, user!</label>
 				</a>
 			</div>
 		</nav>
@@ -30,7 +29,7 @@
 		</div>
 		
 		<footer>
-			<div class="text-center p-3 bg-dark">
+			<div class="text-center p-3 bg-primary">
 				<label style="color: white;">Copyright © 2021 AutoMOSS. All Rights Reserved.</label>
 			</div>
 		</footer>
