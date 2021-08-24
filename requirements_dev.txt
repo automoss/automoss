@@ -1,5 +1,6 @@
 django
 python-dotenv
+whitenoise
 celery
 redis
 numpy

@@ -5,8 +5,28 @@
   <p>Welcome to the Jobs Index Page!</p>
   <p>Dynamically Rendered Job List:</p>
   <ul>
-      {% for id, job in jobs %}
-      <li> <a href="{% url "jobs:reports:index" id %}">{{ job }}</a> </li>
-      {% endfor %}
-  </ul>
+    <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Job Title</th>
+      <th scope="col">Date Created</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for job in jobs %}
+      <tr>
+        <th scope="row">{{ forloop.counter }}</th>
+        <td>
+        {% if job.mossreport_set.first %}
+          <a href="{% url "jobs:reports:index" job.job_id %}">{{ job.comment }}</a>
+        {% else %}
+          {{ job.comment }}
+        {% endif %}
+        </td>
+        <td>{{ job.start_date }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock "main" %}
