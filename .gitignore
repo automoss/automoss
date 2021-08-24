@@ -13,3 +13,6 @@ migrations/
 
 # Media
 media/
+
+# Redis
+dump.rdb
