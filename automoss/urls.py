@@ -21,4 +21,8 @@ urlpatterns = [
     path('jobs/', include('automoss.apps.jobs.urls')),
     # Admin
     path('admin/', admin.site.urls),
+    # Authentication
+    path('accounts/', include('django.contrib.auth.urls')),
+    # Users
+    path('', include('automoss.apps.users.urls'))
 ]
