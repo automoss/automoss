@@ -12,4 +12,9 @@ listen:
 
 db:
 	python manage.py makemigrations && python manage.py migrate
-	
+
+test:
+	python manage.py test
+
+coverage:
+	coverage run --source='.' manage.py test && coverage report

@@ -16,3 +16,6 @@ media/
 
 # Redis
 dump.rdb
+
+# Coverage/testing
+.coverage
