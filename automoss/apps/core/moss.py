@@ -8,12 +8,14 @@ import asyncio
 import aiohttp
 
 
-class MossAPIWrapper:
+from ...defaults import (
+    DEFAULT_MOSS_LANGUAGE,
+    MAX_UNTIL_IGNORED,
+    MAX_DISPLAYED_MATCHES,
+    SUPPORTED_MOSS_LANGUAGES
+)
 
-    _SUPPORTED_LANGUAGES = ['c', 'cc', 'java', 'ml', 'pascal', 'ada', 'lisp',
-                            'scheme', 'haskell', 'fortran', 'ascii', 'vhdl', 'perl',
-                            'matlab', 'python', 'mips', 'prolog', 'spice', 'vb',
-                            'csharp', 'a8086', 'javascript', 'plsql', 'verilog']
+class MossAPIWrapper:
 
     def __init__(self, user_id):
         self.user_id = user_id
@@ -47,7 +49,7 @@ class MossAPIWrapper:
         self._send_string(f'show {num_to_show}')
 
     def set_language(self, language):
-        if language not in self._SUPPORTED_LANGUAGES:
+        if language not in SUPPORTED_MOSS_LANGUAGES:
             raise UnsupportedLanguage(language)
 
         self._send_string(f'language {language}')
@@ -179,18 +181,15 @@ class MOSS:
     def __init__(self, user_id):
         self.user_id = user_id
 
-    def supported_languages(self):
-        return MossAPIWrapper._SUPPORTED_LANGUAGES
-
-    def generate(self, language='c', files=None,
+    def generate(self, language=DEFAULT_MOSS_LANGUAGE, files=None,
                  base_files=None, is_directory=False, experimental=False,
-                 max_matches_until_ignore=1000000, num_to_show=1000000, comment='', use_basename=False):
+                 max_matches_until_ignore=MAX_UNTIL_IGNORED, num_to_show=MAX_DISPLAYED_MATCHES, comment='', use_basename=False):
         """Basic interface for generating a report from MOSS"""
 
         # TODO auto detect language
 
         # Returns report
-        if language not in self.supported_languages():
+        if language not in SUPPORTED_MOSS_LANGUAGES:
             raise UnsupportedLanguage(language)
 
         url = None
