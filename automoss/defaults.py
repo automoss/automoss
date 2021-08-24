@@ -18,7 +18,7 @@ def to_choices(dictionary):
 LANGUAGES = {
     # CODE : (Name, moss_name, [extensions])
 
-    'PY': ('Python', 'python', ['py']), # pyi, pyc, pyd, pyo, pyw, pyz
+    'PY': ('Python', 'python', ['py']),  # pyi, pyc, pyd, pyo, pyw, pyz
     'CX': ('C', 'c', ['c', 'h']),
     'CP': ('C++', 'cc', ['C', 'cc', 'cpp', 'cxx', 'c++', 'h', 'H', 'hh', 'hpp', 'hxx', 'h++']),
     'JA': ('Java', 'java', ['java']),  # class, jar
@@ -27,7 +27,7 @@ LANGUAGES = {
     'PL': ('Perl', 'perl', ['pl', 'plx', 'pm', 'xs', 't', 'pod']),
     'MP': ('MIPS assembly', 'mips', ['asm', 's']),
 
-	# TODO decide which to add, and add extensions
+    # TODO decide which to add, and add extensions
     # 'LP' : ('Lisp', 'lisp', []),
     # 'HS' : ('Haskell', 'haskell', []),
     # 'VB' : ('Visual Basic', 'vb', []),
@@ -43,15 +43,35 @@ LANGUAGES = {
     # 'SP' : ('Spice', 'spice', []),
     # 'PG' : ('Prolog', 'prolog', ['pl', 'pro', 'P']),
     # 'PS' : ('PL/SQL', 'plsql', []),
+    # 'AS' : ('ASCII', 'ascii', []) # All?
 }
 
+
 def nth_value(dictionary, index):
-	return [dictionary[l][index] for l in LANGUAGES]
+    return [dictionary[l][index] for l in LANGUAGES]
+
 
 DEFAULT_LANGUAGE = first(LANGUAGES)
 
 LANGUAGE_CHOICES = [(l, LANGUAGES[l][0]) for l in LANGUAGES]
 SUPPORTED_MOSS_LANGUAGES = nth_value(LANGUAGES, 1)
-VALID_EXTENSIONS = {l:LANGUAGES[l][2] for l in LANGUAGES}
+VALID_EXTENSIONS = {l: LANGUAGES[l][2] for l in LANGUAGES}
 
 MAX_LANGUAGE_LENGTH = get_longest_key(LANGUAGES)
+
+
+# Other
+STATUSES = {
+    # 'Code': 'Name',
+    'UPL': 'Uploading',
+    'PRO': 'Processing',
+    'COM': 'Complete',
+    'FAI': 'Failed'
+}
+
+STATUS_CHOICES = to_choices(STATUSES)
+DEFAULT_STATUS = first(STATUSES)
+MAX_STATUS_LENGTH = get_longest_key(STATUSES)
+
+
+UUID_LENGTH = 32
