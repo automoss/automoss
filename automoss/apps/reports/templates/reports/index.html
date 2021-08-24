@@ -1,12 +1,10 @@
 {% extends "base.html" %}
 
 {% block "main" %}
-  <h1>Report Index Page</h1>
-  <p>Welcome to the Reports Index Page!</p>
-  <p>Dynamically Report URL: <strong>{{ report.url }}</strong></p>
-  <a href="{{ report.generatedreport_set.first.report_id }}">Click Here</a>
+  <h2>{{ report }}</h2>
   <div class="ratio ratio-16x9">
     <iframe class="embed-responsive-item" width=800px src="{{ report.url }}"></iframe>
   </div>
   <a class="btn btn-primary" href="{% url "jobs:index" %}" role="button">Back</a>
+
 {% endblock "main" %}
