@@ -4,6 +4,8 @@
 
 {% block "main" %}
 
+<div class="mb-3"> <h2> Jobs</h2> </div>
+
 
 <style>
 	.files
@@ -68,9 +70,9 @@
 	}
 </style>
 
-<ol class="breadcrumb">
+{% comment %} <ol class="breadcrumb">
 	<li class="breadcrumb-item active">Jobs</li>
-</ol>
+</ol> {% endcomment %}
 
 <div class="row">
 	<div class="col-lg-12">
@@ -110,7 +112,7 @@
 						<!-- Language -->
 						<div class="form-group">
 							<label for="job-language">Language:</label><br>
-							<select class="form-select" id="exampleSelect1" data-dashlane-rid="e800bbfa3021c01f" data-form-type="other">
+							<select class="form-select" id="exampleSelect1" data-form-type="other">
 								<option>C</option>
 								<option>C++</option>
 								<option>Java</option>
@@ -174,27 +176,24 @@
 	
 	<!-- Jobs -->
 	<tbody>
-	{% if jobs %}
-		{% for job in jobs %}
-		<tr>
-			<th scope="row">{{ forloop.counter }}</th>
-			<td>
-				{% if job.mossreport_set.first %}
-				<a href="{% url "jobs:reports:index" job.job_id %}">{{ job.comment }}</a>
-				
-				{% else %}
-					{{ job.comment }}
-				{% endif %}
-			</td>
-			<td>
-				{{ job.start_date }}
-			</td>
-			<td>
-				{{ job.status }}
-			</td>
-		</tr>
-		{% endfor %}
-	{% endif %}
+	{% for job in jobs %}
+	<tr>
+		<th scope="row">{{ forloop.counter }}</th>
+		<td>
+			{% if job.mossreport %}
+			<a href="{% url "jobs:reports:index" job.job_id %}" style="text-decoration: none;">{{ job.comment }}</a>
+			{% else %}
+				{{ job.comment }}
+			{% endif %}
+		</td>
+		<td>
+			{{ job.start_date }}
+		</td>
+		<td>
+			{{ job.status }}
+		</td>
+	</tr>
+	{% endfor %}
 	</tbody>
 
 </table>
