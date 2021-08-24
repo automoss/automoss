@@ -147,54 +147,53 @@
         return validExtensions.includes(extension);
     }
 
-    // https://stackoverflow.com/a/50472925
-    form.onsubmit = async (e) => {
+	// https://stackoverflow.com/a/50472925
+	form.onsubmit = async (e) => {
 
 		e.preventDefault();
-		
-        // Construct new form with relevant data
-        let data = new FormData(form);
 
-        // Read zip file
-        let input = form.querySelector('input[type="file"]')
+		// Construct new form with relevant data
+		let data = new FormData(form);
 
-        let zipFile = input.files[0];
-        if (!zipFile) {
-            // TODO - display error, no files
-            return;
-        }
-        JSZip.loadAsync(zipFile).then(function (zip) {
-            console.log(zip);
+		// Read zip file
+		let input = form.querySelector('input[type="file"]')
 
-            let files = [];
-            zip.forEach(function (relativePath, file) {
-                files.push(file)
-            });
+		let zipFile = input.files[0];
+		if (!zipFile) {
+			// TODO - display error, no files
+			return;
+		}
+		let zip = await JSZip.loadAsync(zipFile);
 
-            Promise.all(files.map(async (zipEntry) => {
-                console.log(zipEntry.name);
+		console.log(zip);
 
-                if (validFile(zipEntry.name)) {
-                    let blob = await zipEntry.async('blob')
-                    data.append('files', blob, btoa(zipEntry.name))
-                    console.log('valid file:', zipEntry.name);
-                } else {
-                    console.log('invalid file:', zipEntry.name);
-                }
+		let files = [];
+		zip.forEach(function (relativePath, file) {
+			files.push(file)
+		});
 
-            })).then(function (d) {
-                console.log(data)
-                fetch('new', {
-                    method: 'POST',
-                    body: data,
-                }).then(result => {
-                    // do something with the result
-                    console.log("Completed with result:", result);
-                })
-            })
+		await Promise.all(files.map(async (zipEntry) => {
+			console.log(zipEntry.name);
 
-        });
-    };
+			if (validFile(zipEntry.name)) {
+				let blob = await zipEntry.async('blob')
+				data.append('files', blob, zipEntry.name)
+				console.log('valid file:', zipEntry.name);
+			} else {
+				console.log('invalid file:', zipEntry.name);
+			}
+		}))
+
+		console.log(data)
+
+		let result = await fetch('new', {
+			method: 'POST',
+			body: data,
+		})
+
+		console.log("Completed with result:", result);
+
+	};
 
 </script>
 

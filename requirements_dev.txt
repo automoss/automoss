@@ -6,3 +6,4 @@ redis
 numpy
 asyncio
 aiohttp
+coverage
