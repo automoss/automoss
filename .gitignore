@@ -19,3 +19,4 @@ dump.rdb
 
 # Coverage/testing
 .coverage
+htmlcov/
