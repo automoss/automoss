@@ -5,8 +5,8 @@ from . import views
 app_name = "reports"
 
 urlpatterns = [
-    # Generated Report - View Report
-    path('<uuid:report_id>/', views.report, name='report'),
+    # TODO Generated Report - View Report
+    #path('<uuid:report_id>/', views.report, name='report'),
     # Report Index - View MOSS Report
     path('', views.index, name="index")
 ]
