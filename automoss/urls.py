@@ -17,6 +17,9 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
+    # API
+    path('api/', include('automoss.apps.api.urls')),
+
     # Jobs
     path('jobs/', include('automoss.apps.jobs.urls')),
     # Admin

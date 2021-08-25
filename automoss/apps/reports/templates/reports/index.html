@@ -1,10 +1,25 @@
-{% extends "base.html" %}
+{% extends "main.html" %}
 
-{% block "main" %}
-  <h2>{{ report }}</h2>
-  <div class="ratio ratio-16x9">
-    <iframe class="embed-responsive-item" width=800px src="{{ report.url }}"></iframe>
-  </div>
-  <a class="btn btn-primary" href="{% url "jobs:index" %}" role="button">Back</a>
+{% block "main-content" %}
 
-{% endblock "main" %}
+<div class="mb-3"> <h2>Job Report</h2> </div>
+
+<div class="ratio ratio-16x9 shadow rounded" style="position: relative; background-color: white">
+	<iframe id="moss-frame" class="embed-responsive-item" width=800px src="{{ report.url }}"></iframe>
+	<div style="pointer-events: none">
+		<button style="pointer-events: all;position: absolute; top: 10px; right: 10px;" class="btn btn-secondary" onclick="back();">Back</button>
+	</div>
+</div>
+
+<a class="btn btn-primary mt-4" href="{% url "jobs:index" %}" role="button">Return to Jobs</a>
+
+<script>
+	let frame = document.getElementById("moss-frame");
+
+	function back()
+	{
+		self.history.back(); 
+	}
+</script>
+
+{% endblock %}

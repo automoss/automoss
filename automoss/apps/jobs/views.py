@@ -1,20 +1,36 @@
 import os
+import json
+from json.decoder import JSONDecodeError
 
 from django.contrib.auth.decorators import login_required
 from .tasks import process_job
 from django.shortcuts import render
+from django.template.defaulttags import register
 from django.http.response import JsonResponse
+from django.utils.datastructures import MultiValueDictKeyError
+from django.core.serializers import serialize
+from django.utils.safestring import mark_safe
 
+from ...defaults import (
+    VIEWABLE_LANGUAGES,
+    STATUSES,
+    COMPLETED_STATUS,
+    POLLING_TIME
+)
 from .models import Job
 
-from ...defaults import VIEWABLE_LANGUAGES
+@register.filter(is_safe=True)
+def js(obj):
+    return mark_safe(json.dumps(obj))
 
 
 @login_required
 def index(request):
     context = {
-        'jobs': request.user.mossuser.job_set.all(),
-        'languages': VIEWABLE_LANGUAGES
+        'languages': VIEWABLE_LANGUAGES,
+        'statuses':  STATUSES,
+        'completed': COMPLETED_STATUS,
+        'poll': POLLING_TIME
     }
     return render(request, "jobs/index.html", context)
 
@@ -50,10 +66,41 @@ def new(request):
         process_job.delay(job_id)
 
         # Return useful information
-        data = {'message': f'started job: {job_id}'}
-        return JsonResponse(data, status=200)
+        data = json.loads(serialize('json', [new_job]))[0]['fields']
+        return JsonResponse(data, status=200, safe=False)
 
     else:
 
         context = {}
         return render(request, "jobs/new.html", context)
+
+
+@login_required
+def get_jobs(request):
+    # Return jobs of user
+    results = Job.objects.filter(moss_user=request.user.mossuser).values()
+    return JsonResponse(list(results), status=200, safe=False)
+
+
+@login_required
+def get_statuses(request):
+
+    job_ids = []
+    try:
+        if request.method == 'POST':
+            body = json.loads(request.body)
+            job_ids = body['job_ids']
+        else:
+            job_ids = request.GET['job_ids'].split(',')
+
+    except (JSONDecodeError, IndexError, MultiValueDictKeyError) as e:
+        pass  # Invalid request - TODO return error
+
+    if not isinstance(job_ids, list):
+        job_ids = []
+
+    results = Job.objects.filter(
+        moss_user=request.user.mossuser, job_id__in=job_ids)
+
+    data = {j.job_id: j.status for j in results}
+    return JsonResponse(data, status=200)
