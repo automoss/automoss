@@ -26,7 +26,11 @@
               {% endif %} {% endcomment %}
         </form>
 				<a class="navbar-text navbar-right">
-					<label style="color: white;">Welcome back, {{ user.username }}!</label>
+					<label style="color: white;">
+					{% if request.user.is_authenticated %}
+					Welcome back, {{ user.username }}!
+					{% endif %}
+					</label>
 				</a>
 			</div>
 		</nav>
