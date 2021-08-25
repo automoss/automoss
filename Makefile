@@ -14,14 +14,15 @@ migrations:
 	python manage.py makemigrations && python manage.py migrate
 
 delete-db:
-	rm db.sqlite3
+	rm -f db.sqlite3
 
 # https://simpleisbetterthancomplex.com/tutorial/2016/07/26/how-to-reset-migrations.html
 db: delete-db clean migrations
 
 clean:
-	rm dump.rdb
+	rm -f dump.rdb
 	find . -path '*/migrations/*.py' -not -name '__init__.py' -delete
+	find . -type d -name __pycache__ -exec rm -r {} \+
 
 test:
 	python3 manage.py test
