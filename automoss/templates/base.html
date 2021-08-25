@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,40 +12,4 @@
     <script src="{% static "bootstrap/js/bootstrap.bundle.min.js" %}" crossorigin="anonymous"></script>
 </head>
 
-<body>
-	<div class="d-flex flex-column" style="min-height: 100vh;">
-		<nav class="navbar navbar-expand navbar-dark bg-primary">
-			<div class="container container-fluid px-0">
-				<a class="navbar-brand" href="{% url "jobs:index" %}">
-					<label style="font-size: 30px;">AutoMOSS</label>
-				</a>
-        <form class="navbar-text navbar-right">
-              {% comment %} {% if user.is_authenticated %}
-                <p><a class="btn btn-info" href="{% url 'logout' %}">Log Out</a></p>
-              {% else %}
-                <a class="btn btn-info" href="{% url 'login' %}">Log In</a>
-              {% endif %} {% endcomment %}
-        </form>
-				<a class="navbar-text navbar-right">
-					<label style="color: white;">
-					{% if request.user.is_authenticated %}
-					Welcome back, {{ user.username }}!
-					{% endif %}
-					</label>
-				</a>
-			</div>
-		</nav>
-		
-		<div class="container flex-grow-1" style="padding: 50px 0 50px 0">
-			{% block "main" %}{% endblock %}
-		</div>
-		
-		<footer>
-			<div class="text-center p-3 bg-primary">
-				<label style="color: white;">Copyright © 2021 AutoMOSS. All Rights Reserved.</label>
-			</div>
-		</footer>
-	</div>
-</body>
-
-</html>
+{% block "base-content" %}{% endblock %}
