@@ -15,15 +15,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from . import views
 
 urlpatterns = [
     # API
     path('api/', include('automoss.apps.api.urls')),
-
     # Jobs
     path('jobs/', include('automoss.apps.jobs.urls')),
     # Admin
     path('admin/', admin.site.urls),
     # Users
-    path('user/', include('automoss.apps.users.urls'))
+    path('user/', include('automoss.apps.users.urls')),
+    # Root
+    path('', views.root, name="root")
 ]
