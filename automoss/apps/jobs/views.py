@@ -4,10 +4,11 @@ from ..utils.encoding import base64_decode
 from .tasks import process_job
 from django.shortcuts import render
 from django.http.response import JsonResponse
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 from .models import Job
 
-
+@xframe_options_exempt
 def index(request):
     context = {"jobs": Job.objects.all()}
     return render(request, "jobs/index.html", context)
