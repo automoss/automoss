@@ -1,31 +1,37 @@
 import os
 
-from ..utils.encoding import base64_decode
+from django.contrib.auth.decorators import login_required
 from .tasks import process_job
 from django.shortcuts import render
 from django.http.response import JsonResponse
 from django.views.decorators.clickjacking import xframe_options_exempt
+from ...defaults import VIEWABLE_LANGUAGES
 
 from .models import Job
 
+@login_required
 @xframe_options_exempt
 def index(request):
-    context = {"jobs": Job.objects.all()}
+    context = {
+        'jobs': request.user.mossuser.job_set.all(),
+        'languages': VIEWABLE_LANGUAGES
+    }
     return render(request, "jobs/index.html", context)
 
 
+@login_required
 def new(request):
     if request.method == 'POST':
 
         # TODO read params from request
         # DB - Create job
-        new_job = Job.objects.create(language='PY', max_until_ignored=1000,
-                      max_displayed_matches=1000)
+        new_job = Job.objects.create(moss_user=request.user.mossuser, language='PY', max_until_ignored=1000,
+                                     max_displayed_matches=1000)
 
         job_id = new_job.job_id
 
         # TODO get from database
-        moss_user_id = 1
+        moss_user_id = request.user.mossuser.moss_id
 
         base_dir = os.path.join('media', str(job_id), 'uploads')
 

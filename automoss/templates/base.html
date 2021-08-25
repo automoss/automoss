@@ -14,12 +14,23 @@
 <body>
 	<div class="d-flex flex-column" style="min-height: 100vh;">
 		<nav class="navbar navbar-expand navbar-dark bg-primary">
-			<div class="container-fluid">
-				<a class="navbar-brand" href="/">
+			<div class="container container-fluid px-0">
+				<a class="navbar-brand" href="{% url "jobs:index" %}">
 					<label style="font-size: 30px;">AutoMOSS</label>
 				</a>
+        <form class="navbar-text navbar-right">
+              {% comment %} {% if user.is_authenticated %}
+                <p><a class="btn btn-info" href="{% url 'logout' %}">Log Out</a></p>
+              {% else %}
+                <a class="btn btn-info" href="{% url 'login' %}">Log In</a>
+              {% endif %} {% endcomment %}
+        </form>
 				<a class="navbar-text navbar-right">
-					<label style="color: white;">Welcome back, user!</label>
+					<label style="color: white;">
+					{% if request.user.is_authenticated %}
+					Welcome back, {{ user.username }}!
+					{% endif %}
+					</label>
 				</a>
 			</div>
 		</nav>

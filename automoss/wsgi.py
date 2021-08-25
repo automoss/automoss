@@ -19,3 +19,7 @@ os.system('redis-cli shutdown')  # shut Redis down
 subprocess.Popen('redis-server')  # start the Redis server
 
 application = get_wsgi_application()
+
+# Restart celery worker
+os.system("kill -9 $(ps aux | grep celery | grep -v grep | awk '{print $2}' | tr '\n' ' ')")
+subprocess.Popen(['celery', '-A', 'automoss', 'worker', '--loglevel=info'])

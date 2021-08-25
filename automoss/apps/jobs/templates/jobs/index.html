@@ -4,6 +4,8 @@
 
 {% block "main" %}
 
+<div class="mb-3"> <h2> Jobs</h2> </div>
+
 
 <style>
 	.files
@@ -19,6 +21,16 @@
 	}
 	.files input
 	{
+		cursor: pointer;
+		position: absolute;
+		opacity: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		width:100%;
+	}
+	.files input::-webkit-file-upload-button {
 		display: none;
 	}
 	.files input:focus
@@ -68,9 +80,9 @@
 	}
 </style>
 
-<ol class="breadcrumb">
+{% comment %} <ol class="breadcrumb">
 	<li class="breadcrumb-item active">Jobs</li>
-</ol>
+</ol> {% endcomment %}
 
 <div class="row">
 	<div class="col-lg-12">
@@ -97,8 +109,8 @@
 					<div class="modal-body">
 
 						<!-- Submission files -->
-						<div class="form-group files">
-							<input id="job-submission-files" type="file" class="form-control-file" multiple="" accept=".zip">
+						<div id="file-dropzone" class="form-group files">
+							<input id="job-submission-files" type="file" class="form-control-file" accept=".zip">
 						</div><br>
 					
 						<!-- Name -->
@@ -110,31 +122,12 @@
 						<!-- Language -->
 						<div class="form-group">
 							<label for="job-language">Language:</label><br>
-							<select class="form-select" id="exampleSelect1" data-dashlane-rid="e800bbfa3021c01f" data-form-type="other">
-								<option>C</option>
-								<option>C++</option>
-								<option>Java</option>
-								<option>C#</option>
-								<option>Python</option>
-								<option>Visual Basic</option>
-								<option>Javascript</option>
-								<option>FORTRAN</option>
-								<option>ML</option>
-								<option>Haskell</option>
-								<option>Lisp</option>
-								<option>Scheme</option>
-								<option>Pascal</option>
-								<option>Modula2</option>
-								<option>Ada</option>
-								<option>Perl</option>
-								<option>TCL</option>
-								<option>Matlab</option>
-								<option>VHDL</option>
-								<option>Verilog</option>
-								<option>Spice</option>
-								<option>MIPS assembly</option>
-								<option>a8086 assembly</option>
-								<option>HCL2</option>
+							<select class="form-select" id="exampleSelect1" data-form-type="other">
+
+							{% for language, extensions in languages.items %}
+								<option extensions="{{extensions}}">{{language}} </option>
+							{% endfor %}
+
 							</select>
 						</div><br>
 
@@ -174,27 +167,24 @@
 	
 	<!-- Jobs -->
 	<tbody>
-	{% if jobs %}
-		{% for job in jobs %}
-		<tr>
-			<th scope="row">{{ forloop.counter }}</th>
-			<td>
-				{% if job.mossreport_set.first %}
-				<a href="{% url "jobs:reports:index" job.job_id %}">{{ job.comment }}</a>
-				
-				{% else %}
-					{{ job.comment }}
-				{% endif %}
-			</td>
-			<td>
-				{{ job.start_date }}
-			</td>
-			<td>
-				{{ job.status }}
-			</td>
-		</tr>
-		{% endfor %}
-	{% endif %}
+	{% for job in jobs %}
+	<tr>
+		<th scope="row">{{ forloop.counter }}</th>
+		<td>
+			{% if job.mossreport %}
+			<a href="{% url "jobs:reports:index" job.job_id %}" style="text-decoration: none;">{{ job.comment }}</a>
+			{% else %}
+				{{ job.comment }}
+			{% endif %}
+		</td>
+		<td>
+			{{ job.start_date }}
+		</td>
+		<td>
+			{{ job.status }}
+		</td>
+	</tr>
+	{% endfor %}
 	</tbody>
 
 </table>
@@ -209,7 +199,44 @@
 
 <script>
 
+	let dropzone = document.getElementById('file-dropzone')
+	
+	dropzone.addEventListener('dragenter', function(){
+		dropzone.style.backgroundColor = 'limegreen'
+	})
+
+	dropzone.addEventListener('dragleave', function(){
+		dropzone.style.backgroundColor = 'white';
+	});
+
+	dropzone.addEventListener('drop', function(){
+		dropzone.style.backgroundColor = 'white';
+	});
+
+	function getFileName(name){
+		return name.split('.').shift();
+	}
     let form = document.getElementById('create-job-form')
+
+    let input = document.getElementById('job-submission-files')
+	input.onchange = (e) => {
+		console.log(e)
+
+		let zipFile = input.files[0];
+		if (!zipFile) {
+			// TODO - display error, no files
+			return;
+		}
+
+		// TODO Check that it is a zip file
+
+		document.getElementById('job-name').value = getFileName(zipFile.name)
+		
+		// TODO select extension based on most popular
+		// JSZip.loadAsync(zipFile).then((zip)=>{
+		// 	console.log(zip)
+		// });
+	}
 
     // TODO increase list
     let validExtensions = ['py']
@@ -228,8 +255,6 @@
 		let data = new FormData(form);
 
 		// Read zip file
-		let input = form.querySelector('input[type="file"]')
-
 		let zipFile = input.files[0];
 		if (!zipFile) {
 			// TODO - display error, no files
