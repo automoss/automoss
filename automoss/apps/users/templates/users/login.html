@@ -16,12 +16,12 @@
 
 	<div class="col p-0 shadow-lg d-flex align-items-center justify-content-center" style="min-height: 100vh; background-image: url({% static "img/shapes.png" %}); background-repeat: repeat;">
 
-		<form class="p-4 m-4 flex-grow-1 shadow-lg" method="post" action="{% url 'login' %}" style="background-color: white; min-width: 350px; max-width: 50%;">
+		<form class="p-4 m-4 flex-grow-1 shadow-lg" method="post" action="{% url 'users:login' %}" style="background-color: white; min-width: 350px; max-width: 50%;">
 			{% csrf_token %}
 			
 			<h3 class="mb-4">Login</h3>
 
-			{% if form.errors %}
+			{% if errors %}
 				<p style="color: red">Your username or password were incorrect. Please try again.</p>
 			{% endif %}
 

@@ -111,6 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LOGIN_REDIRECT_URL = '/jobs'
+LOGIN_URL = "/user/login"
 # Currently returns logged_out.html
 #LOGOUT_REDIRECT_URL = '/accounts/login'
 

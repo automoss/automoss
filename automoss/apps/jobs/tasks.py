@@ -1,9 +1,16 @@
 
+from ...defaults import (
+    MOSS_LANGUAGES,
+    PROCESSING_STATUS,
+    COMPLETED_STATUS,
+    FAILED_STATUS
+)
 from .models import Job
 from ..reports.models import MOSSReport
 from django.core.files.uploadedfile import UploadedFile
 from ..core.moss import (
     MOSS,
+    MossResult
 )
 import os
 import time
@@ -18,6 +25,9 @@ def process_job(job_id):
 
     job = Job.objects.get(job_id=job_id)
 
+    job.status = PROCESSING_STATUS
+    job.save()
+
     base_dir = os.path.join('media', str(job.job_id), 'uploads')
 
     paths = {
@@ -30,11 +40,8 @@ def process_job(job_id):
             paths[file_type] = [os.path.join(path, k)
                                 for k in os.listdir(path)]
 
-    moss_id = 1  # TODO get user who owns this job
-    language = 'python'  # TODO use job.language
-
-    result = MOSS(moss_id).generate(
-        language=language,
+    result = MOSS(job.moss_user.moss_id).generate(
+        language=MOSS_LANGUAGES.get(job.language),
         **paths,
         max_matches_until_ignore=job.max_until_ignored,
         num_to_show=job.max_displayed_matches,
@@ -46,7 +53,8 @@ def process_job(job_id):
 
     MOSSReport.objects.create(job=job, url=result.url)
 
-    job.status = 'COM'
+    # job.status = FAILED_STATUS # TODO detect failure
+    job.status = COMPLETED_STATUS
     job.save()
 
     return result.url

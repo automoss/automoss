@@ -14,3 +14,12 @@ urlpatterns = [
     # Jobs Index - View Jobs
     path('', views.index, name='index'),
 ]
+
+apipatterns = [
+    path('get_jobs', views.get_jobs, name='get_jobs'),
+
+    # Get status of job
+    path('get_statuses', views.get_statuses, name='get_statuses'),
+]
+
+urlpatterns += apipatterns
