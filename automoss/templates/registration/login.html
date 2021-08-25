@@ -1,41 +1,64 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block "base-content" %}
-<div class="d-flex justify-content-center pb-5 mb-5">
-<div class="m-2 p-4 rounded-3 bg-secondary" style="max-width: 900px; min-width: 500px">
-    <div class="mb-4">
-    <h3>Login</h3>
-  </div>
 
-  {% if form.errors %}
-    <p>Your username and password didn't match. Please try again.</p>
-  {% endif %}
+<style> body { overflow: hidden; /* Hide scrollbars */ } </style>
 
-  {% if next %}
-    {% if user.is_authenticated %}
-      <p>Your account doesn't have access to this page. To proceed,
-      please login with an account that has access.</p>
-    {% else %}
-      <p>Please login to see this page.</p>
-    {% endif %}
-  {% endif %}
+<div class="row">
 
-  <form method="post" action="{% url 'login' %}">
-    {% csrf_token %}
-  <div class="mb-4">
-    <label for="id_username" class="form-label">Username: </label>
-    <input type="text" name="username" class="form-control" id="id_username">
-  </div>
-  <div class="mb-4">
-    <label for="id_password" class="form-label">Password: </label>
-    <input type="password" name="password" class="form-control" id="id_password">
-  </div>
-    <input type="submit" class="btn btn-primary" value="Sign In"/>
-    <input type="hidden" name="next" value="{{ next }}" />
-  </form>
+	<div class="col d-none d-sm-block p-0" style="background-color: #137EA7; min-height: 100vh; max-width: 40%;">
+
+		{% comment %} <img src={% static "bootstrap/img/wave.png" %} style="width: 100%; height: 100%"> {% endcomment %}
+
+	</div>
+
+	<div class="col p-0 align-items-center justify-content-center d-flex shadow" style="min-height: 100vh; background-image: url({% static "bootstrap/img/shapes.png" %}); background-repeat: repeat;">
+
+		<form class="p-4 m-4 flex-grow-1 shadow-lg" method="post" action="{% url 'login' %}" style="background-color: white; min-width: 350px; max-width: 50%;">
+			{% csrf_token %}
+			
+			<h3 class="mb-4">Login</h3>
+
+			{% if form.errors %}
+				<p style="color: red">Your username or password were incorrect. Please try again.</p>
+			{% endif %}
+
+			{% if next %}
+				{% if user.is_authenticated %}
+					<p>Unauthorized access. Please login to a different account.</p>
+				{% else %}
+					<p style="color: red">Please login to access this page.</p>
+				{% endif %}
+			{% endif %}
+
+			<div class="mb-3">
+				<label for="id_username" class="form-label">Username: </label>
+				<input type="text" name="username" class="form-control" id="id_username">
+			</div>
+			
+			<div class="mb-3">
+				<label for="id_password" class="form-label">Password: </label>
+				<input type="password" name="password" class="form-control" id="id_password">
+			</div>
+
+			<div class="mb-3">
+				<input id="remember-me" type="checkbox" class="form-check-input">
+				<label class="form-check-label" for="remember-me">Remember me?</label>
+			</div>
+
+			<div class="mb-3">
+				<input type="submit" class="btn btn-primary" value="Log in"/>
+			</div>
+
+			<div class="mb-3">
+				Don't have an account yet? <a href="" style="text-decoration: none">Register.</a>
+			</div>
+		</form>
+	
+	</div>
+
 </div>
-</div>
-  {# Assumes you setup the password_reset view in your URLconf #}
-  <!-- <p><a href="{% url 'password_reset' %}">Lost password?</a></p>-->
 
 {% endblock %}
