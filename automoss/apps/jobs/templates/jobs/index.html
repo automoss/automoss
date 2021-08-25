@@ -30,9 +30,6 @@
 		left: 0;
 		width:100%;
 	}
-	.files input::-webkit-file-upload-button {
-		display: none;
-	}
 	.files input:focus
 	{     
 		outline: 2px dashed #92b0b3;  
@@ -202,15 +199,15 @@
 	let dropzone = document.getElementById('file-dropzone')
 	
 	dropzone.addEventListener('dragenter', function(){
-		dropzone.style.backgroundColor = 'limegreen'
+		dropzone.style.backgroundColor = "#CDFFCC";
 	})
 
 	dropzone.addEventListener('dragleave', function(){
-		dropzone.style.backgroundColor = 'white';
+		dropzone.style.backgroundColor = "#FFFFFF";
 	});
 
 	dropzone.addEventListener('drop', function(){
-		dropzone.style.backgroundColor = 'white';
+		dropzone.style.backgroundColor = "#FFFFFF";
 	});
 
 	function getFileName(name){
