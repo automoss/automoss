@@ -107,13 +107,13 @@
 						<!-- Name -->
 						<div class="mb-3">
 							<label for="job-name">Name:</label>
-							<input id="job-name" type="text" class="form-control">
+							<input id="job-name" type="text" name="job-name" class="form-control">
 						</div>
 
 						<!-- Language -->
 						<div class="mb-3">
 							<label for="job-language">Language:</label>
-							<select class="form-select" id="exampleSelect1" data-form-type="other">
+							<select class="form-select" id="job-language" name="job-language" data-form-type="other">
 
 							{% for language, extensions in languages.items %}
 								<option extensions="{{extensions}}">{{language}} </option>
@@ -125,13 +125,13 @@
 						<!-- Max until ignored -->
 						<div class="mb-3">
 							<label for="job-max-until-ignored">Max until ignored:</label><br>
-							<input id="job-max-until-ignored" type="number" placeholder="1000000">
+							<input id="job-max-until-ignored" type="number" name="job-max-until-ignored" value="{{max_until_ignored}}">
 						</div>
 
 						<!-- Max displayed matches -->
 						<div class="mb-3">
 							<label for="job-max-displayed-matches">Max displayed matches:</label><br>
-							<input id="job-max-displayed-matches" type="number" placeholder="1000000">
+							<input id="job-max-displayed-matches" type="number" name="job-max-displayed-matches" value="{{max_displayed_matches}}">
 						</div>
 					</div>
 				<div class="modal-footer">
@@ -149,9 +149,9 @@
 	<!-- Column headings -->
 	<thead>
 		<tr>
-			<th scope="col">Name</th>
-			<th scope="col">Date Created</th>
-			<th scope="col">Status</th>
+			<th scope="col" style="width: 40%">Name</th>
+			<th scope="col" style="width: 40%">Date Created</th>
+			<th scope="col" style="width: 20%">Status</th>
 		</tr>
 	</thead>
 	
@@ -180,9 +180,7 @@
 			this.setAttribute('status', obj.status)
 
 			this.innerHTML = `
-			<td>
-				<a href="/jobs/${this.job_id}/report/" style="text-decoration: none;">${this.comment}</a>
-			</td>
+			<td> ${this.comment} </td>
 			<td> ${new Date(this.start_date).toLocaleString()} </td>
 			<td></td>
 			`;
@@ -192,6 +190,9 @@
 
 		setStatus(newStatus){
 			this.children[2].innerHTML = statuses[newStatus]
+			if(newStatus == completedStatus){
+				this.children[0].innerHTML = `<a href="/jobs/${this.job_id}/report/" style="text-decoration: none;">${this.comment}</a>`
+			}
 		}
 	}
 	customElements.define('job-row', Job, { extends: 'tr' });
@@ -250,8 +251,8 @@
 		for (let key in json) {
 			var value = json[key];
 
+			document.querySelector(`tr[job_id="${key}"]`).setStatus(value)
 			if(value == completedStatus){
-				document.querySelector(`tr[job_id="${key}"]`).setStatus(value)
 				unfinishedJobs = unfinishedJobs.filter(item => item !== key)
 			}
 
@@ -291,7 +292,8 @@
 
 		// TODO Check that it is a zip file
 
-		document.getElementById('job-name').value = getFileName(zipFile.name)
+		let jobName = document.getElementById('job-name')
+		jobName.value = jobName.value || getFileName(zipFile.name)
 		
 		// TODO select extension based on most popular
 		// JSZip.loadAsync(zipFile).then((zip)=>{
@@ -344,7 +346,8 @@
 
 		console.log(data)
 
-		let result = await fetch('new', {
+		
+		let result = await fetch("{% url "jobs:new" %}", {
 			method: 'POST',
 			body: data,
 		})
