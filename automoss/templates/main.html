@@ -4,11 +4,11 @@
 
 {% block "base-content" %}
 <body>
-	<div class="d-flex flex-column" style="min-height: 100vh; background-image: url({% static "bootstrap/img/shapes.png" %}); background-repeat: repeat;">
+	<div class="d-flex flex-column" style="min-height: 100vh; background-image: url({% static "img/shapes.png" %}); background-repeat: repeat;">
 		<nav class="navbar navbar-expand navbar-dark bg-primary">
 			<div class="container container-fluid px-0">
 				<a class="navbar-brand" href="{% url "jobs:index" %}">
-					<img src="{% static "bootstrap/img/logo.png" %}" height=30px></img>
+					<img src="{% static "img/logo.png" %}" height=30px></img>
 				</a>
 				<a class="navbar-text navbar-right">
 					<div class="dropdown">
@@ -16,7 +16,7 @@
 							Welcome back, {{ user.username }}!
 						</label>
 						<a href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-							<img src="{% static "bootstrap/img/account.png" %}" height=30px style="margin-left: 10px"></img>
+							<img src="{% static "img/account.png" %}" height=30px style="margin-left: 10px"></img>
 						</a>
 						<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink">
 							<li><a class="dropdown-item" href="#">Profile</a></li>
