@@ -3,18 +3,22 @@ import os
 from django.contrib.auth.decorators import login_required
 from .tasks import process_job
 from django.shortcuts import render
+from django.template.defaulttags import register
 from django.http.response import JsonResponse
-from django.views.decorators.clickjacking import xframe_options_exempt
 from ...defaults import VIEWABLE_LANGUAGES
-
+from ...defaults import STATUSES
 from .models import Job
 
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
+
 @login_required
-@xframe_options_exempt
 def index(request):
     context = {
         'jobs': request.user.mossuser.job_set.all(),
-        'languages': VIEWABLE_LANGUAGES
+        'languages': VIEWABLE_LANGUAGES,
+        'statuses':  STATUSES
     }
     return render(request, "jobs/index.html", context)
 

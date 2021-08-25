@@ -178,7 +178,7 @@
 			{{ job.start_date }}
 		</td>
 		<td>
-			{{ job.status }}
+			{{statuses|get_item:job.status}}
 		</td>
 	</tr>
 	{% endfor %}
@@ -187,7 +187,9 @@
 </table>
 
 {% if not jobs %}
-<div class="container text-center">No jobs have been created yet!</div>
+<div class="container text-center">
+	No jobs have been created yet!
+</div>
 {% endif %}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"
