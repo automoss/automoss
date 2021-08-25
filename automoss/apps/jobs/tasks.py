@@ -1,6 +1,9 @@
 
 from ...defaults import (
-    MOSS_LANGUAGES
+    MOSS_LANGUAGES,
+    PROCESSING_STATUS,
+    COMPLETED_STATUS,
+    FAILED_STATUS
 )
 from .models import Job
 from ..reports.models import MOSSReport
@@ -21,6 +24,9 @@ def process_job(job_id):
     """Basic interface for generating a report from MOSS"""
 
     job = Job.objects.get(job_id=job_id)
+
+    job.status = PROCESSING_STATUS
+    job.save()
 
     base_dir = os.path.join('media', str(job.job_id), 'uploads')
 
@@ -47,7 +53,8 @@ def process_job(job_id):
 
     MOSSReport.objects.create(job=job, url=result.url)
 
-    job.status = 'COM'
+    # job.status = FAILED_STATUS # TODO detect failure
+    job.status = COMPLETED_STATUS
     job.save()
 
     return result.url
