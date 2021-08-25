@@ -4,7 +4,7 @@
 
 {% block "base-content" %}
 <body>
-	<div class="d-flex flex-column" style="min-height: 100vh;">
+	<div class="d-flex flex-column" style="min-height: 100vh; background-image: url({% static "bootstrap/img/shapes.png" %}); background-repeat: repeat;">
 		<nav class="navbar navbar-expand navbar-dark bg-primary">
 			<div class="container container-fluid px-0">
 				<a class="navbar-brand" href="{% url "jobs:index" %}">
@@ -28,14 +28,12 @@
 			</div>
 		</nav>
 		
-		<div class="container flex-grow-1" style="padding: 50px 0 50px 0">
+		<div class="container flex-grow-1" style="padding: 50px 0 50px 0;">
 			{% block "main-content" %}{% endblock %}
 		</div>
 		
-		<footer>
-			<div class="text-center p-3 bg-primary">
-				<label style="color: white;">Copyright © 2021 AutoMOSS. All Rights Reserved.</label>
-			</div>
+		<footer class="bg-primary shadow text-center p-3">
+			<label style="color: white;">Copyright © 2021 AutoMOSS. All Rights Reserved.</label>
 		</footer>
 	</div>
 </body>
