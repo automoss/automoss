@@ -1,9 +1,13 @@
 
+from ...defaults import (
+    MOSS_LANGUAGES
+)
 from .models import Job
 from ..reports.models import MOSSReport
 from django.core.files.uploadedfile import UploadedFile
 from ..core.moss import (
     MOSS,
+    MossResult
 )
 import os
 import time
@@ -30,11 +34,8 @@ def process_job(job_id):
             paths[file_type] = [os.path.join(path, k)
                                 for k in os.listdir(path)]
 
-    moss_id = 1  # TODO get user who owns this job
-    language = 'python'  # TODO use job.language
-
-    result = MOSS(moss_id).generate(
-        language=language,
+    result = MOSS(job.mossuser.moss_id).generate(
+        language=MOSS_LANGUAGES.get(job.language),
         **paths,
         max_matches_until_ignore=job.max_until_ignored,
         num_to_show=job.max_displayed_matches,

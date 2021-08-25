@@ -11,13 +11,20 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.core.serializers import serialize
 from django.utils.safestring import mark_safe
 
+from .models import get_default_comment
+
 from ...defaults import (
     VIEWABLE_LANGUAGES,
+    READABLE_TO_CODE_LANGUAGES,
     STATUSES,
     COMPLETED_STATUS,
-    POLLING_TIME
+    POLLING_TIME,
+    DEFAULT_LANGUAGE,
+    MAX_DISPLAYED_MATCHES,
+    MAX_UNTIL_IGNORED
 )
 from .models import Job
+
 
 @register.filter(is_safe=True)
 def js(obj):
@@ -30,7 +37,9 @@ def index(request):
         'languages': VIEWABLE_LANGUAGES,
         'statuses':  STATUSES,
         'completed': COMPLETED_STATUS,
-        'poll': POLLING_TIME
+        'poll': POLLING_TIME,
+        'max_until_ignored': MAX_UNTIL_IGNORED,
+        'max_displayed_matches': MAX_DISPLAYED_MATCHES
     }
     return render(request, "jobs/index.html", context)
 
@@ -38,11 +47,24 @@ def index(request):
 @login_required
 def new(request):
     if request.method == 'POST':
+        language = READABLE_TO_CODE_LANGUAGES.get(
+            request.POST.get('job-language', DEFAULT_LANGUAGE))
+        max_until_ignored = request.POST.get(
+            'job-max-until-ignored', MAX_UNTIL_IGNORED)
+        max_displayed_matches = request.POST.get(
+            'job-max-displayed-matches', MAX_DISPLAYED_MATCHES)
+        comment = request.POST.get('job-name', get_default_comment())
 
-        # TODO read params from request
-        # DB - Create job
-        new_job = Job.objects.create(moss_user=request.user.mossuser, language='PY', max_until_ignored=1000,
-                                     max_displayed_matches=1000)
+        # TODO validate options and reject if incorrect
+
+        info = {
+            'moss_user': request.user.mossuser,
+            'language': language,
+            'comment': comment,
+            'max_until_ignored': max_until_ignored,
+            'max_displayed_matches': max_displayed_matches
+        }
+        new_job = Job.objects.create(**info)
 
         job_id = new_job.job_id
 
