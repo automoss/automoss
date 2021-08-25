@@ -1,41 +1,41 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block "base-content" %}
 <body>
-	<div class="d-flex flex-column" style="min-height: 100vh;">
+	<div class="d-flex flex-column" style="min-height: 100vh; background-image: url({% static "bootstrap/img/shapes.png" %}); background-repeat: repeat;">
 		<nav class="navbar navbar-expand navbar-dark bg-primary">
 			<div class="container container-fluid px-0">
 				<a class="navbar-brand" href="{% url "jobs:index" %}">
-					<label style="font-size: 30px;">AutoMOSS</label>
+					<img src="{% static "bootstrap/img/logo.png" %}" height=30px></img>
 				</a>
-        <form class="navbar-text navbar-right">
-              {% comment %} {% if user.is_authenticated %}
-                <p><a class="btn btn-info" href="{% url 'logout' %}">Log Out</a></p>
-              {% else %}
-                <a class="btn btn-info" href="{% url 'login' %}">Log In</a>
-              {% endif %} {% endcomment %}
-        </form>
 				<a class="navbar-text navbar-right">
-					<label style="color: white;">
-					{% if request.user.is_authenticated %}
-					Welcome back, {{ user.username }}!
-					{% endif %}
-					</label>
+					<div class="dropdown">
+						<label style="color: white; vertical-align: middle;">
+							Welcome back, {{ user.username }}!
+						</label>
+						<a href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+							<img src="{% static "bootstrap/img/account.png" %}" height=30px style="margin-left: 10px"></img>
+						</a>
+						<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink">
+							<li><a class="dropdown-item" href="#">Profile</a></li>
+							<li><hr class="dropdown-divider"></li>
+							<li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+						</ul>
+					</div>
 				</a>
 			</div>
 		</nav>
 		
-		<div class="container flex-grow-1" style="padding: 50px 0 50px 0">
+		<div class="container flex-grow-1" style="padding: 50px 0 50px 0;">
 			{% block "main-content" %}{% endblock %}
 		</div>
 		
-		<footer>
-			<div class="text-center p-3 bg-primary">
-				<label style="color: white;">Copyright © 2021 AutoMOSS. All Rights Reserved.</label>
-			</div>
+		<footer class="bg-primary shadow text-center p-3">
+			<label style="color: white;">Copyright © 2021 AutoMOSS. All Rights Reserved.</label>
 		</footer>
 	</div>
 </body>
 
-</html>
 {% endblock %}

@@ -101,19 +101,19 @@
 					<div class="modal-body">
 
 						<!-- Submission files -->
-						<div id="file-dropzone" class="form-group files">
+						<div id="file-dropzone" class="mb-3 files">
 							<input id="job-submission-files" type="file" class="form-control-file" accept=".zip">
-						</div><br>
+						</div>
 					
 						<!-- Name -->
-						<div class="form-group">
-							<label for="job-name">Name:</label><br>
+						<div class="mb-3">
+							<label for="job-name">Name:</label>
 							<input id="job-name" type="text" class="form-control">
-						</div><br>
+						</div>
 
 						<!-- Language -->
-						<div class="form-group">
-							<label for="job-language">Language:</label><br>
+						<div class="mb-3">
+							<label for="job-language">Language:</label>
 							<select class="form-select" id="exampleSelect1" data-form-type="other">
 
 							{% for language, extensions in languages.items %}
@@ -121,19 +121,19 @@
 							{% endfor %}
 
 							</select>
-						</div><br>
+						</div>
 
 						<!-- Max until ignored -->
-						<div class="form-group">
+						<div class="mb-3">
 							<label for="job-max-until-ignored">Max until ignored:</label><br>
 							<input id="job-max-until-ignored" type="number" placeholder="1000000">
-						</div><br>
+						</div>
 
 						<!-- Max displayed matches -->
-						<div class="form-group">
+						<div class="mb-3">
 							<label for="job-max-displayed-matches">Max displayed matches:</label><br>
 							<input id="job-max-displayed-matches" type="number" placeholder="1000000">
-						</div><br>
+						</div>
 					</div>
 				<div class="modal-footer">
 					<div style="position: relative; min-height: 40px;">
@@ -145,7 +145,7 @@
 	</div>
 </div>
 
-<table id="job-table" class="table table-striped border">
+<table id="job-table" class="table table-striped border" style="background-color: white">
 
 	<!-- Column headings -->
 	<thead>
