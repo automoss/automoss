@@ -1,11 +1,10 @@
-{% extends "base.html" %}
+{% extends "main.html" %}
 
 {% load static %}
 
-{% block "main" %}
+{% block "main-content" %}
 
-<div class="mb-3"> <h2> Jobs</h2> </div>
-
+<div class="mb-3"> <h2>Jobs</h2> </div>
 
 <style>
 	.files
@@ -76,10 +75,6 @@
 		text-align: center;
 	}
 </style>
-
-{% comment %} <ol class="breadcrumb">
-	<li class="breadcrumb-item active">Jobs</li>
-</ol> {% endcomment %}
 
 <div class="row">
 	<div class="col-lg-12">
@@ -293,4 +288,4 @@
 
 </script>
 
-{% endblock "main" %}
+{% endblock %}
