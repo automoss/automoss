@@ -40,7 +40,7 @@ def process_job(job_id):
             paths[file_type] = [os.path.join(path, k)
                                 for k in os.listdir(path)]
 
-    result = MOSS(job.mossuser.moss_id).generate(
+    result = MOSS(job.moss_user.moss_id).generate(
         language=MOSS_LANGUAGES.get(job.language),
         **paths,
         max_matches_until_ignore=job.max_until_ignored,
