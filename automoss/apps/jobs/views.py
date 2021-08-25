@@ -7,10 +7,17 @@ from django.http.response import JsonResponse
 
 from .models import Job
 
+from ...defaults import VIEWABLE_LANGUAGES
+
+
 @login_required
 def index(request):
-    context = {"jobs": request.user.mossuser.job_set.all()}
+    context = {
+        'jobs': request.user.mossuser.job_set.all(),
+        'languages': VIEWABLE_LANGUAGES
+    }
     return render(request, "jobs/index.html", context)
+
 
 @login_required
 def new(request):
@@ -18,8 +25,8 @@ def new(request):
 
         # TODO read params from request
         # DB - Create job
-        new_job = Job.objects.create(language='PY', max_until_ignored=1000,
-                      max_displayed_matches=1000)
+        new_job = Job.objects.create(moss_user=request.user.mossuser, language='PY', max_until_ignored=1000,
+                                     max_displayed_matches=1000)
 
         job_id = new_job.job_id
 

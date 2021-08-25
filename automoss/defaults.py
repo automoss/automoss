@@ -17,9 +17,9 @@ LANGUAGES = {
     # CODE : (Name, moss_name, [extensions])
 
     'PY': ('Python', 'python', ['py']),  # pyi, pyc, pyd, pyo, pyw, pyz
-    'CX': ('C', 'c', ['c', 'h']),
-    'CP': ('C++', 'cc', ['C', 'cc', 'cpp', 'cxx', 'c++', 'h', 'H', 'hh', 'hpp', 'hxx', 'h++']),
     'JA': ('Java', 'java', ['java']),  # class, jar
+    'CP': ('C++', 'cc', ['C', 'cc', 'cpp', 'cxx', 'c++', 'h', 'H', 'hh', 'hpp', 'hxx', 'h++']),
+    'CX': ('C', 'c', ['c', 'h']),
     'CS': ('C#', 'csharp', ['cs', 'csx']),
     'JS': ('Javascript', 'javascript', ['js']),  # cjs, mjs
     'PL': ('Perl', 'perl', ['pl', 'plx', 'pm', 'xs', 't', 'pod']),
@@ -53,16 +53,22 @@ DEFAULT_LANGUAGE = first(LANGUAGES)
 LANGUAGE_CHOICES = [(l, LANGUAGES[l][0]) for l in LANGUAGES]
 SUPPORTED_MOSS_LANGUAGES = nth_value(LANGUAGES, 1)
 VALID_EXTENSIONS = {l: LANGUAGES[l][2] for l in LANGUAGES}
+VIEWABLE_LANGUAGES = {LANGUAGES[l][0]: ', '.join(LANGUAGES[l][2]) for l in LANGUAGES}
+
 MAX_LANGUAGE_LENGTH = get_longest_key(LANGUAGES)
 
+UPLOADING_STATUS = 'UPL'
+PROCESSING_STATUS = 'PRO'
+COMPLETED_STATUS = 'COM'
+FAILED_STATUS = 'FAI'
 
 # Other
 STATUSES = {
     # 'Code': 'Name',
-    'UPL': 'Uploading',
-    'PRO': 'Processing',
-    'COM': 'Complete',
-    'FAI': 'Failed'
+    UPLOADING_STATUS: 'Uploading',
+    PROCESSING_STATUS: 'Processing',
+    COMPLETED_STATUS: 'Complete',
+    FAILED_STATUS: 'Failed'
 }
 
 STATUS_CHOICES = to_choices(STATUSES)
