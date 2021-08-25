@@ -251,8 +251,8 @@
 		for (let key in json) {
 			var value = json[key];
 
+			document.querySelector(`tr[job_id="${key}"]`).setStatus(value)
 			if(value == completedStatus){
-				document.querySelector(`tr[job_id="${key}"]`).setStatus(value)
 				unfinishedJobs = unfinishedJobs.filter(item => item !== key)
 			}
 
