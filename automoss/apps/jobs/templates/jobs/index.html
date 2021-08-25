@@ -1,11 +1,10 @@
-{% extends "base.html" %}
+{% extends "main.html" %}
 
 {% load static %}
 
-{% block "main" %}
+{% block "main-content" %}
 
-<div class="mb-3"> <h2> Jobs</h2> </div>
-
+<div class="mb-3"> <h2>Jobs</h2> </div>
 
 <style>
 	.files
@@ -29,9 +28,6 @@
 		bottom: 0;
 		left: 0;
 		width:100%;
-	}
-	.files input::-webkit-file-upload-button {
-		display: none;
 	}
 	.files input:focus
 	{     
@@ -80,17 +76,12 @@
 	}
 </style>
 
-{% comment %} <ol class="breadcrumb">
-	<li class="breadcrumb-item active">Jobs</li>
-</ol> {% endcomment %}
-
 <div class="row">
 	<div class="col-lg-12">
 		<div class="input-group">
-			<input class="form-control me-2" type="search" placeholder="Search..." aria-label="Search">
+			<input class="form-control me-2 rounded" type="search" placeholder="Search..." aria-label="Search">
 			<span class="input-group-btn">
 				<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createJob">Create Job</button>
-				<button type="button" class="btn btn-primary" onclick="location.reload();">⭮</button>
 			</span>
 		</div>
 	</div>
@@ -109,19 +100,19 @@
 					<div class="modal-body">
 
 						<!-- Submission files -->
-						<div id="file-dropzone" class="form-group files">
+						<div id="file-dropzone" class="mb-3 files">
 							<input id="job-submission-files" type="file" class="form-control-file" accept=".zip">
-						</div><br>
+						</div>
 					
 						<!-- Name -->
-						<div class="form-group">
-							<label for="job-name">Name:</label><br>
+						<div class="mb-3">
+							<label for="job-name">Name:</label>
 							<input id="job-name" type="text" class="form-control">
-						</div><br>
+						</div>
 
 						<!-- Language -->
-						<div class="form-group">
-							<label for="job-language">Language:</label><br>
+						<div class="mb-3">
+							<label for="job-language">Language:</label>
 							<select class="form-select" id="exampleSelect1" data-form-type="other">
 
 							{% for language, extensions in languages.items %}
@@ -129,19 +120,19 @@
 							{% endfor %}
 
 							</select>
-						</div><br>
+						</div>
 
 						<!-- Max until ignored -->
-						<div class="form-group">
+						<div class="mb-3">
 							<label for="job-max-until-ignored">Max until ignored:</label><br>
 							<input id="job-max-until-ignored" type="number" placeholder="1000000">
-						</div><br>
+						</div>
 
 						<!-- Max displayed matches -->
-						<div class="form-group">
+						<div class="mb-3">
 							<label for="job-max-displayed-matches">Max displayed matches:</label><br>
 							<input id="job-max-displayed-matches" type="number" placeholder="1000000">
-						</div><br>
+						</div>
 					</div>
 				<div class="modal-footer">
 					<div style="position: relative; min-height: 40px;">
@@ -153,12 +144,11 @@
 	</div>
 </div>
 
-<table class="table table-striped table-hover">
+<table id="job-table" class="table table-striped border" style="background-color: white">
 
 	<!-- Column headings -->
 	<thead>
 		<tr>
-			<th scope="col">#</th>
 			<th scope="col">Name</th>
 			<th scope="col">Date Created</th>
 			<th scope="col">Status</th>
@@ -166,51 +156,122 @@
 	</thead>
 	
 	<!-- Jobs -->
-	<tbody>
-	{% for job in jobs %}
-	<tr>
-		<th scope="row">{{ forloop.counter }}</th>
-		<td>
-			{% if job.mossreport %}
-			<a href="{% url "jobs:reports:index" job.job_id %}" style="text-decoration: none;">{{ job.comment }}</a>
-			{% else %}
-				{{ job.comment }}
-			{% endif %}
-		</td>
-		<td>
-			{{ job.start_date }}
-		</td>
-		<td>
-			{{ job.status }}
-		</td>
-	</tr>
-	{% endfor %}
-	</tbody>
+	<tbody></tbody>
 
 </table>
 
-{% if not jobs %}
-<div class="container text-center">No jobs have been created yet!</div>
-{% endif %}
+<div id="no-jobs-message" class="container text-center" style="display:none">
+	No jobs have been created yet!
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"
     integrity="sha512-xQBQYt9UcgblF6aCMrwU1NkVA7HCXaSN2oq0so80KO+y68M+n64FOcqgav4igHe6D5ObBLIf68DWv+gfBowczg=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <script>
+	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+	class Job extends HTMLTableRowElement{
+		constructor(obj) {
+			super()
+			Object.assign(this, obj)
+
+			this.setAttribute('job_id', obj.job_id)
+			this.setAttribute('status', obj.status)
+
+			this.innerHTML = `
+			<td>
+				<a href="/jobs/${this.job_id}/report/" style="text-decoration: none;">${this.comment}</a>
+			</td>
+			<td> ${new Date(this.start_date).toLocaleString()} </td>
+			<td></td>
+			`;
+
+			this.setStatus(this.status)
+		}
+
+		setStatus(newStatus){
+			this.children[2].innerHTML = statuses[newStatus]
+		}
+	}
+	customElements.define('job-row', Job, { extends: 'tr' });
+	
+
+	let jobTable = document.getElementById('job-table')
+
+	function addJob(job){
+		jobTable.getElementsByTagName('tbody')[0].prepend(new Job(job))
+	}
+
+	let languages = {{ languages | js }};
+	let statuses = {{ statuses | js }};
+
+	let completedStatus = "{{ completed }}"
+
+	let unfinishedJobs = []
+	let result = fetch("{% url "api:jobs:get_jobs" %}", {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': csrftoken
+		}
+	}).then(async (response)=>{
+		let json = await response.json()
+
+		json.forEach(item => {
+			addJob(item);
+			if (item.status != completedStatus){
+				unfinishedJobs.push(item.job_id)
+			}
+		});
+		if(json.length == 0){
+			document.getElementById('no-jobs-message').style.display = 'block'
+		}
+	});
+	
+	setInterval(async function(){
+		if(unfinishedJobs.length == 0){
+			// Do not make any request if all jobs are finished
+			return;
+		}
+		let result = await fetch("{% url "api:jobs:get_statuses" %}", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrftoken
+			},
+			body: JSON.stringify({
+				'job_ids': unfinishedJobs
+			})
+		})
+
+		let json = await result.json();
+
+		for (let key in json) {
+			var value = json[key];
+
+			if(value == completedStatus){
+				document.querySelector(`tr[job_id="${key}"]`).setStatus(value)
+				unfinishedJobs = unfinishedJobs.filter(item => item !== key)
+			}
+
+		}
+		
+		// TODO update jobs information
+	},{{ poll }});
 
 	let dropzone = document.getElementById('file-dropzone')
 	
 	dropzone.addEventListener('dragenter', function(){
-		dropzone.style.backgroundColor = 'limegreen'
+		dropzone.style.backgroundColor = "#CDFFCC";
 	})
 
 	dropzone.addEventListener('dragleave', function(){
-		dropzone.style.backgroundColor = 'white';
+		dropzone.style.backgroundColor = "#FFFFFF";
 	});
 
 	dropzone.addEventListener('drop', function(){
-		dropzone.style.backgroundColor = 'white';
+		dropzone.style.backgroundColor = "#FFFFFF";
 	});
 
 	function getFileName(name){
@@ -288,10 +349,15 @@
 			body: data,
 		})
 
-		console.log("Completed with result:", result);
+		let json = await result.json();
+
+		document.getElementById('no-jobs-message').style.display = 'none'
+		addJob(json)
+
+		unfinishedJobs.push(json['job_id'])
 
 	};
 
 </script>
 
-{% endblock "main" %}
+{% endblock %}
