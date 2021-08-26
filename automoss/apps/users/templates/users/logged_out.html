@@ -1,9 +1,32 @@
 {% extends "base.html" %}
 
-{% block "base-content"%}
-<div class="d-flex justify-content-center">
-    <h4>You have been logged out.</h4>
-    <a href="{% url "users:login" %}">Login</a>
+{% load static %}
+
+{% block "base-content" %}
+
+<style> body { overflow: hidden; /* Hide scrollbars */ } </style>
+
+<div class="row">
+
+	<div class="col d-none d-lg-block p-0 m-0" style="max-width: 40%; background-color: #158CBA; background-image: url({% static "img/automoss.svg" %}); background-size: 100%; background-repeat: no-repeat">
+		<div class="d-flex justify-content-center" style="width: 100%; height: 100%">
+			<a href="http://www.freepik.com" style="position: absolute; bottom: 10px;">Designed by Freepik</a>
+		</div>
+	</div>
+
+	<div class="col p-0 shadow-lg d-flex align-items-center justify-content-center" style="min-height: 100vh; background-image: url({% static "img/shapes.png" %}); background-repeat: repeat;">
+
+		<div class="d-flex flex-column bg-white shadow-lg p-5">
+            <div>
+                <h4 class="block">You have been logged out.</h4>
+            </div>
+            <div class="d-flex justify-content-center pt-3">
+                <a class = "btn btn-primary" href="{% url "users:login" %}">Login</a>
+            </div>
+        </div>
+	
+	</div>
+
 </div>
 
 {% endblock %}
