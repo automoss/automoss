@@ -14,10 +14,13 @@ from django.utils.safestring import mark_safe
 from .models import get_default_comment
 
 from ...defaults import (
-    VIEWABLE_LANGUAGES,
+    LANGUAGES,
     READABLE_TO_CODE_LANGUAGES,
     STATUSES,
     COMPLETED_STATUS,
+    UPLOADING_STATUS,
+    PROCESSING_STATUS,
+    FAILED_STATUS,
     POLLING_TIME,
     DEFAULT_LANGUAGE,
     MAX_DISPLAYED_MATCHES,
@@ -34,9 +37,12 @@ def js(obj):
 @login_required
 def index(request):
     context = {
-        'languages': VIEWABLE_LANGUAGES,
+        'languages': LANGUAGES,
         'statuses':  STATUSES,
         'completed': COMPLETED_STATUS,
+        'uploading': UPLOADING_STATUS,
+        'processing': PROCESSING_STATUS,
+        'failed': FAILED_STATUS,
         'poll': POLLING_TIME,
         'max_until_ignored': MAX_UNTIL_IGNORED,
         'max_displayed_matches': MAX_DISPLAYED_MATCHES

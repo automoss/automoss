@@ -7,10 +7,12 @@ from ...defaults import (
 )
 from .models import Job
 from ..reports.models import MOSSReport
+from django.utils.timezone import now
 from django.core.files.uploadedfile import UploadedFile
 from ..core.moss import (
     MOSS,
-    MossResult
+    MossResult,
+    MossException
 )
 import os
 import time
@@ -40,21 +42,25 @@ def process_job(job_id):
             paths[file_type] = [os.path.join(path, k)
                                 for k in os.listdir(path)]
 
-    result = MOSS(job.moss_user.moss_id).generate(
-        language=MOSS_LANGUAGES.get(job.language),
-        **paths,
-        max_matches_until_ignore=job.max_until_ignored,
-        num_to_show=job.max_displayed_matches,
-        comment=job.comment,
-        use_basename=True
-    )
+    try:
+        result = MOSS(job.moss_user.moss_id).generate(
+            language=MOSS_LANGUAGES.get(job.language),
+            **paths,
+            max_matches_until_ignore=job.max_until_ignored,
+            num_to_show=job.max_displayed_matches,
+            comment=job.comment,
+            use_basename=True
+        )
+    except MossException as e:
+        job.status = FAILED_STATUS  # TODO detect failure
+        job.save()
+        return None
 
+    job.completion_date = now()
+    job.status = COMPLETED_STATUS
+    job.save()
     # TODO do something with result, e.g., write to DB
 
     MOSSReport.objects.create(job=job, url=result.url)
-
-    # job.status = FAILED_STATUS # TODO detect failure
-    job.status = COMPLETED_STATUS
-    job.save()
 
     return result.url

@@ -115,8 +115,8 @@
 							<label for="job-language">Language:</label>
 							<select class="form-select" id="job-language" name="job-language" data-form-type="other">
 
-							{% for language, extensions in languages.items %}
-								<option extensions="{{extensions}}">{{language}} </option>
+							{% for language, info in languages.items %}
+								<option language-id={{language}}>{{info.0}} </option>
 							{% endfor %}
 
 							</select>
@@ -149,9 +149,10 @@
 	<!-- Column headings -->
 	<thead>
 		<tr>
-			<th scope="col" style="width: 40%">Name</th>
-			<th scope="col" style="width: 40%">Date Created</th>
-			<th scope="col" style="width: 20%">Status</th>
+			<th scope="col" style="width: 30%">Name</th>
+			<th scope="col" style="width: 30%">Language</th>
+			<th scope="col" style="width: 30%">Date Created</th>
+			<th scope="col" style="width: 10%">Status</th>
 		</tr>
 	</thead>
 	
@@ -179,20 +180,54 @@
 			this.setAttribute('job_id', obj.job_id)
 			this.setAttribute('status', obj.status)
 
-			this.innerHTML = `
-			<td> ${this.comment} </td>
-			<td> ${new Date(this.start_date).toLocaleString()} </td>
-			<td></td>
-			`;
+			this.tableComment = document.createElement('td')
+			this.tableComment.innerHTML = this.comment;
+			
+			this.tableLanguage = document.createElement('td')
+			this.tableLanguage.innerHTML = languages[this.language][0];
+
+			this.tableStartDate = document.createElement('td')
+			this.tableStartDate.innerHTML = new Date(this.start_date).toLocaleString();
+			
+			let tableStatusCell = document.createElement('td')
+			this.tableStatus = document.createElement('span')
+			tableStatusCell.append(this.tableStatus)
+			
+			this.append(this.tableComment)
+			this.append(this.tableLanguage)
+			this.append(this.tableStartDate)
+			this.append(tableStatusCell)
 
 			this.setStatus(this.status)
 		}
 
 		setStatus(newStatus){
-			this.children[2].innerHTML = statuses[newStatus]
+			this.tableStatus.innerHTML = statuses[newStatus]
 			if(newStatus == completedStatus){
-				this.children[0].innerHTML = `<a href="/jobs/${this.job_id}/report/" style="text-decoration: none;">${this.comment}</a>`
+				this.tableComment.innerHTML = `<a href="/jobs/${this.job_id}/report/" style="text-decoration: none;">${this.comment}</a>`
 			}
+
+			this.tableStatus.className = '';
+			
+			let classes = ['badge'];
+			switch(newStatus){
+				
+				case completedStatus:
+					classes.push('bg-success')
+					break;
+				case processingStatus:
+					classes.push('bg-info')
+					break;
+				case uploadingStatus:
+					classes.push('bg-warning')
+					break;
+				
+				default:
+					classes.push('bg-danger')
+					break;
+			}
+
+			this.tableStatus.classList.add(...classes)
 		}
 	}
 	customElements.define('job-row', Job, { extends: 'tr' });
@@ -208,6 +243,10 @@
 	let statuses = {{ statuses | js }};
 
 	let completedStatus = "{{ completed }}"
+	let processingStatus = "{{ processing }}"
+	let uploadingStatus = "{{ uploading }}"
+	let failedStatus = "{{ failed }}"
+
 
 	let unfinishedJobs = []
 	let result = fetch("{% url "api:jobs:get_jobs" %}", {
@@ -221,7 +260,7 @@
 
 		json.forEach(item => {
 			addJob(item);
-			if (item.status != completedStatus){
+			if (item.status != completedStatus && item.status != failedStatus){
 				unfinishedJobs.push(item.job_id)
 			}
 		});
@@ -302,11 +341,10 @@
 	}
 
     // TODO increase list
-    let validExtensions = ['py']
 
-    function validFile(name) {
+    function validFile(language, name) {
         let extension = name.split('.').pop();
-        return validExtensions.includes(extension);
+        return languages[language][2].includes(extension);
     }
 
 	// https://stackoverflow.com/a/50472925
@@ -332,10 +370,13 @@
 			files.push(file)
 		});
 
+		let languageSelect = document.getElementById('job-language')
+
 		await Promise.all(files.map(async (zipEntry) => {
 			console.log(zipEntry.name);
 
-			if (validFile(zipEntry.name)) {
+			let languageID =languageSelect.options[languageSelect.selectedIndex].getAttribute('language-id')
+			if (validFile(languageID, zipEntry.name)) {
 				let blob = await zipEntry.async('blob')
 				data.append('files', blob, zipEntry.name)
 				console.log('valid file:', zipEntry.name);
