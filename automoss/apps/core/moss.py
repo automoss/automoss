@@ -15,16 +15,28 @@ from ...defaults import (
     SUPPORTED_MOSS_LANGUAGES
 )
 
+from urllib import parse
+
+from django.utils.http import url_has_allowed_host_and_scheme
+
+MOSS_URL = 'moss.stanford.edu'
+
+
 class MossAPIWrapper:
 
     def __init__(self, user_id):
         self.user_id = user_id
         self.socket = socket.socket()
+        self._is_connected = False
 
     def connect(self):
         # TODO add retries
-        self.socket.connect(('moss.stanford.edu', 7690))
+        self.socket.connect((MOSS_URL, 7690))
         self._send_string(f'moss {self.user_id}')  # authenticate user
+        self._is_connected = True
+
+    def is_connected(self):
+        return self._is_connected
 
     def close(self):
         self._send_string('end')
@@ -78,9 +90,10 @@ class MossAPIWrapper:
 
     def upload_file(self, file_path, language, file_id, use_basename=False):
         with open(file_path, 'rb') as f:
-            self.upload_raw_file(file_path, f.read(), language, file_id, use_basename)
+            self.upload_raw_file(file_path, f.read(),
+                                 language, file_id, use_basename)
 
-    def generate_url(self, comment=''):
+    def process(self, comment=''):
         # Send final query
         self._send_string(f'query 0 {comment}')
         return self.read()
@@ -194,14 +207,14 @@ class MOSS:
 
         url = None
         try:
-            moss = MossAPIWrapper(self.user_id)
-            moss.connect()  # TODO retries
-
-            if files is None:  # No files supplied
-                raise MossException
+            if files is None:
+                raise MossException('No files supplied')
 
             if base_files is None:
                 base_files = []
+
+            moss = MossAPIWrapper(self.user_id)
+            moss.connect()  # TODO retries
 
             # Set options
             moss.set_directory(is_directory)
@@ -227,15 +240,22 @@ class MOSS:
                 moss.upload_file(path, language, index, use_basename)
 
             # Read and return data
-            url = moss.generate_url(comment)
+            data = moss.process(comment)
 
-            # TODO check for errors
-            # b'Error: No files uploaded to compare.\n'
-        except Exception as e: 
+            if url_has_allowed_host_and_scheme(data, MOSS_URL):
+                url = data
+            else:
+                raise MossException(data)
+
+        except Exception as e:
             raise MossException(e)
 
         finally:  # Close session as soon as possible
-            moss.close()
+            if moss.is_connected():
+                try:
+                    moss.close()
+                except Exception:
+                    raise MossException('Unable to close moss session')
 
         if not url:
             raise MossException('Unable to extract URL')
