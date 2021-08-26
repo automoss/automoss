@@ -2,12 +2,13 @@
 install:
 	sudo apt-get install redis
 	pip3 install -r requirements_dev.txt
+	make db
 
 run:
 	python3 manage.py runserver
 
 migrations:
-	python3 manage.py makemigrations && python3 manage.py migrate
+	python3 manage.py makemigrations && python3 manage.py migrate --run-syncdb
 
 delete-db:
 	rm -f db.sqlite3
