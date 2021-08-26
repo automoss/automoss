@@ -429,6 +429,7 @@
 		unfinishedJobs.push(json['job_id'])
 
 		// Reset previous job settings:
+		dropzone.removeAttribute('selected');
 		form.reset();
 	};
 
