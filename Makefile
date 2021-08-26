@@ -16,6 +16,9 @@ delete-db:
 # https://simpleisbetterthancomplex.com/tutorial/2016/07/26/how-to-reset-migrations.html
 db: delete-db clean migrations
 
+admin:
+	python3 manage.py createsuperuser
+
 clean:
 	rm -f dump.rdb
 	find . -path '*/migrations/*.py' -not -name '__init__.py' -delete
