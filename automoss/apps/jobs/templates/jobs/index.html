@@ -56,6 +56,10 @@
 		background-size: 100%;
 		background-repeat: no-repeat;
 	}
+	.files[selected]:after{
+		background-image: url({% static "img/zip.png" %});
+	}
+	
 	.color input
 	{ 
 		background-color:#f1f1f1;
@@ -64,7 +68,8 @@
 	{
 		position: absolute;
 		bottom: 10px;
-		left: 0;  pointer-events: none;
+		left: 0;
+		pointer-events: none;
 		width: 100%;
 		right: 0;
 		height: 57px;
@@ -74,6 +79,10 @@
 		color: darkslategray;
 		text-align: center;
 	}
+	.files[selected]:before{
+		content: "File selected";
+	}
+
 </style>
 
 <div class="row">
@@ -136,7 +145,7 @@
 					</div>
 				<div class="modal-footer">
 					<div style="position: relative; min-height: 40px;">
-						<button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Create</button>
+						<button id="create-job-button" type="submit" class="btn btn-primary" data-bs-dismiss="modal" disabled>Create</button>
 					</div>
 				</div>
 			</form>
@@ -301,10 +310,9 @@
 	},{{ poll }});
 
 	let dropzone = document.getElementById('file-dropzone')
-	
 	dropzone.addEventListener('dragenter', function(){
-		dropzone.style.backgroundColor = "#CDFFCC";
-	})
+		dropzone.style.backgroundColor = "#EFFAFF";
+	});
 
 	dropzone.addEventListener('dragleave', function(){
 		dropzone.style.backgroundColor = "#FFFFFF";
@@ -321,7 +329,6 @@
 
     let input = document.getElementById('job-submission-files')
 	input.onchange = (e) => {
-		console.log(e)
 
 		let zipFile = input.files[0];
 		if (!zipFile) {
@@ -329,10 +336,21 @@
 			return;
 		}
 
+		let zipName = zipFile.name;
+
+		if(getExtension(zipName) != 'zip'){
+			input.value = '';
+			return;
+		}
+
+		document.getElementById('create-job-button').disabled = false;
+
 		// TODO Check that it is a zip file
 
+		dropzone.setAttribute('selected', true);
+
 		let jobName = document.getElementById('job-name')
-		jobName.value = jobName.value || getFileName(zipFile.name)
+		jobName.value = jobName.value || getFileName(zipName)
 		
 		// TODO select extension based on most popular
 		// JSZip.loadAsync(zipFile).then((zip)=>{
@@ -342,8 +360,11 @@
 
     // TODO increase list
 
+	function getExtension(name){
+		return name.split('.').pop();
+	}
     function validFile(language, name) {
-        let extension = name.split('.').pop();
+        let extension = getExtension(name);
         return languages[language][2].includes(extension);
     }
 
