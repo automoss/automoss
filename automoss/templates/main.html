@@ -8,7 +8,8 @@
 		<nav class="navbar navbar-expand navbar-dark bg-primary">
 			<div class="container container-fluid px-0">
 				<a class="navbar-brand" href="{% url "jobs:index" %}">
-					<img src="{% static "img/logo.png" %}" height=30px></img>
+					{% comment %} <img src="{% static "img/logo.png" %}" height=30px></img> {% endcomment %}
+					<h1 class="my-0">AutoMOSS</h1>
 				</a>
 				<a class="navbar-text navbar-right">
 					<div class="dropdown">
