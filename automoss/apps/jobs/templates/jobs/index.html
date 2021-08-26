@@ -269,7 +269,7 @@
 
 		json.forEach(item => {
 			addJob(item);
-			if (item.status != completedStatus && item.status != failedStatus){
+			if (isTerminalState(item.status)){
 				unfinishedJobs.push(item.job_id)
 			}
 		});
@@ -277,6 +277,10 @@
 			document.getElementById('no-jobs-message').style.display = 'block'
 		}
 	});
+	let terminalStates = [completedStatus, failedStatus];
+	function isTerminalState(state){
+		return terminalStates.includes(state)
+	}
 	
 	setInterval(async function(){
 		if(unfinishedJobs.length == 0){
@@ -300,7 +304,7 @@
 			var value = json[key];
 
 			document.querySelector(`tr[job_id="${key}"]`).setStatus(value)
-			if(value == completedStatus){
+			if(isTerminalState(value)){
 				unfinishedJobs = unfinishedJobs.filter(item => item !== key)
 			}
 
@@ -363,10 +367,6 @@
 	function getExtension(name){
 		return name.split('.').pop();
 	}
-    function validFile(language, name) {
-        let extension = getExtension(name);
-        return languages[language][2].includes(extension);
-    }
 
 	// https://stackoverflow.com/a/50472925
 	form.onsubmit = async (e) => {
@@ -397,10 +397,17 @@
 			console.log(zipEntry.name);
 
 			let languageID =languageSelect.options[languageSelect.selectedIndex].getAttribute('language-id')
-			if (validFile(languageID, zipEntry.name)) {
+
+			let extension = getExtension(zipEntry.name);
+
+			// TODO do not upload if no valid files found
+			let validFile = languages[languageID][2].includes(extension);
+			if (validFile) {
 				let blob = await zipEntry.async('blob')
 				data.append('files', blob, zipEntry.name)
 				console.log('valid file:', zipEntry.name);
+
+				// Add to count
 			} else {
 				console.log('invalid file:', zipEntry.name);
 			}
