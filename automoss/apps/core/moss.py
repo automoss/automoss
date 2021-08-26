@@ -231,6 +231,8 @@ class MOSS:
 
             # TODO check for errors
             # b'Error: No files uploaded to compare.\n'
+        except Exception as e: 
+            raise MossException(e)
 
         finally:  # Close session as soon as possible
             moss.close()
