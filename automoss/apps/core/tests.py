@@ -15,7 +15,7 @@ class TestMossAPI(TestCase):
     def test_upload_and_parse(self):
 
         base_dir = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'test')
+            os.path.realpath(__file__)), 'test_files')
         paths = {
             'files': [],
             'base_files': []
