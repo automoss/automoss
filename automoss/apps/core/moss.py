@@ -22,6 +22,10 @@ from django.utils.http import url_has_allowed_host_and_scheme
 MOSS_URL = 'moss.stanford.edu'
 
 
+def is_valid_moss_url(url):
+    return url_has_allowed_host_and_scheme(url, MOSS_URL)
+
+
 class MossAPIWrapper:
 
     def __init__(self, user_id):
@@ -242,7 +246,7 @@ class MOSS:
             # Read and return data
             data = moss.process(comment)
 
-            if url_has_allowed_host_and_scheme(data, MOSS_URL):
+            if is_valid_moss_url(data):
                 url = data
             else:
                 raise MossException(data)
