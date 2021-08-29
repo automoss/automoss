@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 import socket
 import os
 import re
@@ -31,20 +32,18 @@ class MossAPIWrapper:
     def __init__(self, user_id):
         self.user_id = user_id
         self.socket = socket.socket()
-        self._is_connected = False
 
     def connect(self):
         # TODO add retries
         self.socket.connect((MOSS_URL, 7690))
         self._send_string(f'moss {self.user_id}')  # authenticate user
-        self._is_connected = True
-
-    def is_connected(self):
-        return self._is_connected
 
     def close(self):
-        self._send_string('end')
-        self.socket.close()
+        try:
+            self._send_string('end')
+            self.socket.close()
+        except Exception as e:
+            raise MossException('Unable to close moss session: {e}')
 
     def read_raw(self, buffer):
         return self.socket.recv(buffer)
@@ -114,16 +113,14 @@ class MossAPIWrapper:
 #         self.id = id
 #         self.percentage = float(percentage)
 #         self.lines_matched = lines_matched
-        
+
         # self.html = html
 
         # self._parse_from_html(html)
 
-
     # def __str__(self):
     #     return f'({self.id}, {self.percentage}%)'
 
-from bs4 import BeautifulSoup
 
 # class LineMatch:
 #     def __init__(self, line_from, line_to):
@@ -153,7 +150,7 @@ class Match:
 
     def _parse_from_to(self, tag):
         return list(map(int, tag.get_text(strip=True).split('-')))
-    
+
     def _parse_name_percentage(self, tag):
         return re.search(r'(\S+)\s+\((\d+)%\)', tag.get_text(strip=True)).groups()
 
@@ -208,7 +205,8 @@ class MOSS:
 
     def generate(self, language=DEFAULT_MOSS_LANGUAGE, files=None,
                  base_files=None, is_directory=False, experimental=False,
-                 max_matches_until_ignore=MAX_UNTIL_IGNORED, num_to_show=MAX_DISPLAYED_MATCHES, comment='', use_basename=False):
+                 max_matches_until_ignore=MAX_UNTIL_IGNORED, num_to_show=MAX_DISPLAYED_MATCHES,
+                 comment='', use_basename=False):
         """Basic interface for generating a report from MOSS"""
 
         # TODO auto detect language
@@ -263,11 +261,7 @@ class MOSS:
             raise MossException(e)
 
         finally:  # Close session as soon as possible
-            if moss.is_connected():
-                try:
-                    moss.close()
-                except Exception:
-                    raise MossException('Unable to close moss session')
+            moss.close()
 
         if not url:
             raise MossException('Unable to extract URL')
