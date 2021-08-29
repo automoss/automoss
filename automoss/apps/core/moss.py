@@ -107,28 +107,6 @@ class MossAPIWrapper:
     def _send_string(self, text):
         return self._send_raw(f'{text}\n'.encode())
 
-# class MatchItem:
-#     # Meaningless alone, must be paired with another match item in Match class
-#     def __init__(self, id, percentage, lines_matched):
-#         self.id = id
-#         self.percentage = float(percentage)
-#         self.lines_matched = lines_matched
-
-        # self.html = html
-
-        # self._parse_from_html(html)
-
-    # def __str__(self):
-    #     return f'({self.id}, {self.percentage}%)'
-
-
-# class LineMatch:
-#     def __init__(self, line_from, line_to):
-#         self.line_from = line_from
-#         self.line_to = line_to
-
-#     def __str__(self):
-#         return f'{self.line_from}-{self.line_to}'
 
 class Match:
     def __init__(self, html):
