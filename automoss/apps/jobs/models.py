@@ -13,7 +13,9 @@ from ...defaults import (
     LANGUAGE_CHOICES,
     DEFAULT_LANGUAGE,
     MAX_COMMENT_LENGTH,
-    UUID_LENGTH
+    UUID_LENGTH,
+    SUBMISSION_TYPE_CHOICES,
+    MAX_SUBMISSION_TYPE_LENGTH
 )
 
 
@@ -65,3 +67,18 @@ class Job(models.Model):
     def __str__(self):
         """ Model to string method """
         return f"{self.comment} ({self.job_id})"
+
+
+class Submission(models.Model):
+    """ Class to model MOSS Report Entity """
+    # Job submission belongs to
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+
+    # Name/ID of the submission
+    name = models.CharField(max_length=64)
+
+    file_type = models.CharField(
+        max_length=MAX_SUBMISSION_TYPE_LENGTH, choices=SUBMISSION_TYPE_CHOICES)
+
+    def __str__(self):
+        return f'{self.name} ({self.job.job_id})'
