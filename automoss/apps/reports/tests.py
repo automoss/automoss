@@ -5,7 +5,7 @@ from django.test import Client
 from django.http import HttpResponseRedirect
 from django.utils.timezone import now
 from ..users.models import MOSSUser
-from .models import MOSSReport
+# from .models import MOSSReport
 from ..jobs.models import Job
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -28,7 +28,7 @@ class TestReports(TestCase):
         self.test_job = Job.objects.create(moss_user=self.test_moss_user, status=COMPLETED_STATUS, 
         start_date=now(), completion_date=now())
         # Report Creation 
-        self.test_report = MOSSReport.objects.create(job=self.test_job, url="/")
+        # self.test_report = MOSSReport.objects.create(job=self.test_job, url="/")
 
     def test_get_report(self):
         """ Test successful login attempt """
