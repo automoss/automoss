@@ -108,32 +108,42 @@ class MossAPIWrapper:
         return self._send_raw(f'{text}\n'.encode())
 
 
-class Match:
+class MossMatch:
     def __init__(self, html):
-        # self._parse_from_html(html)
         soup = BeautifulSoup(html, 'lxml')
         table = soup.find('table')
         rows = iter(table.find_all('tr'))
 
         header = next(rows)
         a, _, b, _, _ = header.find_all('th')
-        self.name, self.percentage = self._parse_name_percentage(a)
+        self.name_1, self.percentage_1 = self._parse_name_percentage(a)
         self.name_2, self.percentage_2 = self._parse_name_percentage(b)
 
         # TODO reconstruct (more accurate) percentages from line matches?
         self.line_matches = []
+        self.lines_matched = 0
         for tr in rows:
             a, _, b, _ = tr.find_all('td')
-            self.line_matches.append([self._parse_from_to(x) for x in (a, b)])
+            first, second = [self._parse_from_to(x) for x in (a, b)]
+            self.line_matches.append({
+                'first': first,
+                'second': second
+            })
+            
+            self.lines_matched += max(x['to'] - x['from'] for x in (first, second)) + 1
 
     def _parse_from_to(self, tag):
-        return list(map(int, tag.get_text(strip=True).split('-')))
+        info = list(map(int, tag.get_text(strip=True).split('-')))
+        return {
+            'from': info[0],
+            'to': info[1]
+        } 
 
     def _parse_name_percentage(self, tag):
         return re.search(r'(\S+)\s+\((\d+)%\)', tag.get_text(strip=True)).groups()
 
     def __str__(self):
-        return f'{self.name} ({self.percentage}%) : {self.name_2} ({self.percentage_2}%) | {self.line_matches}'
+        return f'{self.name_1} ({self.percentage_1}%) : {self.name_2} ({self.percentage_2}%) | {self.line_matches}'
 
 
 class MossResult:
@@ -164,7 +174,7 @@ class MossResult:
         responses = asyncio.run(self.fetch_concurrent(urls))
 
         for response in responses:
-            yield Match(response)
+            yield MossMatch(response)
 
 
 class MossException(Exception):
