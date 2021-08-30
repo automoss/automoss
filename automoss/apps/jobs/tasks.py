@@ -1,12 +1,17 @@
 
+from django.conf import settings
 from ...defaults import (
     MOSS_LANGUAGES,
     PROCESSING_STATUS,
     COMPLETED_STATUS,
-    FAILED_STATUS
+    FAILED_STATUS,
+    SUBMISSION_TYPES
 )
-from .models import Job
-from ..reports.models import MOSSReport
+from ..matches.models import Match
+from .models import (
+    Job,
+    Submission
+)
 from django.utils.timezone import now
 from django.core.files.uploadedfile import UploadedFile
 from ..core.moss import (
@@ -30,13 +35,11 @@ def process_job(job_id):
     job.status = PROCESSING_STATUS
     job.save()
 
-    base_dir = os.path.join('media', str(job.job_id), 'uploads')
+    base_dir = os.path.join(settings.MEDIA_ROOT, str(job.job_id), 'uploads')
 
-    paths = {
-        'files': [],
-        'base_files': []
-    }
-    for file_type in paths:
+    paths = {}
+
+    for file_type in SUBMISSION_TYPES:
         path = os.path.join(base_dir, file_type)
         if os.path.isdir(path):
             paths[file_type] = [os.path.join(path, k)
@@ -59,8 +62,21 @@ def process_job(job_id):
     job.completion_date = now()
     job.status = COMPLETED_STATUS
     job.save()
+
     # TODO do something with result, e.g., write to DB
 
-    MOSSReport.objects.create(job=job, url=result.url)
+    for match in result.matches:
+        Match.objects.create(
+            first_submission=Submission.objects.get(
+                job=job, name=match.name_1),
+            second_submission=Submission.objects.get(
+                job=job, name=match.name_2),
+            first_percentage=match.percentage_1,
+            second_percentage=match.percentage_2,
+            lines_matched=match.lines_matched,
+            line_matches=match.line_matches
+        )
+
+    # TODO Save MossResult for backup?
 
     return result.url
