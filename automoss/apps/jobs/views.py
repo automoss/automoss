@@ -24,9 +24,13 @@ from ...defaults import (
     POLLING_TIME,
     DEFAULT_LANGUAGE,
     MAX_DISPLAYED_MATCHES,
-    MAX_UNTIL_IGNORED
+    MAX_UNTIL_IGNORED,
+    SUBMISSION_TYPES
 )
-from .models import Job
+from .models import (
+    Job,
+    Submission
+)
 
 
 @register.filter(is_safe=True)
@@ -79,17 +83,20 @@ def new(request):
 
         base_dir = os.path.join('media', str(job_id), 'uploads')
 
-        for file_type in ('files', 'base_files'):
+        for file_type in SUBMISSION_TYPES:
             for f in request.FILES.getlist(file_type):
                 parent = os.path.join(base_dir, file_type)
                 os.makedirs(parent, exist_ok=True)
-                f_path = os.path.join(parent, f.name)
+                file_name = f.name
+                f_path = os.path.join(parent, file_name)
 
                 # TODO add validation (extensions, size, etc.)
 
                 print('Writing to', f_path)
                 with open(f_path, 'wb') as fp:
                     fp.write(f.read())
+
+                Submission.objects.create(job=new_job, name=file_name, file_type=file_type)
 
         process_job.delay(job_id)
 
