@@ -5,7 +5,8 @@ from ...defaults import (
     PROCESSING_STATUS,
     COMPLETED_STATUS,
     FAILED_STATUS,
-    SUBMISSION_TYPES
+    SUBMISSION_TYPES,
+    FILES_NAME
 )
 from ..matches.models import Match
 from .models import (
@@ -45,6 +46,11 @@ def process_job(job_id):
             paths[file_type] = [os.path.join(path, k)
                                 for k in os.listdir(path)]
 
+    if not paths.get(FILES_NAME):
+        # TODO raise exception : no files supplied
+        job.status = FAILED_STATUS  # TODO detect failure
+        job.save()
+        return None
     try:
         result = MOSS(job.moss_user.moss_id).generate(
             language=MOSS_LANGUAGES.get(job.language),
