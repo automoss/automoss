@@ -5,10 +5,7 @@ from .moss import (
     MOSS,
     is_valid_moss_url
 )
-from ...defaults import (
-    MAX_UNTIL_IGNORED,
-    MAX_DISPLAYED_MATCHES
-)
+from ...settings import DEFAULT_MOSS_SETTINGS
 
 
 class TestMossAPI(TestCase):
@@ -33,8 +30,8 @@ class TestMossAPI(TestCase):
         result = MOSS(moss_user_id).generate(
             language='python',
             **paths,
-            max_matches_until_ignore=MAX_UNTIL_IGNORED,
-            num_to_show=MAX_DISPLAYED_MATCHES,
+            max_until_ignored=DEFAULT_MOSS_SETTINGS['max_until_ignored'],
+            max_displayed_matches=DEFAULT_MOSS_SETTINGS['max_displayed_matches'],
             comment='',
             use_basename=True
         )

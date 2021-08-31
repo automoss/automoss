@@ -58,7 +58,7 @@ def process_job(job_id):
         result = MOSS(job.moss_user.moss_id).generate(
             language=get_moss_language(job.language),
             **paths,
-            max_matches_until_ignore=job.max_until_ignored,
+            max_until_ignored=job.max_until_ignored,
             num_to_show=job.max_displayed_matches,
             comment=job.comment,
             use_basename=True

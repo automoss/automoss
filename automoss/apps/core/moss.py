@@ -56,8 +56,8 @@ class MossAPIWrapper:
     def set_max_matches(self, max_matches):
         self._send_string(f'maxmatches {max_matches}')
 
-    def set_num_to_show(self, num_to_show):
-        self._send_string(f'show {num_to_show}')
+    def set_max_displayed_matches(self, max_displayed_matches):
+        self._send_string(f'show {max_displayed_matches}')
 
     def set_language(self, language):
         if language not in SUPPORTED_MOSS_LANGUAGES:
@@ -191,8 +191,8 @@ class MOSS:
     def generate(self, language=SUPPORTED_MOSS_LANGUAGES[0],
                  files=None, base_files=None, is_directory=False,
                  experimental=False,
-                 max_matches_until_ignore=DEFAULT_MOSS_SETTINGS['max_until_ignored'],
-                 num_to_show=DEFAULT_MOSS_SETTINGS['max_displayed_matches'],
+                 max_until_ignored=DEFAULT_MOSS_SETTINGS['max_until_ignored'],
+                 max_displayed_matches=DEFAULT_MOSS_SETTINGS['max_displayed_matches'],
                  comment='', use_basename=False):
         """Basic interface for generating a report from MOSS"""
 
@@ -216,8 +216,8 @@ class MOSS:
             # Set options
             moss.set_directory(is_directory)
             moss.set_experimental(experimental)
-            moss.set_max_matches(max_matches_until_ignore)
-            moss.set_num_to_show(num_to_show)
+            moss.set_max_matches(max_until_ignored)
+            moss.set_max_displayed_matches(max_displayed_matches)
             moss.set_language(language)
 
             data = moss.read()
