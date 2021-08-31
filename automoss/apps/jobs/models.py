@@ -1,3 +1,4 @@
+from ...settings import SUBMISSION_TYPES
 from ...settings import COMPLETED_STATUS
 import uuid
 from django.utils.timezone import now
@@ -65,6 +66,23 @@ class Job(models.Model):
         return f"{self.comment} ({self.job_id})"
 
 
+class Submission(models.Model):
+    """ Class to model MOSS Report Entity """
+    # Job submission belongs to
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+
+    # Name/ID of the submission
+    name = models.CharField(max_length=64)
+
+    file_type = models.CharField(
+        max_length=get_longest_key(SUBMISSION_TYPES),
+        choices=to_choices(SUBMISSION_TYPES)
+    )
+
+    def __str__(self):
+        return f'{self.name} ({self.job.job_id})'
+
+
 class MOSSResult(models.Model):
     """ Class to model MOSS Result Entity """
     # Job result belongs to
@@ -72,10 +90,39 @@ class MOSSResult(models.Model):
                                'status': COMPLETED_STATUS})
     # Date result was created
     created_date = models.DateTimeField(default=now)
-    
+
     # MOSS URL of result
     url = models.URLField(default=None)
 
     def __str__(self):
         """ Report to string method """
         return f"Report at {self.url}"
+
+
+class Match(models.Model):
+    """ Class to model MOSS Match """
+
+    match_id = models.CharField(
+        primary_key=False,
+        default=uuid.uuid4,
+        max_length=UUID_LENGTH,
+        editable=False,
+        unique=True
+    )
+
+    moss_result = models.ForeignKey(MOSSResult, on_delete=models.CASCADE)
+
+    # Submissions the match compares
+    first_submission = models.ForeignKey(
+        Submission, related_name='first_submission', on_delete=models.CASCADE)
+    second_submission = models.ForeignKey(
+        Submission, related_name='second_submission', on_delete=models.CASCADE)
+
+    first_percentage = models.IntegerField()
+    second_percentage = models.IntegerField()
+
+    lines_matched = models.IntegerField()
+    line_matches = models.JSONField()
+
+    def __str__(self):
+        return f'{self.first_submission} - {self.second_submission}'

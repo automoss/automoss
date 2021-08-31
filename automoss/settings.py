@@ -39,8 +39,6 @@ INSTALLED_APPS = [
     'automoss.apps.reports',
     'automoss.apps.api',
     'automoss.apps.users',
-    'automoss.apps.matches',
-    'automoss.apps.submissions',
 
     'django.contrib.admin',
     'django.contrib.auth',

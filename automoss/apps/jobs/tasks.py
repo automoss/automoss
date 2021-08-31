@@ -1,8 +1,6 @@
 
-from ..matches.models import Match
 from ..jobs.models import MOSSResult
-from .models import Job
-from ..submissions.models import Submission
+from .models import Job, Submission, Match
 from django.utils.timezone import now
 from django.core.files.uploadedfile import UploadedFile
 from ..moss.moss import (

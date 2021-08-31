@@ -1,5 +1,4 @@
 
-from ..matches.models import Match
 import os
 import json
 from json.decoder import JSONDecodeError
@@ -16,9 +15,10 @@ from .tasks import process_job
 
 from .models import (
     Job,
+    Match,
+    Submission,
     get_default_comment
 )
-from ..submissions.models import Submission
 
 from ...settings import (
     STATUS_CONTEXT,

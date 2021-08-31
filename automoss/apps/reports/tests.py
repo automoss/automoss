@@ -30,12 +30,12 @@ class TestReports(TestCase):
         # Report Creation 
         # self.test_report = MOSSReport.objects.create(job=self.test_job, url="/")
 
-    def test_get_report(self):
+    def test_get_result(self):
         """ Test successful login attempt """
         test_client = Client()
         # Login
         test_client.post(reverse("users:login"), self.credentials)
         # Get report
-        report_response = test_client.get(reverse("jobs:reports:index", kwargs={"job_id": self.test_job.job_id}), self.credentials)
+        report_response = test_client.get(reverse("jobs:result:index", kwargs={"job_id": self.test_job.job_id}), self.credentials)
         self.assertEqual(report_response.status_code, 200)
         self.assertTrue(isinstance(report_response, HttpResponse))
