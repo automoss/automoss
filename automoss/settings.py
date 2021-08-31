@@ -229,6 +229,10 @@ with capture_in(SUBMISSION_CONTEXT):
         FILES_NAME: 'Submission'
     }
 
+JOB_CONTEXT = {}
+with capture_in(JOB_CONTEXT):
+    JOB_UPLOAD_TEMPLATE = str(MEDIA_ROOT / '{}' / 'uploads')
+
 # UI Defaults
 UI_CONTEXT = {}
 with capture_in(UI_CONTEXT):

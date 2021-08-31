@@ -27,7 +27,9 @@ from ...settings import (
     UI_CONTEXT,
 
     READABLE_LANGUAGE_MAPPING,
-    SUBMISSION_TYPES
+    SUBMISSION_TYPES,
+
+    JOB_UPLOAD_TEMPLATE
 )
 
 
@@ -57,25 +59,24 @@ def new(request):
         language = READABLE_LANGUAGE_MAPPING.get(request.POST.get('job-language'))  # TODO throw error if none
         max_until_ignored = request.POST.get('job-max-until-ignored')
         max_displayed_matches = request.POST.get('job-max-displayed-matches')
-        comment = request.POST.get('job-name', get_default_comment())
+        comment = request.POST.get('job-name')
 
         # TODO validate options and reject if incorrect
 
-        info = {
-            'moss_user': request.user.mossuser,
-            'language': language,
-            'comment': comment,
-            'max_until_ignored': max_until_ignored,
-            'max_displayed_matches': max_displayed_matches
-        }
-        new_job = Job.objects.create(**info)
+        new_job = Job.objects.create(
+            moss_user=request.user.mossuser,
+            language=language,
+            comment=comment,
+            max_until_ignored=max_until_ignored,
+            max_displayed_matches=max_displayed_matches
+        )
 
         job_id = new_job.job_id
 
         # TODO get from database
         moss_user_id = request.user.mossuser.moss_id
 
-        base_dir = os.path.join('media', str(job_id), 'uploads')
+        base_dir = JOB_UPLOAD_TEMPLATE.format(job_id)
 
         for file_type in SUBMISSION_TYPES:
             for f in request.FILES.getlist(file_type):

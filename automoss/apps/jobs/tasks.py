@@ -1,5 +1,4 @@
 
-from django.conf import settings
 from ..matches.models import Match
 from .models import (
     Job,
@@ -18,7 +17,8 @@ from ...settings import (
     COMPLETED_STATUS,
     FAILED_STATUS,
     SUBMISSION_TYPES,
-    FILES_NAME
+    FILES_NAME,
+    JOB_UPLOAD_TEMPLATE
 )
 import os
 import time
@@ -39,7 +39,7 @@ def process_job(job_id):
     job.status = PROCESSING_STATUS
     job.save()
 
-    base_dir = os.path.join(settings.MEDIA_ROOT, str(job.job_id), 'uploads')
+    base_dir = JOB_UPLOAD_TEMPLATE.format(job.job_id)
 
     paths = {}
 
