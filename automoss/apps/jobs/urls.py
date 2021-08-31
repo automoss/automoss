@@ -8,8 +8,8 @@ urlpatterns = [
     # Submit new job
     path('new', views.new, name='new'),
 
-    # Reports
-    path('<uuid:job_id>/report/', include('automoss.apps.reports.urls')),
+    # Results
+    path('<uuid:job_id>/result/', views.result),
     
     # Jobs Index - View Jobs
     path('', views.index, name='index'),

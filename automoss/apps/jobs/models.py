@@ -1,3 +1,4 @@
+from ...settings import COMPLETED_STATUS
 import uuid
 from django.utils.timezone import now
 from django.db import models
@@ -62,3 +63,19 @@ class Job(models.Model):
     def __str__(self):
         """ Model to string method """
         return f"{self.comment} ({self.job_id})"
+
+
+class MOSSResult(models.Model):
+    """ Class to model MOSS Result Entity """
+    # Job result belongs to
+    job = models.OneToOneField(Job, on_delete=models.CASCADE, limit_choices_to={
+                               'status': COMPLETED_STATUS})
+    # Date result was created
+    created_date = models.DateTimeField(default=now)
+    
+    # MOSS URL of result
+    url = models.URLField(default=None)
+
+    def __str__(self):
+        """ Report to string method """
+        return f"Report at {self.url}"

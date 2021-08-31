@@ -143,7 +143,7 @@ class MossMatch:
         return f'{self.name_1} ({self.percentage_1}%) : {self.name_2} ({self.percentage_2}%) | {self.line_matches}'
 
 
-class MossResult:
+class Result:
 
     def __init__(self, url):
         # Parse a moss result from a URL
@@ -253,4 +253,4 @@ class MOSS:
         if not url:
             raise MossException('Unable to extract URL')
 
-        return MossResult(url)
+        return Result(url)

@@ -1,7 +1,7 @@
 from unittest import TestCase
 import os
 from .moss import (
-    MossResult,
+    Result,
     MOSS,
     is_valid_moss_url
 )

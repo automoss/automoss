@@ -1,12 +1,13 @@
 
 from ..matches.models import Match
+from ..jobs.models import MOSSResult
 from .models import Job
 from ..submissions.models import Submission
 from django.utils.timezone import now
 from django.core.files.uploadedfile import UploadedFile
 from ..moss.moss import (
     MOSS,
-    MossResult,
+    Result,
     MossException
 )
 from ...settings import (
@@ -23,7 +24,6 @@ import time
 from celery.decorators import task
 from celery.utils.log import get_task_logger
 logger = get_task_logger(__name__)
-
 
 def get_moss_language(language):
     return next((SUPPORTED_LANGUAGES[l][1] for l in SUPPORTED_LANGUAGES if l == language), None)
@@ -70,10 +70,15 @@ def process_job(job_id):
     job.status = COMPLETED_STATUS
     job.save()
 
+    moss_result = MOSSResult.objects.create(
+        job=job,
+        url=result.url
+    )
     # TODO do something with result, e.g., write to DB
 
     for match in result.matches:
         Match.objects.create(
+            moss_result=moss_result,
             first_submission=Submission.objects.get(
                 job=job, name=match.name_1),
             second_submission=Submission.objects.get(

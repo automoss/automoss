@@ -213,7 +213,7 @@
 		setStatus(newStatus){
 			this.tableStatus.innerHTML = statuses[newStatus]
 			if(newStatus == completedStatus){
-				this.tableComment.innerHTML = `<a href="/jobs/${this.job_id}/report/" style="text-decoration: none;">${this.comment}</a>`
+				this.tableComment.innerHTML = `<a href="/jobs/${this.job_id}/result/" style="text-decoration: none;">${this.comment}</a>`
 			}
 
 			this.tableStatus.className = '';

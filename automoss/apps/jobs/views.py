@@ -1,4 +1,5 @@
 
+from ..matches.models import Match
 import os
 import json
 from json.decoder import JSONDecodeError
@@ -37,6 +38,13 @@ from ...settings import (
 def js(obj):
     return mark_safe(json.dumps(obj))
 
+
+@login_required
+def result(request, job_id):
+    context = {
+        'matches': Match.objects.filter(moss_result__job__job_id=job_id)
+    }
+    return render(request, "results/index.html", context)
 
 @login_required
 def index(request):
