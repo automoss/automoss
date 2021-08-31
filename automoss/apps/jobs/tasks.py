@@ -1,13 +1,5 @@
 
 from django.conf import settings
-from ...defaults import (
-    MOSS_LANGUAGES,
-    PROCESSING_STATUS,
-    COMPLETED_STATUS,
-    FAILED_STATUS,
-    SUBMISSION_TYPES,
-    FILES_NAME
-)
 from ..matches.models import Match
 from .models import (
     Job,
@@ -20,6 +12,14 @@ from ..core.moss import (
     MossResult,
     MossException
 )
+from ...settings import (
+    SUPPORTED_LANGUAGES,
+    PROCESSING_STATUS,
+    COMPLETED_STATUS,
+    FAILED_STATUS,
+    SUBMISSION_TYPES,
+    FILES_NAME
+)
 import os
 import time
 from celery.decorators import task
@@ -27,12 +27,15 @@ from celery.utils.log import get_task_logger
 logger = get_task_logger(__name__)
 
 
+def get_moss_language(language):
+    return next((SUPPORTED_LANGUAGES[l][1] for l in SUPPORTED_LANGUAGES if l == language), None)
+
+
 @task(name='Upload')
 def process_job(job_id):
     """Basic interface for generating a report from MOSS"""
 
     job = Job.objects.get(job_id=job_id)
-
     job.status = PROCESSING_STATUS
     job.save()
 
@@ -53,7 +56,7 @@ def process_job(job_id):
         return None
     try:
         result = MOSS(job.moss_user.moss_id).generate(
-            language=MOSS_LANGUAGES.get(job.language),
+            language=get_moss_language(job.language),
             **paths,
             max_matches_until_ignore=job.max_until_ignored,
             num_to_show=job.max_displayed_matches,

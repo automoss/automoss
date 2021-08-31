@@ -1,9 +1,9 @@
+
 import os
 import json
 from json.decoder import JSONDecodeError
 
 from django.contrib.auth.decorators import login_required
-from .tasks import process_job
 from django.shortcuts import render
 from django.template.defaulttags import register
 from django.http.response import JsonResponse
@@ -11,25 +11,23 @@ from django.utils.datastructures import MultiValueDictKeyError
 from django.core.serializers import serialize
 from django.utils.safestring import mark_safe
 
-from .models import get_default_comment
+from .tasks import process_job
 
-from ...defaults import (
-    LANGUAGES,
-    READABLE_TO_CODE_LANGUAGES,
-    STATUSES,
-    COMPLETED_STATUS,
-    UPLOADING_STATUS,
-    PROCESSING_STATUS,
-    FAILED_STATUS,
-    POLLING_TIME,
-    DEFAULT_LANGUAGE,
-    MAX_DISPLAYED_MATCHES,
-    MAX_UNTIL_IGNORED,
-    SUBMISSION_TYPES
-)
 from .models import (
     Job,
-    Submission
+    Submission,
+    get_default_comment
+)
+
+from ...settings import (
+    STATUS_CONTEXT,
+    SUBMISSION_CONTEXT,
+    MOSS_CONTEXT,
+    LANGUAGE_CONTEXT,
+    UI_CONTEXT,
+
+    READABLE_LANGUAGE_MAPPING,
+    SUBMISSION_TYPES
 )
 
 
@@ -41,15 +39,11 @@ def js(obj):
 @login_required
 def index(request):
     context = {
-        'languages': LANGUAGES,
-        'statuses':  STATUSES,
-        'completed': COMPLETED_STATUS,
-        'uploading': UPLOADING_STATUS,
-        'processing': PROCESSING_STATUS,
-        'failed': FAILED_STATUS,
-        'poll': POLLING_TIME,
-        'max_until_ignored': MAX_UNTIL_IGNORED,
-        'max_displayed_matches': MAX_DISPLAYED_MATCHES
+        **STATUS_CONTEXT,
+        **LANGUAGE_CONTEXT,
+        **UI_CONTEXT,
+        **SUBMISSION_CONTEXT,
+        **MOSS_CONTEXT
     }
     return render(request, "jobs/index.html", context)
 
@@ -57,12 +51,12 @@ def index(request):
 @login_required
 def new(request):
     if request.method == 'POST':
-        language = READABLE_TO_CODE_LANGUAGES.get(
-            request.POST.get('job-language', DEFAULT_LANGUAGE))
-        max_until_ignored = request.POST.get(
-            'job-max-until-ignored', MAX_UNTIL_IGNORED)
-        max_displayed_matches = request.POST.get(
-            'job-max-displayed-matches', MAX_DISPLAYED_MATCHES)
+        print(READABLE_LANGUAGE_MAPPING)
+        print(request.POST.get('job-language'))
+        # TODO validate form
+        language = READABLE_LANGUAGE_MAPPING.get(request.POST.get('job-language'))  # TODO throw error if none
+        max_until_ignored = request.POST.get('job-max-until-ignored')
+        max_displayed_matches = request.POST.get('job-max-displayed-matches')
         comment = request.POST.get('job-name', get_default_comment())
 
         # TODO validate options and reject if incorrect
@@ -96,7 +90,8 @@ def new(request):
                 with open(f_path, 'wb') as fp:
                     fp.write(f.read())
 
-                Submission.objects.create(job=new_job, name=file_name, file_type=file_type)
+                Submission.objects.create(
+                    job=new_job, name=file_name, file_type=file_type)
 
         process_job.delay(job_id)
 

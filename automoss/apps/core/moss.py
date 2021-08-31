@@ -4,23 +4,19 @@ import os
 import re
 import requests
 
-import numpy as np
 import asyncio
 import aiohttp
 
-
-from ...defaults import (
-    DEFAULT_MOSS_LANGUAGE,
-    MAX_UNTIL_IGNORED,
-    MAX_DISPLAYED_MATCHES,
-    SUPPORTED_MOSS_LANGUAGES
+from ...settings import (
+    SUPPORTED_LANGUAGES,
+    DEFAULT_MOSS_SETTINGS
 )
-
-from urllib import parse
 
 from django.utils.http import url_has_allowed_host_and_scheme
 
 MOSS_URL = 'moss.stanford.edu'
+SUPPORTED_MOSS_LANGUAGES = [SUPPORTED_LANGUAGES[l][1]
+                            for l in SUPPORTED_LANGUAGES]
 
 
 def is_valid_moss_url(url):
@@ -129,15 +125,16 @@ class MossMatch:
                 'first': first,
                 'second': second
             })
-            
-            self.lines_matched += max(x['to'] - x['from'] for x in (first, second)) + 1
+
+            self.lines_matched += max(x['to'] - x['from']
+                                      for x in (first, second)) + 1
 
     def _parse_from_to(self, tag):
         info = list(map(int, tag.get_text(strip=True).split('-')))
         return {
             'from': info[0],
             'to': info[1]
-        } 
+        }
 
     def _parse_name_percentage(self, tag):
         return re.search(r'(\S+)\s+\((\d+)%\)', tag.get_text(strip=True)).groups()
@@ -191,9 +188,11 @@ class MOSS:
     def __init__(self, user_id):
         self.user_id = user_id
 
-    def generate(self, language=DEFAULT_MOSS_LANGUAGE, files=None,
-                 base_files=None, is_directory=False, experimental=False,
-                 max_matches_until_ignore=MAX_UNTIL_IGNORED, num_to_show=MAX_DISPLAYED_MATCHES,
+    def generate(self, language=SUPPORTED_MOSS_LANGUAGES[0],
+                 files=None, base_files=None, is_directory=False,
+                 experimental=False,
+                 max_matches_until_ignore=DEFAULT_MOSS_SETTINGS['max_until_ignored'],
+                 num_to_show=DEFAULT_MOSS_SETTINGS['max_displayed_matches'],
                  comment='', use_basename=False):
         """Basic interface for generating a report from MOSS"""
 

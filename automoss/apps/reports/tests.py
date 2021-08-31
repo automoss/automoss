@@ -9,7 +9,7 @@ from ..users.models import MOSSUser
 from ..jobs.models import Job
 from django.contrib.auth.models import User
 from django.urls import reverse
-from ...defaults import (
+from ...settings import (
     COMPLETED_STATUS
 )
 
