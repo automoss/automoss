@@ -3,18 +3,15 @@ from django.utils.timezone import now
 from django.db import models
 from ..users.models import MOSSUser
 
-from ...defaults import (
-    MAX_STATUS_LENGTH,
-    STATUS_CHOICES,
-    DEFAULT_STATUS,
-    MAX_UNTIL_IGNORED,
-    MAX_DISPLAYED_MATCHES,
-    MAX_LANGUAGE_LENGTH,
-    LANGUAGE_CHOICES,
-    DEFAULT_LANGUAGE,
-    MAX_COMMENT_LENGTH,
-    UUID_LENGTH
+from ...settings import (
+    STATUSES,
+    SUPPORTED_LANGUAGES,
+    SUBMISSION_TYPES,
+    DEFAULT_MOSS_SETTINGS,
+    UUID_LENGTH,
+    MAX_COMMENT_LENGTH
 )
+from ...apps.utils.core import (to_choices, get_longest_key, first)
 
 
 def get_default_comment():
@@ -37,25 +34,26 @@ class Job(models.Model):
 
     # Language choice
     language = models.CharField(
-        max_length=MAX_LANGUAGE_LENGTH,
-        choices=LANGUAGE_CHOICES,
-        default=DEFAULT_LANGUAGE,
+        max_length=get_longest_key(SUPPORTED_LANGUAGES),
+        choices=[(l, SUPPORTED_LANGUAGES[l][0]) for l in SUPPORTED_LANGUAGES],
+        default=first(SUPPORTED_LANGUAGES),
     )
 
     # Max matches of a code segment before it is ignored
-    max_until_ignored = models.PositiveIntegerField(default=MAX_UNTIL_IGNORED)
+    max_until_ignored = models.PositiveIntegerField(
+        default=DEFAULT_MOSS_SETTINGS['max_until_ignored'])
     # Max displayed matches
     max_displayed_matches = models.PositiveIntegerField(
-        default=MAX_DISPLAYED_MATCHES)
+        default=DEFAULT_MOSS_SETTINGS['max_displayed_matches'])
     # Comment/description attached to job
     comment = models.CharField(
         max_length=MAX_COMMENT_LENGTH, default=get_default_comment)
 
     # Job status
     status = models.CharField(
-        max_length=MAX_STATUS_LENGTH,
-        choices=STATUS_CHOICES,
-        default=DEFAULT_STATUS,
+        max_length=get_longest_key(STATUSES),
+        choices=to_choices(STATUSES),
+        default=first(STATUSES),
     )
     # Date and time job was started
     start_date = models.DateTimeField(default=now)
@@ -65,3 +63,20 @@ class Job(models.Model):
     def __str__(self):
         """ Model to string method """
         return f"{self.comment} ({self.job_id})"
+
+
+class Submission(models.Model):
+    """ Class to model MOSS Report Entity """
+    # Job submission belongs to
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+
+    # Name/ID of the submission
+    name = models.CharField(max_length=64)
+
+    file_type = models.CharField(
+        max_length=get_longest_key(SUBMISSION_TYPES),
+        choices=to_choices(SUBMISSION_TYPES)
+    )
+
+    def __str__(self):
+        return f'{self.name} ({self.job.job_id})'

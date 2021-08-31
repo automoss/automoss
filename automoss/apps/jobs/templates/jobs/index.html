@@ -124,7 +124,7 @@
 							<label for="job-language">Language:</label>
 							<select class="form-select" id="job-language" name="job-language" data-form-type="other">
 
-							{% for language, info in languages.items %}
+							{% for language, info in SUPPORTED_LANGUAGES.items %}
 								<option language-id={{language}}>{{info.0}} </option>
 							{% endfor %}
 
@@ -134,13 +134,13 @@
 						<!-- Max until ignored -->
 						<div class="mb-3">
 							<label for="job-max-until-ignored">Max until ignored:</label><br>
-							<input id="job-max-until-ignored" type="number" name="job-max-until-ignored" value="{{max_until_ignored}}">
+							<input id="job-max-until-ignored" type="number" name="job-max-until-ignored" value="{{ DEFAULT_MOSS_SETTINGS.max_until_ignored }}">
 						</div>
 
 						<!-- Max displayed matches -->
 						<div class="mb-3">
 							<label for="job-max-displayed-matches">Max displayed matches:</label><br>
-							<input id="job-max-displayed-matches" type="number" name="job-max-displayed-matches" value="{{max_displayed_matches}}">
+							<input id="job-max-displayed-matches" type="number" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}">
 						</div>
 					</div>
 				<div class="modal-footer">
@@ -248,13 +248,14 @@
 		jobTable.getElementsByTagName('tbody')[0].prepend(new Job(job))
 	}
 
-	let languages = {{ languages | js }};
-	let statuses = {{ statuses | js }};
+	let languages = {{ SUPPORTED_LANGUAGES | js }};
+	let statuses = {{ STATUSES | js }};
 
-	let completedStatus = "{{ completed }}"
-	let processingStatus = "{{ processing }}"
-	let uploadingStatus = "{{ uploading }}"
-	let failedStatus = "{{ failed }}"
+
+	let completedStatus = "{{ COMPLETED_STATUS }}";
+	let processingStatus = "{{ PROCESSING_STATUS }}";
+	let uploadingStatus = "{{ UPLOADING_STATUS }}";
+	let failedStatus = "{{ FAILED_STATUS }}";
 
 
 	let unfinishedJobs = []
@@ -311,7 +312,7 @@
 		}
 		
 		// TODO update jobs information
-	},{{ poll }});
+	},{{ POLLING_TIME }});
 
 	let dropzone = document.getElementById('file-dropzone')
 	dropzone.addEventListener('dragenter', function(){
@@ -368,6 +369,9 @@
 		return name.split('.').pop();
 	}
 
+	// TODO
+	{% comment %} data.append("{{ BASE_FILES_NAME }}", blob, zipEntry.name) {% endcomment %}
+
 	// https://stackoverflow.com/a/50472925
 	form.onsubmit = async (e) => {
 
@@ -404,7 +408,7 @@
 			let validFile = languages[languageID][2].includes(extension);
 			if (validFile) {
 				let blob = await zipEntry.async('blob')
-				data.append('files', blob, zipEntry.name)
+				data.append("{{ FILES_NAME }}", blob, zipEntry.name)
 				console.log('valid file:', zipEntry.name);
 
 				// Add to count

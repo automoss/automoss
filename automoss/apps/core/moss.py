@@ -1,25 +1,22 @@
+from bs4 import BeautifulSoup
 import socket
 import os
 import re
 import requests
 
-import numpy as np
 import asyncio
 import aiohttp
 
-
-from ...defaults import (
-    DEFAULT_MOSS_LANGUAGE,
-    MAX_UNTIL_IGNORED,
-    MAX_DISPLAYED_MATCHES,
-    SUPPORTED_MOSS_LANGUAGES
+from ...settings import (
+    SUPPORTED_LANGUAGES,
+    DEFAULT_MOSS_SETTINGS
 )
-
-from urllib import parse
 
 from django.utils.http import url_has_allowed_host_and_scheme
 
 MOSS_URL = 'moss.stanford.edu'
+SUPPORTED_MOSS_LANGUAGES = [SUPPORTED_LANGUAGES[l][1]
+                            for l in SUPPORTED_LANGUAGES]
 
 
 def is_valid_moss_url(url):
@@ -31,20 +28,18 @@ class MossAPIWrapper:
     def __init__(self, user_id):
         self.user_id = user_id
         self.socket = socket.socket()
-        self._is_connected = False
 
     def connect(self):
         # TODO add retries
         self.socket.connect((MOSS_URL, 7690))
         self._send_string(f'moss {self.user_id}')  # authenticate user
-        self._is_connected = True
-
-    def is_connected(self):
-        return self._is_connected
 
     def close(self):
-        self._send_string('end')
-        self.socket.close()
+        try:
+            self._send_string('end')
+            self.socket.close()
+        except Exception as e:
+            raise MossException('Unable to close moss session: {e}')
 
     def read_raw(self, buffer):
         return self.socket.recv(buffer)
@@ -109,30 +104,43 @@ class MossAPIWrapper:
         return self._send_raw(f'{text}\n'.encode())
 
 
-class MatchItem:
-    # Meaningless alone, must be paired with another match item in Match class
-    def __init__(self, id, percentage, html):
-        self.id = id
-        self.percentage = float(percentage)
-        self.html = html
+class MossMatch:
+    def __init__(self, html):
+        soup = BeautifulSoup(html, 'lxml')
+        table = soup.find('table')
+        rows = iter(table.find_all('tr'))
 
-        self._parse_from_html(html)
+        header = next(rows)
+        a, _, b, _, _ = header.find_all('th')
+        self.name_1, self.percentage_1 = self._parse_name_percentage(a)
+        self.name_2, self.percentage_2 = self._parse_name_percentage(b)
 
-    def _parse_from_html(self, html):
-        pass  # TODO
+        # TODO reconstruct (more accurate) percentages from line matches?
+        self.line_matches = []
+        self.lines_matched = 0
+        for tr in rows:
+            a, _, b, _ = tr.find_all('td')
+            first, second = [self._parse_from_to(x) for x in (a, b)]
+            self.line_matches.append({
+                'first': first,
+                'second': second
+            })
+
+            self.lines_matched += max(x['to'] - x['from']
+                                      for x in (first, second)) + 1
+
+    def _parse_from_to(self, tag):
+        info = list(map(int, tag.get_text(strip=True).split('-')))
+        return {
+            'from': info[0],
+            'to': info[1]
+        }
+
+    def _parse_name_percentage(self, tag):
+        return re.search(r'(\S+)\s+\((\d+)%\)', tag.get_text(strip=True)).groups()
 
     def __str__(self):
-        return f'({self.id}, {self.percentage}%)'
-
-
-class Match:
-    def __init__(self, first, second, lines_matched):
-        self.first = first
-        self.second = second
-        self.lines_matched = int(lines_matched)
-
-    def __str__(self):
-        return f'{self.first} : {self.second}% | {self.lines_matched}'
+        return f'{self.name_1} ({self.percentage_1}%) : {self.name_2} ({self.percentage_2}%) | {self.line_matches}'
 
 
 class MossResult:
@@ -140,9 +148,7 @@ class MossResult:
     def __init__(self, url):
         # Parse a moss result from a URL
         self.url = url
-        self.matches = []
-
-        self._parse_from_url(url)
+        self.matches = list(self._parse_matches(url))
 
     # https://stackoverflow.com/a/54878794
     async def fetch(self, session, url):
@@ -155,33 +161,17 @@ class MossResult:
             tasks = [loop.create_task(self.fetch(session, u)) for u in urls]
             return [await result for result in asyncio.as_completed(tasks)]
 
-    def _generate_urls(self, base_url, num_matches):
-        for i in range(num_matches):
-            # yield f'{base_url}/match{i}.html'
-            for j in (0, 1):
-                yield f'{base_url}/match{i}-{j}.html'
+    def _parse_matches(self, url):
+        html = requests.get(url, verify=False).text
 
-    _MATCH_LINK = r'<A[^>]+>(\S+)\s+\((\d+)%\)</A>[^<]+<TD'
-    _PARSE_MATCH = f'{_MATCH_LINK}>{_MATCH_LINK}[^>]+>(\d+)'
+        # TODO parse errors?
+        num_matches = html.count('<TR>') - 1
 
-    def _parse_from_url(self, url):
+        urls = [f'{url}/match{i}-top.html' for i in range(num_matches)]
+        responses = asyncio.run(self.fetch_concurrent(urls))
 
-        initial_info = requests.get(url, verify=False)
-        html = initial_info.text
-
-        matches = re.findall(self._PARSE_MATCH, html)
-        urls = self._generate_urls(url, len(matches))
-
-        data = asyncio.run(self.fetch_concurrent(urls))
-        responses = np.reshape(data, (-1, 2))
-
-        for match, response in zip(matches, responses):
-            left = MatchItem(*match[0:2], response[0])
-            right = MatchItem(*match[2:4], response[1])
-            self.matches.append(Match(left, right, match[4]))
-
-    def json(self):
-        return {'url': self.url}
+        for response in responses:
+            yield MossMatch(response)
 
 
 class MossException(Exception):
@@ -198,9 +188,12 @@ class MOSS:
     def __init__(self, user_id):
         self.user_id = user_id
 
-    def generate(self, language=DEFAULT_MOSS_LANGUAGE, files=None,
-                 base_files=None, is_directory=False, experimental=False,
-                 max_matches_until_ignore=MAX_UNTIL_IGNORED, num_to_show=MAX_DISPLAYED_MATCHES, comment='', use_basename=False):
+    def generate(self, language=SUPPORTED_MOSS_LANGUAGES[0],
+                 files=None, base_files=None, is_directory=False,
+                 experimental=False,
+                 max_matches_until_ignore=DEFAULT_MOSS_SETTINGS['max_until_ignored'],
+                 num_to_show=DEFAULT_MOSS_SETTINGS['max_displayed_matches'],
+                 comment='', use_basename=False):
         """Basic interface for generating a report from MOSS"""
 
         # TODO auto detect language
@@ -255,11 +248,7 @@ class MOSS:
             raise MossException(e)
 
         finally:  # Close session as soon as possible
-            if moss.is_connected():
-                try:
-                    moss.close()
-                except Exception:
-                    raise MossException('Unable to close moss session')
+            moss.close()
 
         if not url:
             raise MossException('Unable to extract URL')

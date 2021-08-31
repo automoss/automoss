@@ -3,7 +3,8 @@ python-dotenv
 whitenoise
 celery
 redis
-numpy
 asyncio
 aiohttp
 coverage
+lxml
+bs4
