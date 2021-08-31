@@ -1,3 +1,8 @@
+from ...settings import (
+    COMPLETED_STATUS
+)
+from .models import Job
+from django.utils.timezone import now
 from django.http.response import HttpResponse
 from django.test import TestCase
 from django.test import Client
@@ -41,3 +46,33 @@ class TestJobs(TestCase):
             file.close()
         self.assertEqual(submit_response.status_code, 200)
         self.assertTrue(isinstance(submit_response, HttpResponse))
+
+
+class TestResults(TestCase):
+    """ Test case to test user views """
+
+    def setUp(self):
+        """ Test case setup """
+        # User Creation
+        self.credentials = {
+            'username': 'test_user',
+            'password': 'Testing123!'}
+        self.test_user = User.objects.create_user(**self.credentials)
+        self.test_moss_user = MOSSUser.objects.create(
+            user=self.test_user, moss_id=1)
+        # Job Creation
+        self.test_job = Job.objects.create(moss_user=self.test_moss_user, status=COMPLETED_STATUS,
+                                           start_date=now(), completion_date=now())
+        # Report Creation
+        # self.test_report = MOSSReport.objects.create(job=self.test_job, url="/")
+
+    def test_get_result(self):
+        """ Test successful login attempt """
+        test_client = Client()
+        # Login
+        test_client.post(reverse("users:login"), self.credentials)
+        # Get result
+        report_response = test_client.get(reverse("jobs:result", kwargs={
+                                          "job_id": self.test_job.job_id}), self.credentials)
+        self.assertEqual(report_response.status_code, 200)
+        self.assertTrue(isinstance(report_response, HttpResponse))
