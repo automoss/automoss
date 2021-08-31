@@ -6,7 +6,7 @@ from .models import (
 )
 from django.utils.timezone import now
 from django.core.files.uploadedfile import UploadedFile
-from ..core.moss import (
+from ..moss.moss import (
     MOSS,
     MossResult,
     MossException
@@ -59,7 +59,7 @@ def process_job(job_id):
             language=get_moss_language(job.language),
             **paths,
             max_until_ignored=job.max_until_ignored,
-            num_to_show=job.max_displayed_matches,
+            max_displayed_matches=job.max_displayed_matches,
             comment=job.comment,
             use_basename=True
         )
