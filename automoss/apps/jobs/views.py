@@ -15,9 +15,9 @@ from .tasks import process_job
 
 from .models import (
     Job,
-    Submission,
     get_default_comment
 )
+from ..submissions.models import Submission
 
 from ...settings import (
     STATUS_CONTEXT,
@@ -56,7 +56,8 @@ def new(request):
         print(READABLE_LANGUAGE_MAPPING)
         print(request.POST.get('job-language'))
         # TODO validate form
-        language = READABLE_LANGUAGE_MAPPING.get(request.POST.get('job-language'))  # TODO throw error if none
+        language = READABLE_LANGUAGE_MAPPING.get(
+            request.POST.get('job-language'))  # TODO throw error if none
         max_until_ignored = request.POST.get('job-max-until-ignored')
         max_displayed_matches = request.POST.get('job-max-displayed-matches')
         comment = request.POST.get('job-name')

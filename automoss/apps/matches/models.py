@@ -1,7 +1,8 @@
 import uuid
 from django.utils.timezone import now, timedelta
 from django.db import models
-from ..jobs.models import (Job, Submission)
+from ..jobs.models import Job
+from ..submissions.models import Submission
 
 
 class Match(models.Model):

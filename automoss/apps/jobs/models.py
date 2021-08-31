@@ -6,7 +6,6 @@ from ..users.models import MOSSUser
 from ...settings import (
     STATUSES,
     SUPPORTED_LANGUAGES,
-    SUBMISSION_TYPES,
     DEFAULT_MOSS_SETTINGS,
     UUID_LENGTH,
     MAX_COMMENT_LENGTH
@@ -63,20 +62,3 @@ class Job(models.Model):
     def __str__(self):
         """ Model to string method """
         return f"{self.comment} ({self.job_id})"
-
-
-class Submission(models.Model):
-    """ Class to model MOSS Report Entity """
-    # Job submission belongs to
-    job = models.ForeignKey(Job, on_delete=models.CASCADE)
-
-    # Name/ID of the submission
-    name = models.CharField(max_length=64)
-
-    file_type = models.CharField(
-        max_length=get_longest_key(SUBMISSION_TYPES),
-        choices=to_choices(SUBMISSION_TYPES)
-    )
-
-    def __str__(self):
-        return f'{self.name} ({self.job.job_id})'

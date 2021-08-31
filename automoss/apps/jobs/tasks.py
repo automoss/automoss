@@ -1,9 +1,7 @@
 
 from ..matches.models import Match
-from .models import (
-    Job,
-    Submission
-)
+from .models import Job
+from ..submissions.models import Submission
 from django.utils.timezone import now
 from django.core.files.uploadedfile import UploadedFile
 from ..moss.moss import (
