@@ -2,7 +2,6 @@ import uuid
 from django.utils.timezone import now, timedelta
 from django.db import models
 from ..jobs.models import (Job, Submission)
-from ...defaults import COMPLETED_STATUS
 
 
 class Match(models.Model):
