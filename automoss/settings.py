@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'automoss.apps.reports',
     'automoss.apps.api',
     'automoss.apps.users',
+    'automoss.apps.results',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -230,7 +231,8 @@ with capture_in(SUBMISSION_CONTEXT):
 
 JOB_CONTEXT = {}
 with capture_in(JOB_CONTEXT):
-    JOB_UPLOAD_TEMPLATE = str(MEDIA_ROOT / '{}' / 'uploads')
+    JOB_UPLOAD_TEMPLATE = f'{MEDIA_ROOT}/{{job_id}}/uploads'
+    SUBMISSION_UPLOAD_TEMPLATE = f'{JOB_UPLOAD_TEMPLATE}/files/{{file_id}}'
 
 # UI Defaults
 UI_CONTEXT = {}

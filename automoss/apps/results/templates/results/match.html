@@ -1,0 +1,16 @@
+{% extends "main.html" %}
+
+{% block "main-content" %}
+
+<div class="mb-3"> <h2>Job Result</h2> </div>
+{{ match.match_id }}
+{{ match.line_matches }}
+
+<pre>
+{{ files.0 }}
+</pre>
+<hr>
+<pre>
+{{ files.1 }}
+</pre>
+{% endblock %}

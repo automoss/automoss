@@ -72,7 +72,7 @@ class TestResults(TestCase):
         # Login
         test_client.post(reverse("users:login"), self.credentials)
         # Get result
-        report_response = test_client.get(reverse("jobs:result", kwargs={
+        report_response = test_client.get(reverse("jobs:results:index", kwargs={
                                           "job_id": self.test_job.job_id}), self.credentials)
         self.assertEqual(report_response.status_code, 200)
         self.assertTrue(isinstance(report_response, HttpResponse))

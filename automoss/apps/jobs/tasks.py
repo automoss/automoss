@@ -1,6 +1,6 @@
 
-from ..jobs.models import MOSSResult
-from .models import Job, Submission, Match
+from ..results.models import MOSSResult, Match
+from .models import Job, Submission
 from django.utils.timezone import now
 from django.core.files.uploadedfile import UploadedFile
 from ..moss.moss import (
@@ -35,7 +35,7 @@ def process_job(job_id):
     job.status = PROCESSING_STATUS
     job.save()
 
-    base_dir = JOB_UPLOAD_TEMPLATE.format(job.job_id)
+    base_dir = JOB_UPLOAD_TEMPLATE.format(job_id=job.job_id)
 
     paths = {}
 

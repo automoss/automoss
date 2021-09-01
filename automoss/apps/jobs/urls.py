@@ -9,7 +9,7 @@ urlpatterns = [
     path('new', views.new, name='new'),
 
     # Results
-    path('<uuid:job_id>/result/', views.result, name='result'),
+    path('<uuid:job_id>/result/', include('automoss.apps.results.urls'), name='result'),
     
     # Jobs Index - View Jobs
     path('', views.index, name='index'),

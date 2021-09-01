@@ -15,11 +15,10 @@ from .tasks import process_job
 
 from .models import (
     Job,
-    Match,
     Submission,
     get_default_comment
 )
-
+from ..results.models import Match
 from ...settings import (
     STATUS_CONTEXT,
     SUBMISSION_CONTEXT,
@@ -38,13 +37,6 @@ from ...settings import (
 def js(obj):
     return mark_safe(json.dumps(obj))
 
-
-@login_required
-def result(request, job_id):
-    context = {
-        'matches': Match.objects.filter(moss_result__job__job_id=job_id)
-    }
-    return render(request, "results/index.html", context)
 
 @login_required
 def index(request):
@@ -85,7 +77,7 @@ def new(request):
         # TODO get from database
         moss_user_id = request.user.mossuser.moss_id
 
-        base_dir = JOB_UPLOAD_TEMPLATE.format(job_id)
+        base_dir = JOB_UPLOAD_TEMPLATE.format(job_id=job_id)
 
         for file_type in SUBMISSION_TYPES:
             for f in request.FILES.getlist(file_type):

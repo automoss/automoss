@@ -8,20 +8,24 @@
 	<!-- Column headings -->
 	<thead>
 		<tr>
+			<th scope="col">ID (temp)</th>
 			<th scope="col">Submission 1</th>
+			<th scope="col">Submission 1 percentage</th>
 			<th scope="col">Submission 2</th>
+			<th scope="col">Submission 2 percentage</th>
 			<th scope="col">Lines Matched</th>
-			<th scope="col">Line matches</th>
 		</tr>
 	</thead>
 	
 	<tbody>
 		{% for match in matches %}
 		<tr>
-			<td>{{ match.first_submission.name }} ({{ match.first_percentage }}%)</td>
-			<td>{{ match.second_submission.name }} ({{ match.second_percentage }}%)</td>
+			<td><a href="match/{{ match.match_id }}">{{ match.match_id }}</a></td> 
+			<td>{{ match.first_submission.name }}</td>
+			<td>{{ match.first_percentage }}</td>
+			<td>{{ match.second_submission.name }}</td>
+			<td>{{ match.second_percentage }}</td>
 			<td>{{ match.lines_matched }}</td>
-			<td>{{ match.line_matches }}</td>
 		</tr>
 		{% endfor %}
 	</tbody>
