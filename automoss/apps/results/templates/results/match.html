@@ -6,11 +6,13 @@
 {{ match.match_id }}
 {{ match.line_matches }}
 
-<pre>
-{{ files.0 }}
-</pre>
-<hr>
-<pre>
-{{ files.1 }}
-</pre>
+<div class="container d-flex">
+    <div class="row w-50" style="margin:0;border: solid 1px;">
+        <pre>{{ files.0 }}</pre>
+    </div>
+	<div class="row w-50" style="margin:0;border: solid 1px;">
+        <pre>{{ files.1 }}</pre>
+    </div>
+</div>
+
 {% endblock %}
