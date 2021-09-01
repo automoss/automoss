@@ -2,16 +2,21 @@
 
 {% block "main-content" %}
 
+<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
 <div class="mb-3"> <h2>Job Result</h2> </div>
 {{ match.match_id }}
 {{ match.line_matches }}
 
 <div class="container d-flex">
-    <div class="row w-50" style="margin:0;border: solid 1px;">
-        <pre>{{ files.0 }}</pre>
+    <div class="row w-50" style="margin:0">
+        <pre><code>{{ files.0 }}</code></pre>
     </div>
-	<div class="row w-50" style="margin:0;border: solid 1px;">
-        <pre>{{ files.1 }}</pre>
+	<div class="row w-50" style="margin:0">
+        <pre><code>{{ files.1 }}</code></pre>
     </div>
 </div>
 
