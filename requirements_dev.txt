@@ -8,3 +8,4 @@ aiohttp
 coverage
 lxml
 bs4
+fpdf2
