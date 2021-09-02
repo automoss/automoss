@@ -234,6 +234,11 @@ with capture_in(JOB_CONTEXT):
     JOB_UPLOAD_TEMPLATE = f'{MEDIA_ROOT}/{{job_id}}/uploads'
     SUBMISSION_UPLOAD_TEMPLATE = f'{JOB_UPLOAD_TEMPLATE}/files/{{file_id}}'
 
+    # Max duration to retry = EXPONENTIAL_BACKOFF_BASE**MAX_RETRIES
+    # Total duration        = \sum_{n=0}^{MAX_RETRIES}{EXPONENTIAL_BACKOFF_BASE}^{n}
+    MAX_RETRIES = 50
+    EXPONENTIAL_BACKOFF_BASE = 1.25  # 1<=x<=2
+
 # UI Defaults
 UI_CONTEXT = {}
 with capture_in(UI_CONTEXT):

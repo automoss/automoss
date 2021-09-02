@@ -15,13 +15,16 @@ from ...settings import (
     FAILED_STATUS,
     SUBMISSION_TYPES,
     FILES_NAME,
-    JOB_UPLOAD_TEMPLATE
+    JOB_UPLOAD_TEMPLATE,
+    EXPONENTIAL_BACKOFF_BASE,
+    MAX_RETRIES
 )
 import os
 import time
 from celery.decorators import task
 from celery.utils.log import get_task_logger
 logger = get_task_logger(__name__)
+
 
 def get_moss_language(language):
     return next((SUPPORTED_LANGUAGES[l][1] for l in SUPPORTED_LANGUAGES if l == language), None)
@@ -50,21 +53,36 @@ def process_job(job_id):
         job.status = FAILED_STATUS  # TODO detect failure
         job.save()
         return None
-    try:
-        result = MOSS(job.moss_user.moss_id).generate(
-            language=get_moss_language(job.language),
-            **paths,
-            max_until_ignored=job.max_until_ignored,
-            max_displayed_matches=job.max_displayed_matches,
-            comment=job.comment,
-            use_basename=True
-        )
-    except MossException as e:
+
+    result = None
+
+    for attempt in range(MAX_RETRIES + 1):
+        try:
+            result = MOSS(job.moss_user.moss_id).generate(
+                language=get_moss_language(job.language),
+                **paths,
+                max_until_ignored=job.max_until_ignored,
+                max_displayed_matches=job.max_displayed_matches,
+                comment=job.comment,
+                use_basename=True
+            )
+            break  # Success, do not retry
+
+        except MossException as e:
+            # An error on Moss' side occurred... retry
+            print('Error:', e)  # TODO - log
+
+        time.sleep(EXPONENTIAL_BACKOFF_BASE ** attempt)
+
+    # Represents when no more processing of the job will occur
+    job.completion_date = now()
+
+    if result is None:  # No result
         job.status = FAILED_STATUS  # TODO detect failure
         job.save()
         return None
 
-    job.completion_date = now()
+    # Success
     job.status = COMPLETED_STATUS
     job.save()
 
@@ -72,7 +90,6 @@ def process_job(job_id):
         job=job,
         url=result.url
     )
-    # TODO do something with result, e.g., write to DB
 
     for match in result.matches:
         Match.objects.create(
@@ -86,7 +103,5 @@ def process_job(job_id):
             lines_matched=match.lines_matched,
             line_matches=match.line_matches
         )
-
-    # TODO Save MossResult for backup?
 
     return result.url
