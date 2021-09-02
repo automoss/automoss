@@ -31,8 +31,11 @@ class MossAPIWrapper:
 
     def connect(self):
         # TODO add retries
-        self.socket.connect((MOSS_URL, 7690))
-        self._send_string(f'moss {self.user_id}')  # authenticate user
+        try:
+            self.socket.connect((MOSS_URL, 7690))
+            self._send_string(f'moss {self.user_id}')  # authenticate user
+        except ConnectionRefusedError as e:
+            raise MossException(f'Connection Refused: {e}')
 
     def close(self):
         try:
