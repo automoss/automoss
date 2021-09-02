@@ -69,7 +69,16 @@ class Submission(models.Model):
     # Job submission belongs to
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
 
-    # Name/ID of the submission
+    # Unique identifier used in routing
+    submission_id = models.CharField(
+        primary_key=False,
+        default=uuid.uuid4,
+        max_length=UUID_LENGTH,
+        editable=False,
+        unique=True
+    )
+
+    # Name of the submission
     name = models.CharField(max_length=64)
 
     file_type = models.CharField(
@@ -78,4 +87,4 @@ class Submission(models.Model):
     )
 
     def __str__(self):
-        return f'{self.name} ({self.job.job_id})'
+        return f'{self.submission_id} ({self.name})'

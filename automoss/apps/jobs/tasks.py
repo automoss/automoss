@@ -95,9 +95,9 @@ def process_job(job_id):
         Match.objects.create(
             moss_result=moss_result,
             first_submission=Submission.objects.get(
-                job=job, name=match.name_1),
+                job=job, submission_id=match.name_1),
             second_submission=Submission.objects.get(
-                job=job, name=match.name_2),
+                job=job, submission_id=match.name_2),
             first_percentage=match.percentage_1,
             second_percentage=match.percentage_2,
             lines_matched=match.lines_matched,

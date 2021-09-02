@@ -232,7 +232,7 @@ with capture_in(SUBMISSION_CONTEXT):
 JOB_CONTEXT = {}
 with capture_in(JOB_CONTEXT):
     JOB_UPLOAD_TEMPLATE = f'{MEDIA_ROOT}/{{job_id}}/uploads'
-    SUBMISSION_UPLOAD_TEMPLATE = f'{JOB_UPLOAD_TEMPLATE}/files/{{file_id}}'
+    SUBMISSION_UPLOAD_TEMPLATE = f'{JOB_UPLOAD_TEMPLATE}/{{file_type}}/{{file_id}}'
 
     # Max duration to retry = EXPONENTIAL_BACKOFF_BASE**MAX_RETRIES
     # Total duration        = \sum_{n=0}^{MAX_RETRIES}{EXPONENTIAL_BACKOFF_BASE}^{n}

@@ -29,7 +29,7 @@ from ...settings import (
     READABLE_LANGUAGE_MAPPING,
     SUBMISSION_TYPES,
 
-    JOB_UPLOAD_TEMPLATE
+    SUBMISSION_UPLOAD_TEMPLATE
 )
 
 
@@ -77,23 +77,26 @@ def new(request):
         # TODO get from database
         moss_user_id = request.user.mossuser.moss_id
 
-        base_dir = JOB_UPLOAD_TEMPLATE.format(job_id=job_id)
-
         for file_type in SUBMISSION_TYPES:
             for f in request.FILES.getlist(file_type):
-                parent = os.path.join(base_dir, file_type)
-                os.makedirs(parent, exist_ok=True)
-                file_name = f.name
-                f_path = os.path.join(parent, file_name)
 
                 # TODO add validation (extensions, size, etc.)
 
-                print('Writing to', f_path)
-                with open(f_path, 'wb') as fp:
-                    fp.write(f.read())
+                submission = Submission.objects.create(
+                    job=new_job, name=f.name, file_type=file_type)
 
-                Submission.objects.create(
-                    job=new_job, name=file_name, file_type=file_type)
+                file_path = SUBMISSION_UPLOAD_TEMPLATE.format(
+                    job_id=job_id,
+                    file_type=file_type,
+                    file_id=submission.submission_id
+                )
+
+                # Ensure directory exists (only run once)
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+                print('Writing to', file_path)
+                with open(file_path, 'wb') as fp:
+                    fp.write(f.read())
 
         process_job.delay(job_id)
 
