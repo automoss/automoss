@@ -17,10 +17,12 @@ def main():
 
     # Only run once - do not run again on reloads
     if os.environ.get('RUN_MAIN') != 'true' and 'runserver' in sys.argv:
-        # Start the Redis server
+        # Restart the Redis server
+        os.system('redis-cli shutdown')
         start_service(['redis-server'])
 
-        # Start celery worker
+        # Restart celery worker
+        os.system("kill -9 $(ps aux | grep celery | grep -v grep | awk '{print $2}' | tr '\n' ' ')")
         start_service(['celery', '-A', 'automoss', 'worker', '--loglevel=info'])
 
     try:
