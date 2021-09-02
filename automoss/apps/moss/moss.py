@@ -42,7 +42,7 @@ class MossAPIWrapper:
             self._send_string('end')
             self.socket.close()
         except Exception as e:
-            raise MossException('Unable to close moss session: {e}')
+            raise MossException(f'Unable to close moss session: {e}')
 
     def read_raw(self, buffer):
         return self.socket.recv(buffer)
