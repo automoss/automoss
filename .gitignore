@@ -20,3 +20,6 @@ dump.rdb
 # Coverage/testing
 .coverage
 htmlcov/
+
+# Log files
+*.log
