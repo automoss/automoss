@@ -17,9 +17,11 @@ from ...settings import (
     FILES_NAME,
     JOB_UPLOAD_TEMPLATE,
     EXPONENTIAL_BACKOFF_BASE,
-    MAX_RETRIES
+    MAX_RETRIES,
+    DEBUG
 )
 import os
+import json
 import time
 from celery.decorators import task
 from celery.utils.log import get_task_logger
@@ -28,6 +30,9 @@ logger = get_task_logger(__name__)
 
 def get_moss_language(language):
     return next((SUPPORTED_LANGUAGES[l][1] for l in SUPPORTED_LANGUAGES if l == language), None)
+
+
+LOG_FILE = 'jobs.log'
 
 
 @task(name='Upload')
@@ -85,6 +90,25 @@ def process_job(job_id):
     # Success
     job.status = COMPLETED_STATUS
     job.save()
+
+    if DEBUG:
+        # Calculate average file_size
+        num_files = len(paths[FILES_NAME])
+        avg_file_size = sum([os.path.getsize(x)
+                            for x in paths[FILES_NAME]])/num_files
+
+        log_info = vars(job).copy()
+        log_info.pop('_state', None)
+        log_info.update({
+            'num_files': num_files,
+            'avg_file_size': avg_file_size
+        })
+
+        with open(LOG_FILE, 'a+') as fp:
+            log_info['duration'] = (
+                log_info['completion_date'] - log_info['start_date']).total_seconds()
+            json.dump(log_info, fp, sort_keys=True, default=str)
+            print(file=fp)
 
     moss_result = MOSSResult.objects.create(
         job=job,
