@@ -15,41 +15,42 @@ def index(request, job_id):
 def match(request, job_id, match_id):
 
     match = Match.objects.get(match_id=match_id)
+    submissions = {
+        'first': match.first_submission,
+        'second': match.second_submission
+    }
 
-    # read files:
-    line_matches = match.line_matches
-    files = []
-    for submission in (match.first_submission, match.second_submission):
+    blocks = {}
+
+    for submission_type, submission in submissions.items():
         file_path = SUBMISSION_UPLOAD_TEMPLATE.format(
             job_id=job_id,
             file_type='files',
             file_id=submission.submission_id
         )
+
         with open(file_path) as fp:
-            files.append(fp.readlines())
+            lines = fp.readlines()
 
-    chunks = []
+        # sort line matches by submission_type's from field:
+        match.line_matches.sort(key=lambda x: x[submission_type]['from'])
 
-
-    blocks = {}
-
-    for index, x in enumerate(['first', 'second']):
+        # for line in lines:
+        blocks[submission_type] = []
         current = 0
-        blocks[x] = []
-
-        for match_id, m in enumerate(match.line_matches, start=1):
-            blocks[x].append({
-                'text': ''.join(files[index][current:m[x]['from']]) # exhaust previous
+        for match_id, match_lines in enumerate(match.line_matches, start=1):
+            blocks[submission_type].append({
+                'text': ''.join(lines[current:match_lines[submission_type]['from']])
             })
-            current = m[x]['to']
-            blocks[x].append({
+            current = match_lines[submission_type]['to']
+            blocks[submission_type].append({
                 'id': match_id,
-                'text': ''.join(files[index][m[x]['from']:current]) # actual match
+                'text': ''.join(lines[match_lines[submission_type]['from']:current])
             })
 
         # Get rest of file
-        blocks[x].append({
-            'text': ''.join(files[index][current:]) 
+        blocks[submission_type].append({
+            'text': ''.join(lines[current:])
         })
 
     # TODO define colours elsewhere
@@ -62,7 +63,7 @@ def match(request, job_id, match_id):
     context = {
         'match': match,
         # 'files': files,
-        'blocks' : blocks,
+        'blocks': blocks,
         'colours': colours
     }
     return render(request, "results/match.html", context)
