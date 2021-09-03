@@ -1,5 +1,7 @@
 
 # Helper methods
+import os
+import sys
 import inspect
 
 
@@ -54,3 +56,7 @@ class capture_globals(capture_in):
     def __init__(self):
         caller_frame = inspect.currentframe().f_back
         super(capture_globals, self).__init__(caller_frame.f_globals)
+
+
+def is_main_thread():
+    return os.environ.get('RUN_MAIN') != 'true' and 'runserver' in sys.argv

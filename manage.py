@@ -4,6 +4,7 @@ import os
 import sys
 from subprocess import Popen, DEVNULL, STDOUT
 from automoss.settings import DEBUG
+from automoss.apps.utils.core import is_main_thread
 
 if DEBUG:
     def start_service(args): return Popen(args)
@@ -16,14 +17,16 @@ def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'automoss.settings')
 
     # Only run once - do not run again on reloads
-    if os.environ.get('RUN_MAIN') != 'true' and 'runserver' in sys.argv:
+    if is_main_thread():
         # Restart the Redis server
         os.system('redis-cli shutdown')
         start_service(['redis-server'])
 
         # Restart celery worker
-        os.system("kill -9 $(ps aux | grep celery | grep -v grep | awk '{print $2}' | tr '\n' ' ')")
-        start_service(['celery', '-A', 'automoss', 'worker', '--loglevel=info'])
+        os.system(
+            "kill -9 $(ps aux | grep celery | grep -v grep | awk '{print $2}' | tr '\n' ' ')")
+        start_service(['celery', '-A', 'automoss',
+                      'worker', '--loglevel=info'])
 
     try:
         from django.core.management import execute_from_command_line
