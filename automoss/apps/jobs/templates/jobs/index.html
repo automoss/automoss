@@ -145,7 +145,7 @@
 					</div>
 				<div class="modal-footer">
 					<div style="position: relative; min-height: 40px;">
-						<button id="create-job-button" type="submit" class="btn btn-primary" data-bs-dismiss="modal" disabled>Create</button>
+						<button id="create-job-button" type="submit" class="btn btn-primary" disabled>Create</button>
 					</div>
 				</div>
 			</form>
@@ -371,6 +371,8 @@
 
 	// TODO
 	{% comment %} data.append("{{ BASE_FILES_NAME }}", blob, zipEntry.name) {% endcomment %}
+	const container = document.getElementById('createJob');
+	const modal = new bootstrap.Modal(container);
 
 	// https://stackoverflow.com/a/50472925
 	form.onsubmit = async (e) => {
@@ -429,6 +431,9 @@
 
 		document.getElementById('no-jobs-message').style.display = 'none'
 		addJob(json)
+
+		// Hide modal on successful post
+		modal.hide()
 
 		unfinishedJobs.push(json['job_id'])
 
