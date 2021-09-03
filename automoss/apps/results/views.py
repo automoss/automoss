@@ -26,10 +26,43 @@ def match(request, job_id, match_id):
             file_id=submission.submission_id
         )
         with open(file_path) as fp:
-            files.append(fp.read())
+            files.append(fp.readlines())
+
+    chunks = []
+
+
+    blocks = {}
+
+    for index, x in enumerate(['first', 'second']):
+        current = 0
+        blocks[x] = []
+
+        for match_id, m in enumerate(match.line_matches, start=1):
+            blocks[x].append({
+                'text': ''.join(files[index][current:m[x]['from']]) # exhaust previous
+            })
+            current = m[x]['to']
+            blocks[x].append({
+                'id': match_id,
+                'text': ''.join(files[index][m[x]['from']:current]) # actual match
+            })
+
+        # Get rest of file
+        blocks[x].append({
+            'text': ''.join(files[index][current:]) 
+        })
+
+    # TODO define colours elsewhere
+    colours = [
+        '255, 0, 0',
+        '0, 255, 0',
+        '0, 0, 255',
+    ]
 
     context = {
         'match': match,
-        'files': files
+        # 'files': files,
+        'blocks' : blocks,
+        'colours': colours
     }
     return render(request, "results/match.html", context)

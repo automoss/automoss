@@ -5,19 +5,84 @@
 <link rel="stylesheet"
       href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
-<script>hljs.highlightAll();</script>
+<script>//hljs.highlightAll();</script>
 
-<div class="mb-3"> <h2>Job Result</h2> </div>
-{{ match.match_id }}
-{{ match.line_matches }}
+<div class="mb-3"> <h2>Matches</h2> </div>
 
-<div class="container d-flex">
-    <div class="row w-50" style="margin:0">
-        <pre><code>{{ files.0 }}</code></pre>
+<style>
+
+pre {
+    float: left;
+    min-width: 100%;
+    margin:0;
+}
+
+
+.match {
+    transition: all ease-out 0.1s;
+}
+
+</style>
+
+<body>
+<div class="container d-flex shadow" style="background-color:white;padding:0;max-height: calc(100vh - 350px)">
+    
+    {% for key, values in blocks.items %}
+    <div class="w-50" style="overflow-x:auto;">
+        
+        
+        {% for x in values %}
+            <pre {% if x.id %} match="{{x.id}}" class="match" {% endif %}>{{x.text}}</pre>
+        {% endfor %}
+
     </div>
-	<div class="row w-50" style="margin:0">
-        <pre><code>{{ files.1 }}</code></pre>
-    </div>
+    {% endfor %}
+    
 </div>
+</body>
+
+<script>
+let colours = {{ colours | js }};
+
+let hoverOpacity = 0.75;
+let defaultOpacity = 0.2;
+function setMatches(matchID, opacity){
+    document.querySelectorAll(`.match[match="${matchID}"]`).forEach(x=>{
+        x.style.backgroundColor = `rgba(${colours[matchID % colours.length]}, ${opacity})`;
+    })
+}
+document.querySelectorAll(".match").forEach(m => {
+    let matchID = m.getAttribute('match');
+    console.log(matchID);
+
+    m.addEventListener("mouseover", e => {
+        setMatches(matchID, hoverOpacity);
+    });
+    
+    m.addEventListener("mouseout", e => {
+        setMatches(matchID, defaultOpacity);
+    });
+    m.addEventListener("click", e => {
+        console.log(matchID);
+        document.querySelectorAll(`.match[match="${matchID}"]`).forEach(x=>{
+            console.log('scroll into view', x)
+            if (m!= x){
+                x.scrollLeft = 0;
+                x.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'start'
+                });
+            }
+            
+            
+        })
+
+    }); 
+
+    setMatches(matchID, defaultOpacity)
+});
+
+</script> 
 
 {% endblock %}
