@@ -23,6 +23,7 @@ clean:
 	rm -f dump.rdb
 	find . -path '*/migrations/*.py' -not -name '__init__.py' -delete
 	find . -type d -name __pycache__ -exec rm -r {} \+
+	rm -rf media/* 
 
 test:
 	python3 manage.py test
