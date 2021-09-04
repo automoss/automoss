@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import MOSSUser
+from django.contrib.auth import get_user_model
 
-admin.site.register(MOSSUser)
+User = get_user_model()
+
+admin.site.register(User)
 

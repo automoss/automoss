@@ -113,6 +113,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'users.User'
+
 LOGIN_REDIRECT_URL = '/jobs/'
 LOGIN_URL = "/user/login/"
 # Currently returns logged_out.html

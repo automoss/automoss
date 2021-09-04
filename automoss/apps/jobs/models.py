@@ -2,7 +2,9 @@ from ...settings import SUBMISSION_TYPES
 import uuid
 from django.utils.timezone import now
 from django.db import models
-from ..users.models import MOSSUser
+from django.conf import settings
+from django.contrib.auth import get_user_model
+
 from ...settings import (
     STATUSES,
     SUPPORTED_LANGUAGES,
@@ -17,11 +19,12 @@ def get_default_comment():
     """ Returns default job comment """
     return f"My Job - {now().strftime('%d/%m/%y-%H:%M:%S')}"
 
+User = get_user_model()
 
 class Job(models.Model):
     """ Class to model Job Entity """
     # MOSS user that created the job
-    moss_user = models.ForeignKey(MOSSUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     # Unique identifier used in routing
     job_id = models.CharField(
         primary_key=False,
