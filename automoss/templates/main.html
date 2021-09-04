@@ -1,42 +1,39 @@
 {% extends "base.html" %}
-
 {% load static %}
 
 {% block "base-content" %}
-<body>
-	<div class="d-flex flex-column" style="min-height: 100vh; background-image: url({% static "img/shapes.png" %}); background-repeat: repeat;">
-		<nav class="navbar navbar-expand navbar-dark bg-primary">
-			<div class="container container-fluid px-0">
-				<a class="navbar-brand" href="{% url "jobs:index" %}">
-					{% comment %} <img src="{% static "img/logo.png" %}" height=30px></img> {% endcomment %}
-					<h1 class="my-0">AutoMOSS</h1>
-				</a>
-				<a class="navbar-text navbar-right">
-					<div class="dropdown">
-						<label style="color: white; vertical-align: middle;">
-							Welcome back, {{ user }}!
-						</label>
-						<a href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-							<img src="{% static "img/account.png" %}" height=30px style="margin-left: 10px"></img>
-						</a>
-						<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink">
-							<li><a class="dropdown-item" href="#">Profile</a></li>
-							<li><hr class="dropdown-divider"></li>
-							<li><a class="dropdown-item" href="{% url 'users:logout' %}">Logout</a></li>
-						</ul>
-					</div>
-				</a>
-			</div>
-		</nav>
-		
-		<div class="container flex-grow-1" style="padding: 50px 0 50px 0;">
-			{% block "main-content" %}{% endblock %}
+
+<div class="d-flex flex-column" style="min-height: 100vh; background-image: url({% static "img/shapes.png" %});">
+	<nav class="navbar navbar-expand navbar-dark bg-primary">
+		<div class="container container-fluid px-0">
+			<a class="navbar-brand" href="{% url "jobs:index" %}">
+				<h1 class="my-0">Auto<b>MOSS</b></h1>
+			</a>
+			<a class="navbar-text navbar-right">
+				<div class="dropdown">
+					<label style="color: white; vertical-align: middle;">
+						Welcome back, {{ user }}!
+					</label>
+					<a href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+						<img src="{% static "img/account.png" %}" height=30px style="margin-left: 10px"></img>
+					</a>
+					<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink">
+						<li><a class="dropdown-item" href="#">Profile</a></li>
+						<li><hr class="dropdown-divider"></li>
+						<li><a class="dropdown-item" href="{% url 'users:logout' %}">Logout</a></li>
+					</ul>
+				</div>
+			</a>
 		</div>
-		
-		<footer class="bg-primary shadow text-center p-3">
-			<label style="color: white;">Copyright © 2021 AutoMOSS. All Rights Reserved.</label>
-		</footer>
+	</nav>
+	
+	<div class="container flex-grow-1" style="padding: 50px 0 50px 0;">
+		{% block "main-content" %}{% endblock %}
 	</div>
-</body>
+	
+	<footer class="bg-primary shadow text-center p-3">
+		<label style="color: white;">Copyright © 2021 AutoMOSS. All Rights Reserved.</label>
+	</footer>
+</div>
 
 {% endblock %}

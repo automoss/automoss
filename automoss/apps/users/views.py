@@ -11,7 +11,7 @@ def login(request):
     if request.method == "GET":
         if request.user.is_authenticated:
             return redirect(settings.LOGIN_REDIRECT_URL)
-        return render(request, "users/login.html")
+        return render(request, "users/login/login.html")
     elif request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -24,9 +24,9 @@ def login(request):
                 #    return redirect(redirect_url)
                 return redirect(settings.LOGIN_REDIRECT_URL)
             else:
-                return render(request, "users/login.html", {"errors": "Account diabled!"})
+                return render(request, "users/login/login.html", {"errors": "Account diabled!"})
         else:
-            return render(request, "users/login.html", {"errors": "The username and password entered were incorrect!"})
+            return render(request, "users/login/login.html", {"errors": "The username and password entered were incorrect!"})
     raise Http404(f"Login route with method {request.METHOD}, not found!")
 
 
@@ -35,7 +35,7 @@ def logout(request):
     """ Logout View : Log user out """
     if request.method == "GET":
         django_logout(request)
-        return render(request, "users/logged_out.html")
+        return render(request, "users/login/logged_out.html")
     return Http404(f"Logout route with method {request.METHOD}, not found!")
     
     
