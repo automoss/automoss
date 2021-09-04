@@ -66,8 +66,6 @@ def process_job(job_id):
         job.save()
         return None
 
-    moss = MOSS(job.user.moss_id)
-
     url = None
     result = None
     for attempt in range(MAX_RETRIES + 1):
@@ -75,7 +73,8 @@ def process_job(job_id):
             if not is_valid_moss_url(url):
                 # Keep retrying until valid url has been generated
                 # Do not restart whole job if this succeeds but parsing fails
-                url = moss.generate_url(
+                url = MOSS.generate_url(
+                    user_id=job.user.moss_id,
                     language=get_moss_language(job.language),
                     **paths,
                     max_until_ignored=job.max_until_ignored,
@@ -88,7 +87,7 @@ def process_job(job_id):
 
             print('Start parsing report')
             # Parsing and extraction
-            result = moss.generate_report(url)
+            result = MOSS.generate_report(url)
             print('Result finished parsing:', len(
                 result.matches), 'matches detected.')
 

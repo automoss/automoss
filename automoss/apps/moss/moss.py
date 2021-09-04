@@ -23,7 +23,38 @@ def is_valid_moss_url(url):
     return url and url_has_allowed_host_and_scheme(url, MOSS_URL)
 
 
+class MossException(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class UnsupportedLanguage(MossException):
+    def __init__(self, language, **kwargs):
+        super().__init__(f'Unsupported language: {language}', **kwargs)
+
+
+class NoFiles(MossException):
+    message = 'No files uploaded to compare.'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(self.message, *args, **kwargs)
+
+
+class EmptyResponse(MossException):
+    message = 'Empty response.'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(self.message, *args, **kwargs)
+
+
+ERROR_PREFIX = 'Error: '
+
+
 class MossAPIWrapper:
+
+    _ERRORS = {
+        NoFiles.message: NoFiles
+    }
 
     def __init__(self, user_id):
         self.user_id = user_id
@@ -98,7 +129,27 @@ class MossAPIWrapper:
     def process(self, comment=''):
         # Send final query
         self._send_string(f'query 0 {comment}')
-        return self.read()
+
+        data = self.read()
+        if is_valid_moss_url(data):
+            return data
+        else:
+
+            # Check for errors
+            if data.startswith(ERROR_PREFIX):
+                error_message = data[len(ERROR_PREFIX):]
+
+                error = self._ERRORS.get(error_message)
+                if error:  # Found corresponding error
+                    raise error
+
+                # TODO find errors like this
+                raise MossException(f'Unknown error: {error_message}')
+
+            elif data:
+                raise MossException(f'Data extracted: "{data}"')
+
+            raise EmptyResponse
 
     def _send_raw(self, bytes):
         self.socket.send(bytes)
@@ -177,31 +228,35 @@ class Result:
             yield MossMatch(response)
 
 
-class MossException(Exception):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-
-class UnsupportedLanguage(MossException):
-    def __init__(self, language, **kwargs):
-        super().__init__(f'Unsupported language: {language}', **kwargs)
-
-
 class MOSS:
-    def __init__(self, user_id):
-        self.user_id = user_id
 
-    def generate(self, **kwargs):
-        url = self.generate_url(**kwargs)
-        return self.generate_report(url)
+    @classmethod
+    def validate_moss_id(cls, user_id):
+        moss = MossAPIWrapper(user_id)
+        try:
+            moss.connect()
+            moss.process()
+        except NoFiles:
+            return True
+        except Exception:  # Anything else means no
+            return False
+        finally:  # Close session as soon as possible
+            moss.close()
 
-    def generate_report(self, url):
+    @classmethod
+    def generate(cls, **kwargs):
+        url = cls.generate_url(**kwargs)
+        return cls.generate_report(url)
+
+    @classmethod
+    def generate_report(cls, url):
         try:
             return Result(url)
         except Exception as e:
             raise MossException(f'Unable to generate report: {e}')
 
-    def generate_url(self, language=SUPPORTED_MOSS_LANGUAGES[0],
+    @classmethod
+    def generate_url(cls, user_id, language=SUPPORTED_MOSS_LANGUAGES[0],
                      files=None, base_files=None, is_directory=False,
                      experimental=False,
                      max_until_ignored=DEFAULT_MOSS_SETTINGS['max_until_ignored'],
@@ -223,7 +278,7 @@ class MOSS:
             if base_files is None:
                 base_files = []
 
-            moss = MossAPIWrapper(self.user_id)
+            moss = MossAPIWrapper(user_id)
             moss.connect()  # TODO retries
 
             # Set options
@@ -250,12 +305,7 @@ class MOSS:
                 moss.upload_file(path, language, index, use_basename)
 
             # Read and return data
-            data = moss.process(comment)
-
-            if is_valid_moss_url(data):
-                url = data
-            else:
-                raise MossException(f'Data extracted: "{data}"')
+            url = moss.process(comment)
 
         except Exception as e:
             raise MossException(f'Exception: "{e}"')
