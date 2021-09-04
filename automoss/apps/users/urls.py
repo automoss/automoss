@@ -20,6 +20,6 @@ from . import views
 app_name = "users"
 
 urlpatterns = [
-    path('login/', views.login, name="login"),
-    path('logout/', views.logout, name="logout"),
+    path('login/', views.Login.as_view(), name="login"),
+    path('logout/', views.Logout.as_view(), name="logout"),
 ]

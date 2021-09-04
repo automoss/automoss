@@ -4,12 +4,14 @@ import json
 from json.decoder import JSONDecodeError
 
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.template.defaulttags import register
 from django.http.response import JsonResponse
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.serializers import serialize
 from django.utils.safestring import mark_safe
+from django.views import View
 
 from .tasks import process_job
 
@@ -37,9 +39,10 @@ from ...settings import (
 def js(obj):
     return mark_safe(json.dumps(obj))
 
-
-@login_required
-def index(request):
+@method_decorator(login_required, name='dispatch')
+class Index(View):
+    """ Index view for Jobs """
+    template = 'jobs/index.html'
     context = {
         **STATUS_CONTEXT,
         **LANGUAGE_CONTEXT,
@@ -47,12 +50,17 @@ def index(request):
         **SUBMISSION_CONTEXT,
         **MOSS_CONTEXT
     }
-    return render(request, "jobs/jobs.html", context)
 
+    def get(self, request):
+        """ Get jobs """
+        return render(request, self.template, self.context)
 
-@login_required
-def new(request):
-    if request.method == 'POST':
+@method_decorator(login_required, name='dispatch')
+class New(View):
+    """ Job creation view """
+
+    def post(self, request):
+        """ Post new job """
         print(READABLE_LANGUAGE_MAPPING)
         print(request.POST.get('job-language'))
         # TODO validate form
@@ -104,38 +112,33 @@ def new(request):
         data = json.loads(serialize('json', [new_job]))[0]['fields']
         return JsonResponse(data, status=200, safe=False)
 
-    else:
+@method_decorator(login_required, name='dispatch')
+class JSONJobs(View):
+    """ JSON view of Jobs """
 
-        context = {}
-        return render(request, "jobs/new.html", context)
+    def post(self, request):
+        """ Post ID's of jobs needed """
+        results = Job.objects.filter(user=request.user).values()
+        return JsonResponse(list(results), status=200, safe=False)
 
+@method_decorator(login_required, name='dispatch')
+class JSONStatuses(View):
+    """ JSON view of statuses """
 
-@login_required
-def get_jobs(request):
-    # Return jobs of user
-    results = Job.objects.filter(user=request.user).values()
-    return JsonResponse(list(results), status=200, safe=False)
-
-
-@login_required
-def get_statuses(request):
-
-    job_ids = []
-    try:
-        if request.method == 'POST':
+    def post(self, request):
+        """ Post ID's to get statuses of """
+        job_ids = []
+        try:
             body = json.loads(request.body)
             job_ids = body['job_ids']
-        else:
-            job_ids = request.GET['job_ids'].split(',')
+        except (JSONDecodeError, IndexError, MultiValueDictKeyError) as e:
+            pass  # Invalid request - TODO return error
 
-    except (JSONDecodeError, IndexError, MultiValueDictKeyError) as e:
-        pass  # Invalid request - TODO return error
+        if not isinstance(job_ids, list):
+            job_ids = []
 
-    if not isinstance(job_ids, list):
-        job_ids = []
+        results = Job.objects.filter(
+            user=request.user, job_id__in=job_ids)
 
-    results = Job.objects.filter(
-        user=request.user, job_id__in=job_ids)
-
-    data = {j.job_id: j.status for j in results}
-    return JsonResponse(data, status=200)
+        data = {j.job_id: j.status for j in results}
+        return JsonResponse(data, status=200)

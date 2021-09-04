@@ -6,8 +6,8 @@ app_name = "results"
 
 urlpatterns = [
     # TODO Generated Report - View Report
-    path('match/<uuid:match_id>/', views.match, name='match'),
+    path('match/<uuid:match_id>/', views.ResultMatch.as_view(), name='match'),
 
     # Report Index - View MOSS Report
-    path('', views.index, name="index")
+    path('', views.Index.as_view(), name="index")
 ]
