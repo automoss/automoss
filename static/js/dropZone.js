@@ -7,6 +7,7 @@ class DropZone extends HTMLElement {
 		// Zone
 		this.zone = document.createElement("div");
 		this.zone.id = "zone";
+		this.zone.classList.add("mb-2");
 		this.append(this.zone);
 
 		// File List
@@ -55,7 +56,6 @@ class DropZone extends HTMLElement {
 			return;
 		}
 		this.files.push(file);
-		this.updateSpacing(this.zone);
 
 		// File
 		let listedFile = document.createElement("div");
@@ -111,15 +111,12 @@ class DropZone extends HTMLElement {
 			if (index > -1) {
 				this.files.splice(index, 1);
 			}
-
 			this.fileList.removeChild(listedFile);
-			this.updateSpacing(this.zone);
+			this.onFileRemoved();
 		});
 		fileInfoDiv.append(fileRemoveButton);
 
-		// Update job form values.
-		let jobName = document.getElementById('job-name');
-		jobName.value = jobName.value || file.name.slice(0, file.name.length - 4);
+		this.onFileAdded();
 	}
 
 	isValidFile(file) {
@@ -170,14 +167,10 @@ class DropZone extends HTMLElement {
 		}
 	}
 
-	updateSpacing() {
-		if (this.files.length == 0) {
-			this.zone.classList.remove("mb-2");
-			document.getElementById("create-job-button").disabled = true;
-		} else {
-			this.zone.classList.add("mb-2");
-			document.getElementById("create-job-button").disabled = false;
-		}
+	onFileAdded(){
+	}
+
+	onFileRemoved(){
 	}
 }
 

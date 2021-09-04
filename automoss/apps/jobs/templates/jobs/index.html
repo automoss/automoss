@@ -109,6 +109,10 @@
 	const modal = new bootstrap.Modal(container);
 	
 	let languageSelect = document.getElementById('job-language')
+	let jobName = document.getElementById('job-name');
+	let maxMatchesUntilIgnored = document.getElementById('job-max-until-ignored');
+	let maxMatchesDisplayed = document.getElementById('job-max-displayed-matches');
+	let createJobButton = document.getElementById('create-job-button');
 
 
 	let jobTable = document.getElementById('job-table')
@@ -258,6 +262,65 @@
 		dropzone.removeAttribute('selected');
 		form.reset();
 	};
+
+
+	function updateFormData(){
+
+
+		if (dropzone.files.length > 0)
+		{
+			zipFile = dropzone.files[0]; // TODO just first for now...
+
+			// name
+			jobName.value = jobName.value || zipFile.name.slice(0, zipFile.name.length - 4);
+
+			// programming language
+			JSZip.loadAsync(zipFile).then((zip)=>{
+				
+				// initialise counts:
+				let d = {};
+				for (let key in languages){
+					d[key] = 0;
+				}
+
+				zip.forEach(function (relativePath, file) {
+					let extension = getExtension(file.name);
+
+					for (let key in languages){
+						console.log()
+						if(languages[key][2].includes(extension)){
+							d[key] += 1;
+						}
+					}
+				});
+
+				let bestID = Object.entries(d).reduce((a, b) => a[1] > b[1] ? a : b)[0]
+				languageSelect.value = languages[bestID][0];
+			});
+
+			createJobButton.disabled = false;
+		}
+		else
+		{
+			jobName.value = "";
+			languageSelect.selectedIndex = 0;
+			maxMatchesUntilIgnored.value = {{ DEFAULT_MOSS_SETTINGS.max_until_ignored }};
+			maxMatchesDisplayed.value = {{ DEFAULT_MOSS_SETTINGS.max_displayed_matches }};
+
+			createJobButton.disabled = true;
+		}
+	}
+
+	dropzone.onFileAdded = () =>
+	{
+		updateFormData();
+	};
+
+	dropzone.onFileRemoved = () =>
+	{
+		updateFormData();
+	};
+
 
 </script>
 
