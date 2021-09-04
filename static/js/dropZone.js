@@ -41,11 +41,11 @@ class DropZone extends HTMLElement {
 		this.zone.append(this.zoneInput);
 
 		// Zone > Info
-		this.zoneInfo = document.createElement("input");
-		this.zoneInfo.id = "zone-info";
-		this.zoneInfo.type = "image";
-		this.zoneInfo.src = this.getAttribute('infoImgURL');
-		this.zone.append(this.zoneInfo);
+		// this.zoneInfo = document.createElement("input");
+		// this.zoneInfo.id = "zone-info";
+		// this.zoneInfo.type = "image";
+		// this.zoneInfo.src = this.getAttribute('infoImgURL');
+		// this.zone.append(this.zoneInfo);
 	}
 
 	addFile(file) {
