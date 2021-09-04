@@ -63,7 +63,7 @@ def process_job(job_id):
 
     for attempt in range(MAX_RETRIES + 1):
         try:
-            result = MOSS(job.moss_user.moss_id).generate(
+            result = MOSS(job.user.moss_id).generate(
                 language=get_moss_language(job.language),
                 **paths,
                 max_until_ignored=job.max_until_ignored,

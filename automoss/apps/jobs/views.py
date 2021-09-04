@@ -65,7 +65,7 @@ def new(request):
         # TODO validate options and reject if incorrect
 
         new_job = Job.objects.create(
-            moss_user=request.user.mossuser,
+            user=request.user,
             language=language,
             comment=comment,
             max_until_ignored=max_until_ignored,
@@ -75,7 +75,7 @@ def new(request):
         job_id = new_job.job_id
 
         # TODO get from database
-        moss_user_id = request.user.mossuser.moss_id
+        moss_user_id = request.user.moss_id
 
         for file_type in SUBMISSION_TYPES:
             for f in request.FILES.getlist(file_type):
@@ -113,7 +113,7 @@ def new(request):
 @login_required
 def get_jobs(request):
     # Return jobs of user
-    results = Job.objects.filter(moss_user=request.user.mossuser).values()
+    results = Job.objects.filter(user=request.user).values()
     return JsonResponse(list(results), status=200, safe=False)
 
 
@@ -135,7 +135,7 @@ def get_statuses(request):
         job_ids = []
 
     results = Job.objects.filter(
-        moss_user=request.user.mossuser, job_id__in=job_ids)
+        user=request.user, job_id__in=job_ids)
 
     data = {j.job_id: j.status for j in results}
     return JsonResponse(data, status=200)
