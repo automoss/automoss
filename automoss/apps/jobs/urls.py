@@ -6,20 +6,21 @@ app_name = 'jobs'
 
 urlpatterns = [
     # Submit new job
-    path('new', views.new, name='new'),
+    path('new', views.New.as_view(), name='new'),
 
     # Results
     path('<uuid:job_id>/result/', include('automoss.apps.results.urls'), name='result'),
     
     # Jobs Index - View Jobs
-    path('', views.index, name='index'),
+    path('', views.Index.as_view(), name='index'),
 ]
 
 apipatterns = [
-    path('get_jobs', views.get_jobs, name='get_jobs'),
+    # Get jobs data
+    path('get_jobs', views.JSONJobs.as_view(), name='get_jobs'),
 
-    # Get status of job
-    path('get_statuses', views.get_statuses, name='get_statuses'),
+    # Get statuses of jobs
+    path('get_statuses', views.JSONStatuses.as_view(), name='get_statuses'),
 ]
 
 urlpatterns += apipatterns
