@@ -191,12 +191,22 @@ class MOSS:
     def __init__(self, user_id):
         self.user_id = user_id
 
-    def generate(self, language=SUPPORTED_MOSS_LANGUAGES[0],
-                 files=None, base_files=None, is_directory=False,
-                 experimental=False,
-                 max_until_ignored=DEFAULT_MOSS_SETTINGS['max_until_ignored'],
-                 max_displayed_matches=DEFAULT_MOSS_SETTINGS['max_displayed_matches'],
-                 comment='', use_basename=False):
+    def generate(self, **kwargs):
+        url = self.generate_url(**kwargs)
+        return self.generate_report(url)
+
+    def generate_report(self, url):
+        try:
+            return Result(url)
+        except Exception as e:
+            raise MossException(e)
+
+    def generate_url(self, language=SUPPORTED_MOSS_LANGUAGES[0],
+                     files=None, base_files=None, is_directory=False,
+                     experimental=False,
+                     max_until_ignored=DEFAULT_MOSS_SETTINGS['max_until_ignored'],
+                     max_displayed_matches=DEFAULT_MOSS_SETTINGS['max_displayed_matches'],
+                     comment='', use_basename=False):
         """Basic interface for generating a report from MOSS"""
 
         # TODO auto detect language
@@ -256,4 +266,4 @@ class MOSS:
         if not url:
             raise MossException('Unable to extract URL')
 
-        return Result(url)
+        return url

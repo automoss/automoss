@@ -6,7 +6,8 @@ from django.core.files.uploadedfile import UploadedFile
 from ..moss.moss import (
     MOSS,
     Result,
-    MossException
+    MossException,
+    is_valid_moss_url
 )
 from ...settings import (
     SUPPORTED_LANGUAGES,
@@ -59,25 +60,38 @@ def process_job(job_id):
         job.save()
         return None
 
-    result = None
+    moss = MOSS(job.user.moss_id)
 
+    url = None
+    result = None
     for attempt in range(MAX_RETRIES + 1):
         try:
-            result = MOSS(job.user.moss_id).generate(
-                language=get_moss_language(job.language),
-                **paths,
-                max_until_ignored=job.max_until_ignored,
-                max_displayed_matches=job.max_displayed_matches,
-                comment=job.comment,
-                use_basename=True
-            )
+            if not url or not is_valid_moss_url(url):
+                # Keep retrying until valid url has been generated
+                # Do not restart whole job if this succeeds but parsing fails
+                url = moss.generate_url(
+                    language=get_moss_language(job.language),
+                    **paths,
+                    max_until_ignored=job.max_until_ignored,
+                    max_displayed_matches=job.max_displayed_matches,
+                    comment=job.comment,
+                    use_basename=True
+                )
+
+            # TODO set status to parsing?
+
+            # Parsing and extraction
+            result = moss.generate_report(url)
+
             break  # Success, do not retry
 
         except MossException as e:
             # An error on Moss' side occurred... retry
-            print('Error:', e)  # TODO - log
-
-        time.sleep(EXPONENTIAL_BACKOFF_BASE ** attempt)
+            time_to_sleep = EXPONENTIAL_BACKOFF_BASE ** attempt
+            # TODO - log
+            print(
+                f'(Attempt {attempt}) Error: {e}. Retrying in {time_to_sleep} seconds')
+            time.sleep(time_to_sleep)
 
     # Represents when no more processing of the job will occur
     job.completion_date = now()
