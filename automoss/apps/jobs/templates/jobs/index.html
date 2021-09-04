@@ -264,7 +264,7 @@
 	let failedStatus = "{{ FAILED_STATUS }}";
 
 
-	let unfinishedJobs = []
+	let unfinishedJobs = [];
 	let result = fetch("{% url "api:jobs:get_jobs" %}", {
 		method: 'POST',
 		headers: {
@@ -276,7 +276,7 @@
 
 		json.forEach(item => {
 			addJob(item);
-			if (isTerminalState(item.status)){
+			if (!isTerminalState(item.status)){
 				unfinishedJobs.push(item.job_id)
 			}
 		});
