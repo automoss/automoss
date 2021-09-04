@@ -421,7 +421,6 @@
 		});
 
 		await Promise.all(files.map(async (zipEntry) => {
-			console.log(zipEntry.name);
 
 			let languageID =languageSelect.options[languageSelect.selectedIndex].getAttribute('language-id')
 
@@ -434,7 +433,6 @@
 				data.append("{{ FILES_NAME }}", blob, zipEntry.name)
 				console.log('valid file:', zipEntry.name);
 
-				// Add to count
 			} else {
 				console.log('invalid file:', zipEntry.name);
 			}
