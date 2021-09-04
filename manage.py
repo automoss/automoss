@@ -5,11 +5,23 @@ import sys
 from subprocess import Popen, DEVNULL, STDOUT
 from automoss.settings import DEBUG
 from automoss.apps.utils.core import is_main_thread
+import atexit
 
 if DEBUG:
     def start_service(args): return Popen(args)
 else:
     def start_service(args): return Popen(args, stdout=DEVNULL, stderr=STDOUT)
+
+
+def exit_handler():
+    if is_main_thread():
+        os.system('redis-cli shutdown')
+        os.system(
+            "kill -9 $(ps aux | grep celery | grep -v grep | awk '{print $2}' | tr '\n' ' ')")
+        print('Server closed')
+
+
+atexit.register(exit_handler)
 
 
 def main():
@@ -18,13 +30,10 @@ def main():
 
     # Only run once - do not run again on reloads
     if is_main_thread():
-        # Restart the Redis server
-        os.system('redis-cli shutdown')
+        # Start the Redis server
         start_service(['redis-server'])
 
-        # Restart celery worker
-        os.system(
-            "kill -9 $(ps aux | grep celery | grep -v grep | awk '{print $2}' | tr '\n' ' ')")
+        # Start celery worker
         start_service(['celery', '-A', 'automoss',
                       'worker', '--loglevel=info'])
 

@@ -50,9 +50,15 @@ def process_job(job_id):
 
     for file_type in SUBMISSION_TYPES:
         path = os.path.join(base_dir, file_type)
-        if os.path.isdir(path):
-            paths[file_type] = [os.path.join(path, k)
-                                for k in os.listdir(path)]
+        if not os.path.isdir(path):
+            continue  # Ignore if none of these files were submitted
+
+        paths[file_type] = []
+        for f in os.listdir(path):
+            file_path = os.path.join(path, f)
+            if os.path.getsize(file_path) > 0:
+                # Only add non-empty files
+                paths[file_type].append(file_path)
 
     if not paths.get(FILES_NAME):
         # TODO raise exception : no files supplied
@@ -66,7 +72,7 @@ def process_job(job_id):
     result = None
     for attempt in range(MAX_RETRIES + 1):
         try:
-            if not url or not is_valid_moss_url(url):
+            if not is_valid_moss_url(url):
                 # Keep retrying until valid url has been generated
                 # Do not restart whole job if this succeeds but parsing fails
                 url = moss.generate_url(
@@ -74,14 +80,17 @@ def process_job(job_id):
                     **paths,
                     max_until_ignored=job.max_until_ignored,
                     max_displayed_matches=job.max_displayed_matches,
-                    comment=job.comment,
                     use_basename=True
                 )
+                print(f'Generated url: "{url}"')
 
             # TODO set status to parsing?
 
+            print('Start parsing report')
             # Parsing and extraction
             result = moss.generate_report(url)
+            print('Result finished parsing:', len(
+                result.matches), 'matches detected.')
 
             break  # Success, do not retry
 
