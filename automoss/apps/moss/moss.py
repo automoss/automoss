@@ -35,14 +35,14 @@ class MossAPIWrapper:
             self.socket.connect((MOSS_URL, 7690))
             self._send_string(f'moss {self.user_id}')  # authenticate user
         except ConnectionRefusedError as e:
-            raise MossException(f'Connection Refused: {e}')
+            raise MossException(f'Connection Refused: "{e}"')
 
     def close(self):
         try:
             self._send_string('end')
             self.socket.close()
         except Exception as e:
-            raise MossException(f'Unable to close moss session: {e}')
+            raise MossException(f'Unable to close moss session: "{e}"')
 
     def read_raw(self, buffer):
         return self.socket.recv(buffer)
@@ -199,7 +199,7 @@ class MOSS:
         try:
             return Result(url)
         except Exception as e:
-            raise MossException(e)
+            raise MossException(f'Unable to generate report: {e}')
 
     def generate_url(self, language=SUPPORTED_MOSS_LANGUAGES[0],
                      files=None, base_files=None, is_directory=False,
@@ -255,10 +255,10 @@ class MOSS:
             if is_valid_moss_url(data):
                 url = data
             else:
-                raise MossException(data)
+                raise MossException(f'Data extracted: "{data}"')
 
         except Exception as e:
-            raise MossException(e)
+            raise MossException(f'Exception: "{e}"')
 
         finally:  # Close session as soon as possible
             moss.close()

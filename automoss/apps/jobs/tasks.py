@@ -77,11 +77,14 @@ def process_job(job_id):
                     comment=job.comment,
                     use_basename=True
                 )
+                print(f'Generated url: "{url}"')
 
             # TODO set status to parsing?
 
+            print('Start parsing report')
             # Parsing and extraction
             result = moss.generate_report(url)
+            print('Result finished parsing:', len(result.matches), 'matches detected.')
 
             break  # Success, do not retry
 
