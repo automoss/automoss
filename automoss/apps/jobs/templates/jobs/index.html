@@ -6,9 +6,15 @@
 <h2 class="mb-3">Jobs</h2>
 
 <!-- Search/Create -->
-<div class="d-flex pb-3">
-	<input class="form-control rounded me-2" type="search" placeholder="Search..." aria-label="Search">
-	<button type="button" class="btn btn-primary" style="width: 125px" data-bs-toggle="modal" data-bs-target="#createJob">Create Job</button>
+<div class="row mb-4">
+	<div class="col-lg-12">
+		<div class="input-group">
+			<input class="form-control me-2 rounded" type="search" placeholder="Search..." aria-label="Search">
+			<span class="input-group-btn">
+				<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createJob">Create Job</button>
+			</span>
+		</div>
+	</div>
 </div>
 
 <!-- Table -->
@@ -47,16 +53,11 @@
 				<div class="modal-body" id="create-job-body">
 
 					<!-- Drop Zone -->
-					<div class="mb-3" id="drop-zone">
-						<script src="{% static "js/dropZone.js" %}"></script>
-						<link href="{% static "css/dropZone.css" %}" rel="stylesheet">
-						<script>
-							let uploadImgURL = "{% static "img/upload.png" %}";
-							let removeImgURL = "{% static "img/remove.png" %}";
-							let infoImgURL = "{% static "img/info.png" %}";
-							document.getElementById("drop-zone").appendChild(new DropZone({ uploadImgURL, removeImgURL, infoImgURL }));
-						</script>
-					</div>
+
+					<link href="{% static "css/dropZone.css" %}" rel="stylesheet">
+
+					<drop-zone class="mb-3" id="drop-zone" uploadImgURL="{% static "img/upload.png" %}" removeImgURL="{% static "img/remove.png" %}" infoImgURL="{% static "img/info.png" %}"></drop-zone>
+					<script src="{% static "js/dropZone.js" %}"></script>
 
 					<!-- Name -->
 					<div class="mb-3">
@@ -76,14 +77,14 @@
 
 					<!-- Max until ignored -->
 					<div class="mb-3">
-						<label for="job-max-matches-until-ignored">Max matches until ignored:</label>
-						<input class="form-control" id="job-max-matches-until-ignored" type="number" name="job-max-matches-until-ignored" value="{{ DEFAULT_MOSS_SETTINGS.max_until_ignored }}">
+						<label for="job-max-until-ignored">Max matches until ignored:</label>
+						<input class="form-control" id="job-max-until-ignored" type="number" name="job-max-until-ignored" value="{{ DEFAULT_MOSS_SETTINGS.max_until_ignored }}">
 					</div>
 
 					<!-- Max displayed matches -->
 					<div class="mb-3">
-						<label for="job-max-matches-displayed">Max matches displayed:</label>
-						<input class="form-control" id="job-max-matches-displayed" type="number" name="job-max-matches-displayed" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}">
+						<label for="job-max-displayed-matches">Max matches displayed:</label>
+						<input class="form-control" id="job-max-displayed-matches" type="number" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}">
 					</div>
 				</div>
 
@@ -97,13 +98,18 @@
 	</div>
 </div>
 
-<script src="{% static "lib/jszip.min.js" %}" integrity="sha512-xQBQYt9UcgblF6aCMrwU1NkVA7HCXaSN2oq0so80KO+y68M+n64FOcqgav4igHe6D5ObBLIf68DWv+gfBowczg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="{% static "lib/jszip.min.js" %}"></script>
 
 <script src="{% static "js/job.js" %}"></script>
 
-<!--
 <script>
 	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+	const container = document.getElementById('createJob');
+	const modal = new bootstrap.Modal(container);
+	
+	let languageSelect = document.getElementById('job-language')
+
 
 	let jobTable = document.getElementById('job-table')
 
@@ -114,12 +120,14 @@
 	let languages = {{ SUPPORTED_LANGUAGES | js }};
 	let statuses = {{ STATUSES | js }};
 
+
 	let completedStatus = "{{ COMPLETED_STATUS }}";
 	let processingStatus = "{{ PROCESSING_STATUS }}";
 	let uploadingStatus = "{{ UPLOADING_STATUS }}";
 	let failedStatus = "{{ FAILED_STATUS }}";
 
-	let unfinishedJobs = []
+
+	let unfinishedJobs = [];
 	let result = fetch("{% url "api:jobs:get_jobs" %}", {
 		method: 'POST',
 		headers: {
@@ -131,7 +139,7 @@
 
 		json.forEach(item => {
 			addJob(item);
-			if (isTerminalState(item.status)){
+			if (!isTerminalState(item.status)){
 				unfinishedJobs.push(item.job_id)
 			}
 		});
@@ -169,15 +177,24 @@
 			if(isTerminalState(value)){
 				unfinishedJobs = unfinishedJobs.filter(item => item !== key)
 			}
-
 		}
 		
 		// TODO update jobs information
 	},{{ POLLING_TIME }});
 
+    let form = document.getElementById('create-job-form')
+
+
+    // TODO increase list
+
+	function getExtension(name){
+		return name.split('.').pop();
+	}
+
 	// TODO
 	{% comment %} data.append("{{ BASE_FILES_NAME }}", blob, zipEntry.name) {% endcomment %}
 
+	const dropzone = document.getElementById('drop-zone')
 	// https://stackoverflow.com/a/50472925
 	form.onsubmit = async (e) => {
 
@@ -187,7 +204,7 @@
 		let data = new FormData(form);
 
 		// Read zip file
-		let zipFile = input.files[0];
+		let zipFile = dropzone.files[0];
 		if (!zipFile) {
 			// TODO - display error, no files
 			return;
@@ -201,10 +218,7 @@
 			files.push(file)
 		});
 
-		let languageSelect = document.getElementById('job-language')
-
 		await Promise.all(files.map(async (zipEntry) => {
-			console.log(zipEntry.name);
 
 			let languageID =languageSelect.options[languageSelect.selectedIndex].getAttribute('language-id')
 
@@ -217,7 +231,6 @@
 				data.append("{{ FILES_NAME }}", blob, zipEntry.name)
 				console.log('valid file:', zipEntry.name);
 
-				// Add to count
 			} else {
 				console.log('invalid file:', zipEntry.name);
 			}
@@ -236,13 +249,17 @@
 		document.getElementById('no-jobs-message').style.display = 'none'
 		addJob(json)
 
+		// Hide modal on successful post
+		modal.hide()
+
 		unfinishedJobs.push(json['job_id'])
 
 		// Reset previous job settings:
 		dropzone.removeAttribute('selected');
 		form.reset();
 	};
+
 </script>
--->
+
 
 {% endblock %}

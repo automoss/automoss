@@ -1,12 +1,8 @@
-class DropZone extends HTMLElement
-{
+class DropZone extends HTMLElement {
 	files = []
 
-	constructor(obj)
-	{
+	constructor() {
 		super();
-
-		Object.assign(this, obj);
 
 		// Zone
 		this.zone = document.createElement("div");
@@ -24,7 +20,7 @@ class DropZone extends HTMLElement
 		// Zone > Icon
 		this.zoneIcon = document.createElement("img");
 		this.zoneIcon.id = "zone-icon";
-		this.zoneIcon.src = this.uploadImgURL;
+		this.zoneIcon.src = this.getAttribute('uploadImgURL');
 		this.zone.append(this.zoneIcon);
 
 		// Zone > Text
@@ -48,20 +44,19 @@ class DropZone extends HTMLElement
 		this.zoneInfo = document.createElement("input");
 		this.zoneInfo.id = "zone-info";
 		this.zoneInfo.type = "image";
-		this.zoneInfo.src = this.infoImgURL;
+		this.zoneInfo.src = this.getAttribute('infoImgURL');
 		this.zone.append(this.zoneInfo);
 	}
 
-	addFile(file)
-	{
+	addFile(file) {
 		this.zoneInput.value = '';
-		
-		if (!this.isValidFile(file)){
+
+		if (!this.isValidFile(file)) {
 			return;
 		}
-		this.files.push(file);	
+		this.files.push(file);
 		this.updateSpacing(this.zone);
-		
+
 		// File
 		let listedFile = document.createElement("div");
 		listedFile.classList.add("position-relative");
@@ -73,7 +68,7 @@ class DropZone extends HTMLElement
 		listedFile.style.borderRadius = "10px";
 		listedFile.style.borderWidth = "2px";
 		this.fileList.append(listedFile);
-		
+
 		// File > Progress Bar
 		let progressBar = document.createElement("div");
 		progressBar.classList.add("progress");
@@ -109,15 +104,14 @@ class DropZone extends HTMLElement
 		// File > Info > Remove Button
 		let fileRemoveButton = document.createElement("input");
 		fileRemoveButton.type = "image";
-		fileRemoveButton.src = this.removeImgURL;
+		fileRemoveButton.src = this.getAttribute('removeImgURL');
 		fileRemoveButton.style.height = "25px";
-		fileRemoveButton.addEventListener("click", () => 
-		{
+		fileRemoveButton.addEventListener("click", () => {
 			const index = this.files.indexOf(file);
-			if (index > -1){
+			if (index > -1) {
 				this.files.splice(index, 1);
 			}
-	
+
 			this.fileList.removeChild(listedFile);
 			this.updateSpacing(this.zone);
 		});
@@ -128,38 +122,35 @@ class DropZone extends HTMLElement
 		jobName.value = jobName.value || file.name.slice(0, file.name.length - 4);
 	}
 
-	isValidFile(file)
-	{
-		if (this.getFileExtension(file.name) != "zip"){
+	isValidFile(file) {
+		if (this.getFileExtension(file.name) != "zip") {
 			return false; // Must upload a zip file.
-		}else if (this.files.find(x => x.name == file.name)){
+		} else if (this.files.find(x => x.name == file.name)) {
 			return false; // Can't upload the same file more than once.
-		}else{
+		} else {
 			return true;
 		}
 	}
 
-	getFileExtension(fileName)
-	{
+	getFileExtension(fileName) {
 		return fileName.split('.').pop();
 	}
 
-	getFileSize(fileSize)
-	{
+	getFileSize(fileSize) {
 		let sizeKB = fileSize / 1024;
 		let sizeMB = sizeKB / 1024;
 		let sizeGB = sizeMB / 1024;
-		
+
 		let size = 0;
 		let unit = "";
 
-		if (sizeGB > 1){
+		if (sizeGB > 1) {
 			size = sizeGB;
 			unit = "GB";
-		}else if (sizeMB > 1){
+		} else if (sizeMB > 1) {
 			size = sizeMB;
 			unit = "MB"
-		}else{
+		} else {
 			size = sizeKB;
 			unit = "KB";
 		}
@@ -167,25 +158,23 @@ class DropZone extends HTMLElement
 		return `${Math.round(size * 100) / 100} ${unit}`;
 	}
 
-	setZoneHighlight(isHighlighted)
-	{
-		if (isHighlighted){
+	setZoneHighlight(isHighlighted) {
+		if (isHighlighted) {
 			this.zone.style.backgroundColor = "#EEE";
 			this.zone.classList.add("progress-bar-striped");
-			this.zone.classList.add("progress-bar-animated");	
-		}else{
+			this.zone.classList.add("progress-bar-animated");
+		} else {
 			this.zone.style.backgroundColor = "#FFF";
 			this.zone.classList.remove("progress-bar-striped");
-			this.zone.classList.remove("progress-bar-animated");	
+			this.zone.classList.remove("progress-bar-animated");
 		}
 	}
-	
-	updateSpacing()
-	{
-		if (this.files.length == 0){
+
+	updateSpacing() {
+		if (this.files.length == 0) {
 			this.zone.classList.remove("mb-2");
 			document.getElementById("create-job-button").disabled = true;
-		}else{
+		} else {
 			this.zone.classList.add("mb-2");
 			document.getElementById("create-job-button").disabled = false;
 		}
