@@ -20,7 +20,7 @@ SUPPORTED_MOSS_LANGUAGES = [SUPPORTED_LANGUAGES[l][1]
 
 
 def is_valid_moss_url(url):
-    return url_has_allowed_host_and_scheme(url, MOSS_URL)
+    return url and url_has_allowed_host_and_scheme(url, MOSS_URL)
 
 
 class MossAPIWrapper:
@@ -262,8 +262,5 @@ class MOSS:
 
         finally:  # Close session as soon as possible
             moss.close()
-
-        if not url:
-            raise MossException('Unable to extract URL')
 
         return url
