@@ -8,5 +8,5 @@ urlpatterns = [
     # TODO Generated Report - View Report
 
     # Report Index - View MOSS Report
-    path('', views.index, name="index")
+    path('', views.Index.as_view(), name="index")
 ]

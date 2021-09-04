@@ -27,5 +27,5 @@ urlpatterns = [
     # Users
     path('user/', include('automoss.apps.users.urls')),
     # Root
-    path('', views.root, name="root")
+    path('', views.Index.as_view(), name="root")
 ]
