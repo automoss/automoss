@@ -11,7 +11,7 @@ def index(request, job_id):
     }
     return render(request, "results/index.html", context)
 
-
+@login_required
 def match(request, job_id, match_id):
 
     match = Match.objects.get(match_id=match_id)
