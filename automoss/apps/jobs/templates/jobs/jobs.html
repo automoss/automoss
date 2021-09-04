@@ -1,0 +1,248 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block "main-content" %}
+
+<h2 class="mb-3">Jobs</h2>
+
+<!-- Search/Create -->
+<div class="d-flex pb-3">
+	<input class="form-control rounded me-2" type="search" placeholder="Search..." aria-label="Search">
+	<button type="button" class="btn btn-primary" style="width: 125px" data-bs-toggle="modal" data-bs-target="#createJob">Create Job</button>
+</div>
+
+<!-- Table -->
+<table id="job-table" class="table table-striped border" style="background-color: white">
+
+	<!-- Headings -->
+	<thead>
+		<tr>
+			<th scope="col" style="width: 30%">Name</th>
+			<th scope="col" style="width: 30%">Language</th>
+			<th scope="col" style="width: 30%">Date Created</th>
+			<th scope="col" style="width: 10%">Status</th>
+		</tr>
+	</thead>
+	
+	<!-- Jobs -->
+	<tbody></tbody>
+
+</table>
+
+<div id="no-jobs-message" class="container text-center" style="display: none">No jobs have been created yet!</div>
+
+<!-- Modal -->
+<div class="modal fade" id="createJob" tabindex="-1" aria-labelledby="createJobLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<form id="create-job-form">
+
+				{% csrf_token %}
+
+				<div class="modal-header">
+					<h5 class="modal-title" id="createJobLabel">Create Job</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+
+				<div class="modal-body" id="create-job-body">
+
+					<!-- Drop Zone -->
+					<div class="mb-3" id="drop-zone">
+						<script src="{% static "js/dropZone.js" %}"></script>
+						<link href="{% static "css/dropZone.css" %}" rel="stylesheet">
+						<script>
+							let uploadImgURL = "{% static "img/upload.png" %}";
+							let removeImgURL = "{% static "img/remove.png" %}";
+							let infoImgURL = "{% static "img/info.png" %}";
+							document.getElementById("drop-zone").appendChild(new DropZone({ uploadImgURL, removeImgURL, infoImgURL }));
+						</script>
+					</div>
+
+					<!-- Name -->
+					<div class="mb-3">
+						<label for="job-name">Name:</label>
+						<input class="form-control" id="job-name" type="text" name="job-name" autocomplete="off" data-lpignore="true" data-form-type="text">
+					</div>
+
+					<!-- Language -->
+					<div class="mb-3">
+						<label for="job-language">Language:</label>
+						<select class="form-select" id="job-language" name="job-language" data-form-type="other">
+							{% for language, info in SUPPORTED_LANGUAGES.items %}
+								<option language-id={{language}}>{{info.0}} </option>
+							{% endfor %}
+						</select>
+					</div>
+
+					<!-- Max until ignored -->
+					<div class="mb-3">
+						<label for="job-max-matches-until-ignored">Max matches until ignored:</label>
+						<input class="form-control" id="job-max-matches-until-ignored" type="number" name="job-max-matches-until-ignored" value="{{ DEFAULT_MOSS_SETTINGS.max_until_ignored }}">
+					</div>
+
+					<!-- Max displayed matches -->
+					<div class="mb-3">
+						<label for="job-max-matches-displayed">Max matches displayed:</label>
+						<input class="form-control" id="job-max-matches-displayed" type="number" name="job-max-matches-displayed" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}">
+					</div>
+				</div>
+
+				<div class="modal-footer">
+					<div style="position: relative; min-height: 40px;">
+						<button id="create-job-button" type="submit" class="btn btn-primary" data-bs-dismiss="modal" disabled>Create</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script src="{% static "lib/jszip.min.js" %}" integrity="sha512-xQBQYt9UcgblF6aCMrwU1NkVA7HCXaSN2oq0so80KO+y68M+n64FOcqgav4igHe6D5ObBLIf68DWv+gfBowczg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script src="{% static "js/job.js" %}"></script>
+
+<!--
+<script>
+	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+	let jobTable = document.getElementById('job-table')
+
+	function addJob(job){
+		jobTable.getElementsByTagName('tbody')[0].prepend(new Job(job))
+	}
+
+	let languages = {{ SUPPORTED_LANGUAGES | js }};
+	let statuses = {{ STATUSES | js }};
+
+	let completedStatus = "{{ COMPLETED_STATUS }}";
+	let processingStatus = "{{ PROCESSING_STATUS }}";
+	let uploadingStatus = "{{ UPLOADING_STATUS }}";
+	let failedStatus = "{{ FAILED_STATUS }}";
+
+	let unfinishedJobs = []
+	let result = fetch("{% url "api:jobs:get_jobs" %}", {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'X-CSRFToken': csrftoken
+		}
+	}).then(async (response)=>{
+		let json = await response.json()
+
+		json.forEach(item => {
+			addJob(item);
+			if (isTerminalState(item.status)){
+				unfinishedJobs.push(item.job_id)
+			}
+		});
+		if(json.length == 0){
+			document.getElementById('no-jobs-message').style.display = 'block'
+		}
+	});
+	let terminalStates = [completedStatus, failedStatus];
+	function isTerminalState(state){
+		return terminalStates.includes(state)
+	}
+	
+	setInterval(async function(){
+		if(unfinishedJobs.length == 0){
+			// Do not make any request if all jobs are finished
+			return;
+		}
+		let result = await fetch("{% url "api:jobs:get_statuses" %}", {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-CSRFToken': csrftoken
+			},
+			body: JSON.stringify({
+				'job_ids': unfinishedJobs
+			})
+		})
+
+		let json = await result.json();
+
+		for (let key in json) {
+			var value = json[key];
+
+			document.querySelector(`tr[job_id="${key}"]`).setStatus(value)
+			if(isTerminalState(value)){
+				unfinishedJobs = unfinishedJobs.filter(item => item !== key)
+			}
+
+		}
+		
+		// TODO update jobs information
+	},{{ POLLING_TIME }});
+
+	// TODO
+	{% comment %} data.append("{{ BASE_FILES_NAME }}", blob, zipEntry.name) {% endcomment %}
+
+	// https://stackoverflow.com/a/50472925
+	form.onsubmit = async (e) => {
+
+		e.preventDefault();
+
+		// Construct new form with relevant data
+		let data = new FormData(form);
+
+		// Read zip file
+		let zipFile = input.files[0];
+		if (!zipFile) {
+			// TODO - display error, no files
+			return;
+		}
+		let zip = await JSZip.loadAsync(zipFile);
+
+		console.log(zip);
+
+		let files = [];
+		zip.forEach(function (relativePath, file) {
+			files.push(file)
+		});
+
+		let languageSelect = document.getElementById('job-language')
+
+		await Promise.all(files.map(async (zipEntry) => {
+			console.log(zipEntry.name);
+
+			let languageID =languageSelect.options[languageSelect.selectedIndex].getAttribute('language-id')
+
+			let extension = getExtension(zipEntry.name);
+
+			// TODO do not upload if no valid files found
+			let validFile = languages[languageID][2].includes(extension);
+			if (validFile) {
+				let blob = await zipEntry.async('blob')
+				data.append("{{ FILES_NAME }}", blob, zipEntry.name)
+				console.log('valid file:', zipEntry.name);
+
+				// Add to count
+			} else {
+				console.log('invalid file:', zipEntry.name);
+			}
+		}))
+
+		console.log(data)
+
+		
+		let result = await fetch("{% url "jobs:new" %}", {
+			method: 'POST',
+			body: data,
+		})
+
+		let json = await result.json();
+
+		document.getElementById('no-jobs-message').style.display = 'none'
+		addJob(json)
+
+		unfinishedJobs.push(json['job_id'])
+
+		// Reset previous job settings:
+		dropzone.removeAttribute('selected');
+		form.reset();
+	};
+</script>
+-->
+
+{% endblock %}

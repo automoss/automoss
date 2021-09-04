@@ -45,7 +45,7 @@ def index(request):
         **SUBMISSION_CONTEXT,
         **MOSS_CONTEXT
     }
-    return render(request, "jobs/index.html", context)
+    return render(request, "jobs/jobs.html", context)
 
 
 @login_required
