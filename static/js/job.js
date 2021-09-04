@@ -1,11 +1,8 @@
-class Job extends HTMLTableRowElement
-{
-	constructor(obj) 
-	{
+class Job extends HTMLTableRowElement{
+	constructor(obj) {
 		super()
-
 		Object.assign(this, obj)
-		
+
 		this.setAttribute('job_id', obj.job_id)
 		this.setAttribute('status', obj.status)
 
@@ -30,17 +27,17 @@ class Job extends HTMLTableRowElement
 		this.setStatus(this.status)
 	}
 
-	setStatus(newStatus)
-	{
+	setStatus(newStatus){
 		this.tableStatus.innerHTML = statuses[newStatus]
 		if(newStatus == completedStatus){
-			this.tableComment.innerHTML = `<a href="/jobs/${this.job_id}/report/" style="text-decoration: none;">${this.comment}</a>`
+			this.tableComment.innerHTML = `<a href="/jobs/${this.job_id}/result/" style="text-decoration: none;">${this.comment}</a>`
 		}
 
 		this.tableStatus.className = '';
 		
 		let classes = ['badge'];
 		switch(newStatus){
+			
 			case completedStatus:
 				classes.push('bg-success')
 				break;
@@ -59,5 +56,4 @@ class Job extends HTMLTableRowElement
 		this.tableStatus.classList.add(...classes)
 	}
 }
-
 customElements.define('job-row', Job, { extends: 'tr' });
