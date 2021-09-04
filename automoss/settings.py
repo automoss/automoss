@@ -238,8 +238,8 @@ with capture_in(JOB_CONTEXT):
 
     # Max duration to retry = EXPONENTIAL_BACKOFF_BASE**MAX_RETRIES
     # Total duration        = \sum_{n=0}^{MAX_RETRIES}{EXPONENTIAL_BACKOFF_BASE}^{n}
-    MAX_RETRIES = 50
-    EXPONENTIAL_BACKOFF_BASE = 1.25  # 1<=x<=2
+    MAX_RETRIES = 30
+    EXPONENTIAL_BACKOFF_BASE = 2 #1.5  # 1<=x<=2
 
 # UI Defaults
 UI_CONTEXT = {}
