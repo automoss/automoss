@@ -1,36 +1,81 @@
 {% extends "users/auth/base.html" %}
 
+{% load static %}
+
+{% block "scripts" %}
+<script src="{% static "js/registration.js" %}" defer></script>
+{% endblock %}
+
 {% block "login-content" %}
 
-<form class="d-flex flex-grow-1 flex-column bg-white shadow-lg p-4 m-4 " method="post" action="{% url 'users:register' %}" style="min-width: 400px; max-width: 50%;">
+		<form class="p-4 m-4 flex-grow-1 shadow-lg needs-validation" method="post" action="{% url 'users:register' %}" style="background-color: white; min-width: 350px; max-width: 50%;" novalidate>
+            {% csrf_token %}
+            <!-- Title -->
+            <h3 class="mb-4">Register</h3>
+            <!-- Course Code -->
+            <div class="mb-3">
+              <label for="id_course_code" class="form-label">Course Code</label>
+              <input type="text" name="course_code" class="form-control" id="id_course_code" maxlength="150" required>
+              <div class="valid-feedback">
+                Looks good!
+              </div>
+              <div class="invalid-feedback">
+                That course code is either taken or invalid! Choose another.
+              </div>
+            </div>
+            <!-- Email Address -->
+            <div class="mb-3">
+                <label for="id_email" class="form-label">Primary Email Address</label>
+                <input type="email" name="primary_email_address" class="form-control" id="id_email" required>
+                <div class="valid-feedback">
+                  Looks good!
+                </div>
+                <div class="invalid-feedback">
+                  That is not a valid email address!
+                </div>
+              </div>
+            <!-- MOSS ID -->
+            <div class="mb-3">
+                <label for="id_moss_id" class="form-label">MOSS ID</label>
+                <input type="text" name="moss_id" class="form-control" id="id_moss_id" maxlength="32" required>
+                <div class="valid-feedback">
+                  Looks good!
+                </div>
+                <div class="invalid-feedback">
+                  That is not a valid MOSS ID!
+                </div>
+              </div>
+            <!-- Password -->
+            <div class="mb-3">
+                <label for="id_password_1" class="form-label">Password</label>
+                <input type="password" name="password_1" class="form-control" id="id_password_1" required>
+                <div class="valid-feedback">
+                  Looks good!
+                </div>
+                <div class="invalid-feedback">
+                  Insecure password!
+                </div>
+              </div>
+            <!-- Password Confirmation -->
+            <div class="mb-3">
+                <label for="id_password_2" class="form-label">Confirm Password</label>
+                <input type="password" name="password_2" class="form-control" id="id_password_2" required>
+                <div class="valid-feedback">
+                  Looks good!
+                </div>
+                <div class="invalid-feedback">
+                  The passwords don't match!
+                </div>
+              </div>
+            <!-- Submit -->
+            <div class="mb-3">
+                <input type="submit" class="btn btn-primary" value="Register"/>
+            </div>
 
-	{% csrf_token %}
-	
-	<h3 class="mb-4">Register</h3>
-    
-	<div class="mb-3">
-		<label for="id_username" class="form-label">Username: </label>
-		<input type="text" name="username" class="form-control" id="id_username">
-	</div>
-    
-    <div class="mb-3">
-		<label for="id_email" class="form-label">Email: </label>
-		<input type="text" name="email" class="form-control" id="id_email">
-	</div>
-	
-	<div class="mb-3">
-		<label for="id_password" class="form-label">Password: </label>
-		<input type="password" name="password" class="form-control" id="id_password">
+        </form>
+
 	</div>
 
-	<div class="mb-3">
-		<input type="submit" class="btn btn-primary" value="Register"/>
-	</div>
-
-	<div class="mb-3">
-		Already have an account? <a href="" style="text-decoration: none">Log in.</a>
-	</div>
-	
-</form>
+</div>
 
 {% endblock %}
