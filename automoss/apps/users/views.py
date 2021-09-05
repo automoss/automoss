@@ -6,6 +6,10 @@ from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
 from django.http import Http404
 from django.conf import settings
+from .forms import (
+    UserCreationForm,
+    LoginForm,
+)
 
 # TODO Implement handling of '?next=/url/' for redirects due to @login_required
 # def login(request):
@@ -67,6 +71,27 @@ class Logout(View):
         """ Get logout view """
         django_logout(request)
         return render(request, self.template)
+
+class Register(View):
+    """ User registration view """
+    template = "users/register.html"
+    context = {}
+
+    def get(self, request):
+        """ Get registration form """
+        form = UserCreationForm() 
+        if request.user.is_authenticated:
+            return redirect(settings.LOGIN_REDIRECT_URL)
+        return render(request, self.template, {**self.context, 'form': form})
+    
+    def post(self, request):
+        """ Post new user information """
+        # user = UserCreationForm(request.POST)
+        # if user.is_valid():
+        #     user.save()
+        # TODO Complete Post
+        return render(request, self.template, self.context)
+            
     
 # @login_required
 # def logout(request):
