@@ -8,7 +8,9 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link href="{% static "lib/bootstrap/css/lumen.css" %}" rel="stylesheet" crossorigin="anonymous">
+		{% block "links" %}{% endblock %}
 		<script src="{% static "lib/bootstrap/js/bootstrap.bundle.min.js" %}" crossorigin="anonymous"></script>
+		{% block "scripts" %}{% endblock %}
 	</head>
 	<body>{% block "base-content" %}{% endblock %}</body>
 </html>
