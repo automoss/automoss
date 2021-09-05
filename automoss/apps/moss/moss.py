@@ -3,6 +3,9 @@ import socket
 import os
 import re
 import requests
+import time
+
+import threading
 
 import asyncio
 import aiohttp
@@ -28,23 +31,47 @@ class MossException(Exception):
         super().__init__(*args, **kwargs)
 
 
-class UnsupportedLanguage(MossException):
+class FatalMossException(MossException):
+    """ Cannot recover. Do not resubmit if this occurs """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class UnsupportedLanguage(FatalMossException):
     def __init__(self, language, **kwargs):
         super().__init__(f'Unsupported language: {language}', **kwargs)
 
 
-class NoFiles(MossException):
+class NoFiles(FatalMossException):
     message = 'No files uploaded to compare.'
 
     def __init__(self, *args, **kwargs):
         super().__init__(self.message, *args, **kwargs)
 
 
-class EmptyResponse(MossException):
+class EmptyResponse(FatalMossException):
+    """Moss returned nothing after requesting for URL.
+
+    This means a timeout has occurred and MOSS is unable to run this
+    job successfully without altering the options.
+    """
     message = 'Empty response.'
 
     def __init__(self, *args, **kwargs):
         super().__init__(self.message, *args, **kwargs)
+
+
+class RecoverableMossException(MossException):
+    """ Able to recover. Resubmit if this occurs """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class MossConnectionError(RecoverableMossException):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 ERROR_PREFIX = 'Error: '
@@ -62,18 +89,16 @@ class MossAPIWrapper:
 
     def connect(self):
         # TODO add retries
-        try:
-            self.socket.connect((MOSS_URL, 7690))
-            self._send_string(f'moss {self.user_id}')  # authenticate user
-        except ConnectionRefusedError as e:
-            raise MossException(f'Connection Refused: "{e}"')
+        self.socket.connect((MOSS_URL, 7690))
+        self._send_string(f'moss {self.user_id}')  # authenticate user
 
     def close(self):
         try:
             self._send_string('end')
             self.socket.close()
+            return True
         except Exception as e:
-            raise MossException(f'Unable to close moss session: "{e}"')
+            return False  # Do not throw error if unable to close
 
     def read_raw(self, buffer):
         return self.socket.recv(buffer)
@@ -133,29 +158,30 @@ class MossAPIWrapper:
         data = self.read()
         if is_valid_moss_url(data):
             return data
-        else:
 
-            # Check for errors
-            if data.startswith(ERROR_PREFIX):
-                error_message = data[len(ERROR_PREFIX):]
+        # Not a valid URL, check for errors
+        if data.startswith(ERROR_PREFIX):
+            error_message = data[len(ERROR_PREFIX):]
 
-                error = self._ERRORS.get(error_message)
-                if error:  # Found corresponding error
-                    raise error
+            error = self._ERRORS.get(error_message)
+            if error:  # Found corresponding error
+                raise error
 
-                # TODO find errors like this
-                raise MossException(f'Unknown error: {error_message}')
+            # TODO find errors like this
+            raise FatalMossException(f'Unknown error: {error_message}')
 
-            elif data:
-                raise MossException(f'Data extracted: "{data}"')
+        elif data:
+            raise FatalMossException(f'Data extracted: "{data}"')
 
-            raise EmptyResponse
+        raise EmptyResponse
 
     def _send_raw(self, bytes):
         self.socket.send(bytes)
 
     def _send_string(self, text):
-        return self._send_raw(f'{text}\n'.encode())
+        to_send = f'{text}\n'.encode()
+        print(f'sending: {to_send}')
+        return self._send_raw(to_send)
 
 
 class MossMatch:
@@ -253,7 +279,13 @@ class MOSS:
         try:
             return Result(url)
         except Exception as e:
-            raise MossException(f'Unable to generate report: {e}')
+            if is_valid_moss_url(url):
+                # Some timeout error?
+                # TODO add built-in retry functionality to parsing report
+                raise RecoverableMossException(
+                    f'Unable to generate report: {e}')
+            else:
+                raise FatalMossException(f'Unable to generate report: {e}')
 
     @classmethod
     def generate_url(cls, user_id, language=SUPPORTED_MOSS_LANGUAGES[0],
@@ -292,9 +324,16 @@ class MOSS:
 
             # Double check on server-side that language is accepted
             if data == 'no':
+                # TODO detect incorrect options?
                 raise UnsupportedLanguage(language)  # Unsupported language
             elif data != 'yes':
                 pass
+                # TODO do checking
+            else:
+                pass
+                # what does this mean? TODO
+
+            print('data =', data)
 
             # Upload base files
             for base_file in base_files:
@@ -307,8 +346,13 @@ class MOSS:
             # Read and return data
             url = moss.process(comment)
 
-        except Exception as e:
-            raise MossException(f'Exception: "{e}"')
+        except ConnectionError as e:
+            # Includes:
+            #  - BrokenPipeError
+            #  - ConnectionAbortedError
+            #  - ConnectionRefusedError
+            #  - ConnectionResetError.
+            raise MossConnectionError(e)
 
         finally:  # Close session as soon as possible
             moss.close()

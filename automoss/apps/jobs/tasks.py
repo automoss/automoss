@@ -6,7 +6,8 @@ from django.core.files.uploadedfile import UploadedFile
 from ..moss.moss import (
     MOSS,
     Result,
-    MossException,
+    RecoverableMossException,
+    FatalMossException,
     is_valid_moss_url
 )
 from ...settings import (
@@ -92,14 +93,21 @@ def process_job(job_id):
                 result.matches), 'matches detected.')
 
             break  # Success, do not retry
-
-        except MossException as e:
-            # An error on Moss' side occurred... retry
+        
+        except RecoverableMossException as e:
+            # A recoverable error occurred... retry
             time_to_sleep = EXPONENTIAL_BACKOFF_BASE ** attempt
-            # TODO - log
-            print(
-                f'(Attempt {attempt}) Error: {e}. Retrying in {time_to_sleep} seconds')
+            print(f'(Attempt {attempt}) Error: {e}. Retrying in {time_to_sleep} seconds')
             time.sleep(time_to_sleep)
+            # TODO ensure sleeping is correct
+
+        except FatalMossException as e:
+            break # Will be handled below (result is None)
+
+        except Exception:
+            # TODO something catastrophic happened
+            # Do some logging here
+            break
 
     # Represents when no more processing of the job will occur
     job.completion_date = now()
@@ -123,7 +131,8 @@ def process_job(job_id):
         log_info.pop('_state', None)
         log_info.update({
             'num_files': num_files,
-            'avg_file_size': avg_file_size
+            'avg_file_size': avg_file_size,
+            'moss_id': job.user.moss_id
         })
 
         with open(LOG_FILE, 'a+') as fp:
