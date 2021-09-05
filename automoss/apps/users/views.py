@@ -33,7 +33,7 @@ from django.conf import settings
 
 class Login(View):
     """ Login view """
-    template = "users/login.html"
+    template = "users/auth/login.html"
 
     def get(self, request):
         """ Get login view """
@@ -61,7 +61,7 @@ class Login(View):
 @method_decorator(login_required, name='dispatch')
 class Logout(View):
     """ Logout View """
-    template = "users/logged_out.html"
+    template = "users/auth/logged_out.html"
 
     def get(self, request):
         """ Get logout view """

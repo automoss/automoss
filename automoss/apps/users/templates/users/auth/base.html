@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block "base-content" %}
+
+<style> body { overflow: hidden; /* Hide scrollbars */ } </style>
+
+<div class="row">
+	<div class="col d-none d-lg-block" style="max-width: 40%; background-color: #3554a9;">
+		<div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 100vh;">	
+			<img class="img-fluid" src={% static "img/login-background.svg" %}>		
+			<h1 style="color: white">
+				Auto<b>MOSS</b>
+			</h1>
+			<p class="text-center fs-5 m-5 mt-0" style="color: white; opacity: 50%;">
+				Automate the process of detecting plagiarism between code for a collection of computer science assignments (using <a href="https://theory.stanford.edu/~aiken/moss/" target="_blank">MOSS by Stanford</a>).
+			</p>
+		</div>
+	</div>
+	<div class="col d-flex align-items-center justify-content-center" style="min-height: 100vh; background-image: url({% static "img/shapes.png" %})">
+		{% block "login-content" %}{% endblock %}
+	</div>
+</div>
+
+{% endblock %}
