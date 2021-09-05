@@ -1,34 +1,38 @@
 drop-zone > #zone
-{
+{    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
     border-color: #CCC;
     border-radius: 20px;
     border-width: 2px;
     border-style: dashed;
     height: 150px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 100%;
 }
 drop-zone > #zone > #zone-icon
 {
     position: absolute;
-    top: 25px;
     height: 100px;
     width: 100px;
+    top: 10px;
+    content: url("/static/img/upload.png");
 }
 drop-zone > #zone > #zone-text
 {
     position: absolute;
-    top: 125px;
     color: #AAA;
+    bottom: 20px;
 }
 drop-zone > #zone > #zone-info
 {
     position: absolute;
-    top: 25px;
-    right: 25px;
     height: 25px;
     width: 25px;
+    top: 10px;
+    right: 10px;
+    content: url("/static/img/info.png");
 }
 drop-zone > #zone > #zone-input
 {
@@ -36,11 +40,4 @@ drop-zone > #zone > #zone-input
     opacity: 0;
     width: 100%;
     height: 100%;
-}
-
-drop-zone > #file-list
-{
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }

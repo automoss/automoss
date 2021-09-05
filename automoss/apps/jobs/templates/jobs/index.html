@@ -53,10 +53,12 @@
 				<div class="modal-body" id="create-job-body">
 
 					<!-- Drop Zone -->
+					<link href="{% static "css/dropZoneFile.css" %}" rel="stylesheet">
 					<link href="{% static "css/dropZone.css" %}" rel="stylesheet">
 					<div class="mb-3">
-						<drop-zone id="drop-zone" uploadImgURL="{% static "img/upload.png" %}" removeImgURL="{% static "img/remove.png" %}" infoImgURL="{% static "img/info.png" %}"></drop-zone>
+						<drop-zone id="drop-zone"></drop-zone>
 					</div>
+					<script src="{% static "js/dropZoneFile.js" %}"></script>
 					<script src="{% static "js/dropZone.js" %}"></script>
 
 					<!-- Name -->
@@ -208,7 +210,7 @@
 		let data = new FormData(form);
 
 		// Read zip file
-		let zipFile = dropzone.files[0];
+		let zipFile = dropzone.files[0].file;
 		if (!zipFile) {
 			// TODO - display error, no files
 			return;
@@ -271,7 +273,7 @@
 
 		if (dropzone.files.length > 0)
 		{
-			zipFile = dropzone.files[0]; // TODO just first for now...
+			zipFile = dropzone.files[0].file; // TODO just first for now...
 
 			// name
 			jobName.value = jobName.value || zipFile.name.slice(0, zipFile.name.length - 4);

@@ -16,11 +16,9 @@ class DropZone extends HTMLElement {
 		this.fileList.classList.add("flex-column");
 		this.append(this.fileList);
 
-
 		// Zone > Icon
 		this.zoneIcon = document.createElement("img");
 		this.zoneIcon.id = "zone-icon";
-		this.zoneIcon.src = this.getAttribute('uploadImgURL');
 		this.zone.append(this.zoneIcon);
 
 		// Zone > Text
@@ -43,7 +41,6 @@ class DropZone extends HTMLElement {
 		// Zone > Info
 		this.zoneInfo = document.createElement("img");
 		this.zoneInfo.id = "zone-info";
-		this.zoneInfo.src = this.getAttribute('infoImgURL');
 		this.zone.append(this.zoneInfo);
 	}
 
@@ -53,59 +50,10 @@ class DropZone extends HTMLElement {
 		if (!this.isValidFile(file)) {
 			return;
 		}
-		this.files.push(file);
 
-		// File
-		let listedFile = document.createElement("div");
-		listedFile.classList.add("position-relative");
-		listedFile.classList.add("d-flex");
-		listedFile.classList.add("w-100");
-		listedFile.classList.add("mt-1");
-		listedFile.style.height = "40px";
-		listedFile.style.borderColor = "#CCC";
-		listedFile.style.borderRadius = "10px";
-		listedFile.style.borderWidth = "2px";
-		this.fileList.append(listedFile);
-
-		// File > Progress Bar
-		let progressBar = document.createElement("div");
-		progressBar.classList.add("progress");
-		progressBar.classList.add("position-absolute");
-		progressBar.classList.add("w-100");
-		progressBar.style.height = "40px";
-		progressBar.value = 0;
-		listedFile.append(progressBar);
-
-		let bar = document.createElement("div");
-		bar.classList.add("progress-bar");
-		bar.classList.add("progress-bar-striped");
-		bar.classList.add("progress-bar-animated");
-		bar.classList.add("bg-success");
-		bar.role = "progressbar";
-		bar.style.width = "50%";
-		progressBar.append(bar);
-
-		// File > Info
-		let fileInfoDiv = document.createElement("div");
-		fileInfoDiv.classList.add("d-flex");
-		fileInfoDiv.classList.add("w-100");
-		fileInfoDiv.classList.add("p-2");
-		fileInfoDiv.style.zIndex = 1;
-		listedFile.append(fileInfoDiv);
-
-		// File > Info > Name
-		let fileName = document.createElement("label");
-		fileName.classList.add("flex-fill");
-		fileName.textContent = file.name + ` (${this.getFileSize(file.size)})`;
-		fileInfoDiv.append(fileName);
-
-		// File > Info > Remove Button
-		let fileRemoveButton = document.createElement("input");
-		fileRemoveButton.type = "image";
-		fileRemoveButton.src = this.getAttribute('removeImgURL');
-		fileRemoveButton.style.height = "25px";
-		fileRemoveButton.addEventListener("click", () => this.removeFile(file));
-		fileInfoDiv.append(fileRemoveButton);
+		let dropZoneFile = new DropZoneFile(file, this)
+		this.files.push(dropZoneFile);
+		this.fileList.append(dropZoneFile);
 
 		this.onFileAdded();
 	}
@@ -115,7 +63,7 @@ class DropZone extends HTMLElement {
 		if (index > -1) {
 			this.files.splice(index, 1);
 		}
-		this.fileList.childNodes[index].remove();
+		file.remove();
 		this.onFileRemoved();
 	}
 	
@@ -127,9 +75,9 @@ class DropZone extends HTMLElement {
 
 	isValidFile(file) {
 		if (this.getFileExtension(file.name) != "zip") {
-			return false; // Must upload a zip file.
+			return false; // must upload a zip file
 		} else if (this.files.find(x => x.name == file.name)) {
-			return false; // Can't upload the same file more than once.
+			return false; // cannot upload the same file more than once
 		} else {
 			return true;
 		}
