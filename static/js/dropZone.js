@@ -64,6 +64,7 @@ class DropZone extends HTMLElement {
 			this.files.splice(index, 1);
 		}
 		file.remove();
+		
 		this.onFileRemoved();
 	}
 	
@@ -76,7 +77,7 @@ class DropZone extends HTMLElement {
 	isValidFile(file) {
 		if (this.getFileExtension(file.name) != "zip") {
 			return false; // must upload a zip file
-		} else if (this.files.find(x => x.name == file.name)) {
+		} else if (this.files.find(x => x.file.name == file.name)) {
 			return false; // cannot upload the same file more than once
 		} else {
 			return true;
