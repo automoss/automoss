@@ -1,6 +1,18 @@
 {% extends "main.html" %}
 {% load static %}
 
+{% block "links" %}
+<link href="{% static "css/dropZoneFile.css" %}" rel="stylesheet">
+<link href="{% static "css/dropZone.css" %}" rel="stylesheet">
+{% endblock %}
+
+{% block "scripts" %}
+<script src="{% static "js/dropZoneFile.js" %}" defer></script>
+<script src="{% static "js/dropZone.js" %}" defer></script>
+<script src="{% static "lib/jszip.min.js" %}" defer></script>
+<script src="{% static "js/job.js" %}" defer></script>
+{% endblock %}
+
 {% block "main-content" %}
 
 <h2 class="mb-3">Jobs</h2>
@@ -53,13 +65,9 @@
 				<div class="modal-body" id="create-job-body">
 
 					<!-- Drop Zone -->
-					<link href="{% static "css/dropZoneFile.css" %}" rel="stylesheet">
-					<link href="{% static "css/dropZone.css" %}" rel="stylesheet">
 					<div class="mb-3">
 						<drop-zone id="drop-zone"></drop-zone>
 					</div>
-					<script src="{% static "js/dropZoneFile.js" %}"></script>
-					<script src="{% static "js/dropZone.js" %}"></script>
 
 					<!-- Name -->
 					<div class="mb-3">
@@ -99,10 +107,6 @@
 		</div>
 	</div>
 </div>
-
-<script src="{% static "lib/jszip.min.js" %}"></script>
-
-<script src="{% static "js/job.js" %}"></script>
 
 <script>
 	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
