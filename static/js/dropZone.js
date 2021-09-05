@@ -7,7 +7,6 @@ class DropZone extends HTMLElement {
 		// Zone
 		this.zone = document.createElement("div");
 		this.zone.id = "zone";
-		this.zone.classList.add("mb-2");
 		this.append(this.zone);
 
 		// File List
@@ -35,18 +34,17 @@ class DropZone extends HTMLElement {
 		this.zoneInput.id = "zone-input";
 		this.zoneInput.type = "file";
 		this.zoneInput.multiple = false;
-		this.zoneInput.addEventListener('dragenter', () => this.setZoneHighlight(true));
-		this.zoneInput.addEventListener('dragleave', () => this.setZoneHighlight(false));
-		this.zoneInput.addEventListener('drop', () => this.setZoneHighlight(false));
+		this.zoneInput.addEventListener('dragenter', () => this.setHighlighted(true));
+		this.zoneInput.addEventListener('dragleave', () => this.setHighlighted(false));
+		this.zoneInput.addEventListener('drop', () => this.setHighlighted(false));
 		this.zoneInput.addEventListener("change", () => this.addFile(this.zoneInput.files[0]));
 		this.zone.append(this.zoneInput);
 
 		// Zone > Info
-		// this.zoneInfo = document.createElement("input");
-		// this.zoneInfo.id = "zone-info";
-		// this.zoneInfo.type = "image";
-		// this.zoneInfo.src = this.getAttribute('infoImgURL');
-		// this.zone.append(this.zoneInfo);
+		this.zoneInfo = document.createElement("img");
+		this.zoneInfo.id = "zone-info";
+		this.zoneInfo.src = this.getAttribute('infoImgURL');
+		this.zone.append(this.zoneInfo);
 	}
 
 	addFile(file) {
@@ -62,7 +60,7 @@ class DropZone extends HTMLElement {
 		listedFile.classList.add("position-relative");
 		listedFile.classList.add("d-flex");
 		listedFile.classList.add("w-100");
-		listedFile.classList.add("mb-1");
+		listedFile.classList.add("mt-1");
 		listedFile.style.height = "40px";
 		listedFile.style.borderColor = "#CCC";
 		listedFile.style.borderRadius = "10px";
@@ -106,17 +104,25 @@ class DropZone extends HTMLElement {
 		fileRemoveButton.type = "image";
 		fileRemoveButton.src = this.getAttribute('removeImgURL');
 		fileRemoveButton.style.height = "25px";
-		fileRemoveButton.addEventListener("click", () => {
-			const index = this.files.indexOf(file);
-			if (index > -1) {
-				this.files.splice(index, 1);
-			}
-			this.fileList.removeChild(listedFile);
-			this.onFileRemoved();
-		});
+		fileRemoveButton.addEventListener("click", () => this.removeFile(file));
 		fileInfoDiv.append(fileRemoveButton);
 
 		this.onFileAdded();
+	}
+
+	removeFile(file) {
+		const index = this.files.indexOf(file);
+		if (index > -1) {
+			this.files.splice(index, 1);
+		}
+		this.fileList.childNodes[index].remove();
+		this.onFileRemoved();
+	}
+	
+	reset() {
+		while (this.files.length > 0) {
+			this.removeFile(this.files[0]);
+		}
 	}
 
 	isValidFile(file) {
@@ -155,7 +161,7 @@ class DropZone extends HTMLElement {
 		return `${Math.round(size * 100) / 100} ${unit}`;
 	}
 
-	setZoneHighlight(isHighlighted) {
+	setHighlighted(isHighlighted) {
 		if (isHighlighted) {
 			this.zone.style.backgroundColor = "#EEE";
 			this.zone.classList.add("progress-bar-striped");
