@@ -8,63 +8,83 @@
 
 {% block "login-content" %}
 
-		<form class="p-4 m-4 flex-grow-1 shadow-lg needs-validation" method="post" action="{% url 'users:register' %}" style="background-color: white; min-width: 350px; max-width: 50%;" novalidate>
+		<form id="register" class="p-4 m-4 flex-grow-1 shadow-lg needs-validation" method="post" action="{% url 'users:register' %}" style="background-color: white; min-width: 350px; max-width: 50%;" novalidate>
             {% csrf_token %}
             <!-- Title -->
             <h3 class="mb-4">Register</h3>
             <!-- Course Code -->
             <div class="mb-3">
               <label for="id_course_code" class="form-label">Course Code</label>
-              <input type="text" name="course_code" class="form-control" id="id_course_code" maxlength="150" required>
+              <input type="text" name="course_code" class="form-control{% if form.errors.course_code %} is-invalid{% endif %}" id="id_course_code" maxlength="150" required>
               <div class="valid-feedback">
                 Looks good!
               </div>
               <div class="invalid-feedback">
-                That course code is either taken or invalid! Choose another.
+              {% if form.errors.course_code %}
+              {{ form.errors.course_code}}
+              {% else %}
+              That is not a valid course code.
+              {% endif %}
               </div>
             </div>
             <!-- Email Address -->
             <div class="mb-3">
                 <label for="id_email" class="form-label">Primary Email Address</label>
-                <input type="email" name="primary_email_address" class="form-control" id="id_email" required>
+                <input type="email" name="primary_email_address" class="form-control{% if form.errors.primary_email_address %} is-invalid{% endif %}" id="id_email" required>
                 <div class="valid-feedback">
                   Looks good!
                 </div>
                 <div class="invalid-feedback">
-                  That is not a valid email address!
+                {% if form.errors.primary_email_address %}
+                {{ form.errors.primary_email_address }}
+                {% else %}
+                That is not a valid email address.
+                {% endif %}
                 </div>
               </div>
             <!-- MOSS ID -->
             <div class="mb-3">
                 <label for="id_moss_id" class="form-label">MOSS ID</label>
-                <input type="text" name="moss_id" class="form-control" id="id_moss_id" maxlength="32" required>
+                <input type="text" name="moss_id" class="form-control{% if form.errors.moss_id %} is-invalid{% endif %}" id="id_moss_id" maxlength="32" required>
                 <div class="valid-feedback">
                   Looks good!
                 </div>
                 <div class="invalid-feedback">
-                  That is not a valid MOSS ID!
+                {% if form.errors.moss_id %}
+                {{ form.errors.moss_id }}
+                {% else %}
+                That is not a valid MOSS ID.
+                {% endif %}
                 </div>
               </div>
             <!-- Password -->
             <div class="mb-3">
-                <label for="id_password_1" class="form-label">Password</label>
-                <input type="password" name="password_1" class="form-control" id="id_password_1" required>
+                <label for="id_password1" class="form-label">Password</label>
+                <input type="password" name="password1" class="form-control{% if form.errors.password1 %} is-invalid{% endif %}" id="id_password1" required>
                 <div class="valid-feedback">
                   Looks good!
                 </div>
                 <div class="invalid-feedback">
-                  Insecure password!
+                {% if form.errors.password1 %}
+                {{ form.errors.password1 }}
+                {% else %}
+                That is an insecure password.
+                {% endif %}
                 </div>
               </div>
             <!-- Password Confirmation -->
             <div class="mb-3">
-                <label for="id_password_2" class="form-label">Confirm Password</label>
-                <input type="password" name="password_2" class="form-control" id="id_password_2" required>
+                <label for="id_password2" class="form-label">Confirm Password</label>
+                <input type="password" name="password2" class="form-control{% if form.errors.password2 %} is-invalid{% endif %}" id="id_password2" required>
                 <div class="valid-feedback">
                   Looks good!
                 </div>
                 <div class="invalid-feedback">
-                  The passwords don't match!
+                {% if form.errors.password2 %}
+                {{ form.errors.password2 }}
+                {% else %}
+                The passwords do not match.
+                {% endif %}
                 </div>
               </div>
             <!-- Submit -->
