@@ -31,11 +31,11 @@ class DropZone extends HTMLElement {
 		this.zoneInput = document.createElement("input");
 		this.zoneInput.id = "zone-input";
 		this.zoneInput.type = "file";
-		this.zoneInput.multiple = false;
+		this.zoneInput.multiple = true;
 		this.zoneInput.addEventListener('dragenter', () => this.setHighlighted(true));
 		this.zoneInput.addEventListener('dragleave', () => this.setHighlighted(false));
 		this.zoneInput.addEventListener('drop', () => this.setHighlighted(false));
-		this.zoneInput.addEventListener("change", () => this.addFile(this.zoneInput.files[0]));
+		this.zoneInput.addEventListener("change", () => this.addFiles(this.zoneInput.files[0]));
 		this.zone.append(this.zoneInput);
 
 		// Zone > Info
@@ -45,8 +45,6 @@ class DropZone extends HTMLElement {
 	}
 
 	addFile(file) {
-		this.zoneInput.value = '';
-
 		if (!this.isValidFile(file)) {
 			return;
 		}
@@ -75,7 +73,7 @@ class DropZone extends HTMLElement {
 	}
 
 	isValidFile(file) {
-		if (this.getFileExtension(file.name) != "zip") {
+		if (!this.getAttribute("filetypes").includes(this.getFileExtension(file.name))) {
 			return false; // must upload a zip file
 		} else if (this.files.find(x => x.file.name == file.name)) {
 			return false; // cannot upload the same file more than once
