@@ -1,18 +1,27 @@
 (function () {
     'use strict'
-    // Get all forms needing validation
-    let forms = document.querySelectorAll('.needs-validation')
+    // Get registration form
+    let form = document.getElementById('register')
+    let password1 = document.getElementById('id_password1')
+    let password2 = document.getElementById('id_password2')
   
-    // Loop over them and prevent submission
-    Array.prototype.slice.call(forms)
-      .forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-          if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
-          }
-          form.classList.add('was-validated')
-        }, false)
-      })
+    // Prevent submission if not valid
+    form.addEventListener('submit', function (event) {
+        let passwordMatch = password1.value === password2.value
+        if (!form.checkValidity() || !passwordMatch) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+      }, false)
+      
+
+    password2.addEventListener('input', function(event){
+      if(password1.value === password2.value){
+        console.log("valid")
+      }
+      
+    })
+
   })()
   
