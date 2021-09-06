@@ -54,7 +54,7 @@
 					<link href="{% static "css/dropZoneFile.css" %}" rel="stylesheet">
 					<link href="{% static "css/dropZone.css" %}" rel="stylesheet">
 					<div class="mb-3">
-						<drop-zone id="job-drop-zone"></drop-zone>
+						<drop-zone id="job-drop-zone" filetypes="['zip', 'tar', 'rar']"></drop-zone>
 					</div>
 					<script src="{% static "js/dropZoneFile.js" %}"></script>
 					<script src="{% static "js/dropZone.js" %}"></script>
@@ -100,7 +100,7 @@
 </div>
 
 
-<script src="{% static "lib/jszip.min.js" %}"></script>
+<script src="{% static "lib/uncompress/uncompress.js" %}"></script>
 <script src="{% static "js/job.js" %}"></script>
 
 <script>
@@ -115,7 +115,7 @@
 	const failedStatus = "{{ FAILED_STATUS }}";
 
 	
-	// ---- JOBS TABLE ----
+	// Jobs Table
 
 	let jobTable = document.getElementById('job-table')
 	function addJob(job) {
@@ -178,7 +178,7 @@
 	},{{ POLLING_TIME }});
 
 
-	// ---- CREATE JOB ----
+	// Create Job
 
 	let createJobModal = new bootstrap.Modal(document.getElementById('create-job-modal'));
 	let createJobForm = document.getElementById('create-job-form')
@@ -194,61 +194,81 @@
 		return name.split('.').pop();
 	}
 
+	let loadFormatsPromise = new Promise((resolve, reject) => {
+		loadArchiveFormats(["zip", "tar", "rar"], () => {
+			resolve();
+		});
+	});
+
+	async function extractAndReadAll(file, password, onRead) {
+		
+		// Wait until formats have been loaded
+		await loadFormatsPromise;
+
+		// Wait until archived has been opened
+		let openArchivePromise = new Promise((resolve, reject) => {
+			archiveOpenFile(file, password, (archive) => {
+				resolve(archive);
+			});
+		});
+		let archive = await openArchivePromise;
+
+		// Wait until all the files have been read
+		let readPromises = []
+		readPromises.push(Promise.all(archive.entries.map(async (entry) => {
+			return new Promise((resolve, reject)=>{
+				entry.readData(function(entryData){
+					onRead(entry, entryData);
+					resolve();
+				});
+			});
+		})));
+		await Promise.all(readPromises);
+	}
+
 	createJobForm.onsubmit = async (e) => {
 
 		e.preventDefault();
-
-		// Construct new form with existing form's data
-		let data = new FormData(createJobForm);
-
-		// Read zip file
-		let zipFile = jobDropZone.files[0].file;
-		if (!zipFile) {
-			// TODO - display error, no files
-			return;
-		}
-		let zip = await JSZip.loadAsync(zipFile);
-
-		console.log(zip);
-
-		let files = [];
-		zip.forEach(function (relativePath, file) {
-			files.push(file)
-		});
-
-		await Promise.all(files.map(async (zipEntry) => {
-
-			let languageID =jobLanguage.options[jobLanguage.selectedIndex].getAttribute('language-id')
-
-			let extension = getExtension(zipEntry.name);
-
-			// TODO do not upload if no valid files found
-			let validFile = languages[languageID][2].includes(extension);
-			if (validFile) {
-				let blob = await zipEntry.async('blob')
-				data.append("{{ FILES_NAME }}", blob, zipEntry.name)
-				console.log('valid file:', zipEntry.name);
-
-			} else {
-				console.log('invalid file:', zipEntry.name);
-			}
-		}))
-
-		console.log(data)
-
 		
+		// Create a new form (and capture name, language, max matches until ignored and max matches displayed)
+		let jobFormData = new FormData(createJobForm);
+
+		// Capture file data separately and append to created form
+		for (let dropZoneFile of jobDropZone.files) {
+
+			let file = dropZoneFile.file;
+			let password = "";
+
+			await extractAndReadAll(file, password, 
+				(entry, entryData) => {
+
+					let languageID = jobLanguage.options[jobLanguage.selectedIndex].getAttribute('language-id');
+					let isCorrectLanguage = languages[languageID][2].includes(getExtension(entry.name));
+					let hasNoPassword = password == "";
+
+					if (isCorrectLanguage && hasNoPassword){
+						jobFormData.append("{{ FILES_NAME }}", new Blob([entryData]), entryData.name);
+						console.log("Valid: ", entry.name);
+					}else{
+						console.log('Invalid:', entry.name);
+					}
+				}
+			);
+		}
+
+		// Submit a new job with the created form
 		let result = await fetch("{% url "jobs:new" %}", {
 			method: 'POST',
-			body: data,
-		})
+			body: jobFormData,
+		});
 
+		// Receive the result as a json object and add it to the jobs table
 		let json = await result.json();
+		addJob(json);
+		unfinishedJobs.push(json['job_id']);
 
-		addJob(json)
-
+		// Hide and reset the form data and dropzone
 		createJobModal.hide();
-		unfinishedJobs.push(json['job_id'])
-
 		createJobForm.reset();
 		jobDropZone.reset();
 	};
@@ -257,18 +277,17 @@
 		if (jobDropZone.files.length == 1) {
 			zipFile = jobDropZone.files[0].file;
 
-			// Name
+			// Update form name
 			jobName.value = jobName.value || zipFile.name.slice(0, zipFile.name.length - 4);
 
-			// Language
-			JSZip.loadAsync(zipFile).then((zip)=> {
+			// Update form programming language
+			archiveOpenFile(zipFile, "", (archive) => {
 				let d = {};
 				for (let key in languages) {
 					d[key] = 0;
 				}
-				zip.forEach(function (relativePath, file) {
-					let extension = getExtension(file.name);
-
+				archive.entries.forEach((entry) => {
+					let extension = getExtension(entry.name);
 					for (let key in languages) {
 						console.log()
 						if(languages[key][2].includes(extension)){
