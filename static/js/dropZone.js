@@ -35,13 +35,20 @@ class DropZone extends HTMLElement {
 		this.zoneInput.addEventListener('dragenter', () => this.setHighlighted(true));
 		this.zoneInput.addEventListener('dragleave', () => this.setHighlighted(false));
 		this.zoneInput.addEventListener('drop', () => this.setHighlighted(false));
-		this.zoneInput.addEventListener("change", () => this.addFiles(this.zoneInput.files[0]));
+		this.zoneInput.addEventListener("change", () => this.addFiles(this.zoneInput.files));
 		this.zone.append(this.zoneInput);
 
 		// Zone > Info
 		this.zoneInfo = document.createElement("img");
 		this.zoneInfo.id = "zone-info";
 		this.zone.append(this.zoneInfo);
+	}
+
+	addFiles(files) {
+		for (let file of files) {
+			this.addFile(file);
+		}
+		this.zoneInput.value = '';
 	}
 
 	addFile(file) {
