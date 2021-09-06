@@ -74,23 +74,24 @@ class Logout(View):
 
 class Register(View):
     """ User registration view """
-    template = "users/register.html"
+    template = "users/auth/register.html"
     context = {}
 
     def get(self, request):
         """ Get registration form """
-        form = UserCreationForm() 
         if request.user.is_authenticated:
             return redirect(settings.LOGIN_REDIRECT_URL)
+        form = UserCreationForm() 
         return render(request, self.template, {**self.context, 'form': form})
     
     def post(self, request):
         """ Post new user information """
-        # user = UserCreationForm(request.POST)
-        # if user.is_valid():
-        #     user.save()
-        # TODO Complete Post
-        return render(request, self.template, self.context)
+        user_form = UserCreationForm(request.POST)
+        if user_form.is_valid():
+            user = user_form.save()
+            django_login(request, user)
+            return redirect(settings.LOGIN_REDIRECT_URL)
+        return render(request, self.template, {**self.context, 'form': user_form})
             
     
 # @login_required
