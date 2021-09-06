@@ -37,6 +37,7 @@ class TestUsers(TestCase):
         self.assertEqual(login_response.status_code, 302)
         self.assertTrue(isinstance(login_response, HttpResponseRedirect))
         self.assertEqual(login_response.get("Location"), reverse("jobs:index"))
+        self.assertIn('_auth_user_id', test_client.session)
 
     def test_login_fail(self):
         """ Test failed login attempt """
@@ -45,16 +46,19 @@ class TestUsers(TestCase):
         login_response = test_client.post(reverse("users:login"), {"username" : "1", "password": "1"})
         self.assertEqual(login_response.status_code, 200)
         self.assertTrue(isinstance(login_response, HttpResponse) and not isinstance(login_response, HttpResponseRedirect))
+        self.assertNotIn('_auth_user_id', test_client.session)
 
     def test_logout(self):
         """ Test logout """
         test_client = Client()
         # Login
         test_client.post(reverse("users:login"), self.login_credentials)
+        self.assertIn('_auth_user_id', test_client.session)
         # Logout
         logout_response = test_client.get(reverse("users:logout"))
         self.assertEqual(logout_response.status_code, 200)
         self.assertTrue(isinstance(logout_response, HttpResponse) and not isinstance(logout_response, HttpResponseRedirect))
+        self.assertNotIn('_auth_user_id', test_client.session)
 
     def test_login_page_unauth(self):
         """ Test get login page when unauthenticated """
@@ -74,3 +78,72 @@ class TestUsers(TestCase):
         self.assertEqual(login_response.status_code, 302)
         self.assertTrue(isinstance(login_response, HttpResponseRedirect))
         self.assertEqual(login_response.get("Location"), reverse("jobs:index"))
+
+    def test_register(self):
+        cases = [
+            ({
+            'course_code': 'CSC3003S',
+            'primary_email_address': 'testing@test.com',
+            'moss_id': '2',
+            'password1': 'Testing123!',
+            'password2': 'Testing123!'
+            }, True), # Normal Details
+            ({
+            'course_code': 'test_user',
+            'primary_email_address': 'testing@test.com',
+            'moss_id': '2',
+            'password1': 'Testing123!',
+            'password2': 'Testing123!'
+            }, False), # Course Code already exists
+            ({
+            'course_code': 'CSC3002F',
+            'primary_email_address': 'testing@test',
+            'moss_id': '2',
+            'password1': 'Testing123!',
+            'password2': 'Testing123!'
+            }, False), # Invalid Email
+            ({
+            'course_code': 'CSC3002F',
+            'primary_email_address': 'testing@test.com',
+            'moss_id': '0',
+            'password1': 'Testing123!',
+            'password2': 'Testing123!'
+            }, False), # Invalid MOSS ID
+            ({
+            'course_code': 'CSC3002F',
+            'primary_email_address': 'testing@test.com',
+            'moss_id': '1',
+            'password1': 'Testing123!',
+            'password2': 'Testing123!'
+            }, False), # MOSS ID already exists
+            ({
+            'course_code': 'CSC3002F',
+            'primary_email_address': 'testing@test.com',
+            'moss_id': '3',
+            'password1': 'Testing123',
+            'password2': 'Testing123!'
+            }, False), # Passwords do not match
+            ({
+            'course_code': 'CSC3002F',
+            'primary_email_address': 'testing@test.com',
+            'moss_id': '3',
+            'password1': 'Testing',
+            'password2': 'Testing'
+            }, False), # Passwords not secure
+        ]
+        # For each case
+        for details, outcome in cases:
+            test_client = Client()
+            # Post registration details
+            register_response = test_client.post(reverse("users:register"), details)
+            # Outcome success should authenticate and redirect to jobs index
+            if outcome:
+                self.assertEqual(register_response.status_code, 302)
+                self.assertTrue(isinstance(register_response, HttpResponseRedirect))
+                self.assertEqual(register_response.get("Location"), reverse("jobs:index"))
+                self.assertIn('_auth_user_id', test_client.session)
+            # Outcome fail should not redirect and should not authenticate
+            else:
+                self.assertEqual(register_response.status_code, 200)
+                self.assertTrue(isinstance(register_response, HttpResponse) and not isinstance(register_response, HttpResponseRedirect))
+                self.assertNotIn('_auth_user_id', test_client.session)
