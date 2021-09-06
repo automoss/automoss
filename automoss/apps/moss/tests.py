@@ -27,7 +27,8 @@ class TestMossAPI(TestCase):
             return
 
         moss_user_id = 1  # TODO use environment variables
-        result = MOSS(moss_user_id).generate(
+        result = MOSS().generate(
+            user_id=moss_user_id,
             language='python',
             **paths,
             max_until_ignored=DEFAULT_MOSS_SETTINGS['max_until_ignored'],
