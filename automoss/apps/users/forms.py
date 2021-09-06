@@ -4,6 +4,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import ValidationError
 from django.contrib.auth import password_validation
+from ..moss.moss import MOSS
 
 class UsernameField(forms.CharField):
     """ User name field - based on Django's UsernameField """
@@ -21,6 +22,7 @@ class UserCreationForm(forms.ModelForm):
     """ User registration form - based on Django's UserCreationForm """
     error_messages = {
         'password_mismatch': 'The two password fields didn’t match.',
+        'invalid_moss_id': 'The MOSS ID provided is not valid.',
     }
     password1 = forms.CharField(
         label="Password",
@@ -63,6 +65,16 @@ class UserCreationForm(forms.ModelForm):
                 code='password_mismatch',
             )
         return password2
+
+    def clean_moss_id(self):
+        clean_moss_id = self.cleaned_data.get('moss_id')
+        valid_id = MOSS().validate_moss_id(clean_moss_id)
+        if valid_id:
+            return clean_moss_id
+        raise ValidationError(
+                self.error_messages['invalid_moss_id'],
+                code='invalid_moss_id',
+            )
 
     def save(self, commit=True):
         user = super().save(commit=False)
