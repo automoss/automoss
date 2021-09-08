@@ -100,8 +100,10 @@
 </div>
 
 
-<script src="{% static "lib/uncompress/uncompress.js" %}"></script>
+<script src="{% static "lib/jszip.min.js" %}"></script>
+{% comment %} <script src="{% static "lib/uncompress/uncompress.js" %}"></script> {% endcomment %}
 <script src="{% static "js/job.js" %}"></script>
+<script src="{% static "js/jobSubmission.js" %}"></script>
 
 <script>
 	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -194,13 +196,13 @@
 		return name.split('.').pop();
 	}
 
-	let loadFormatsPromise = new Promise((resolve, reject) => {
+	{% comment %} let loadFormatsPromise = new Promise((resolve, reject) => {
 		loadArchiveFormats(["zip", "tar", "rar"], () => {
 			resolve();
 		});
-	});
+	}); {% endcomment %}
 
-	async function extractAndReadAll(file, password, onRead) {
+	{% comment %} async function extractAndReadAll(file, password, onRead) {
 		
 		// Wait until formats have been loaded
 		await loadFormatsPromise;
@@ -224,36 +226,29 @@
 			});
 		})));
 		await Promise.all(readPromises);
-	}
+	} {% endcomment %}
 
 	createJobForm.onsubmit = async (e) => {
 
 		e.preventDefault();
-		
+
 		// Create a new form (and capture name, language, max matches until ignored and max matches displayed)
 		let jobFormData = new FormData(createJobForm);
 
+		function appendDataToForm(name, data){
+			jobFormData.append("{{ FILES_NAME }}", new Blob([data]), name);
+		}
+
 		// Capture file data separately and append to created form
-		for (let dropZoneFile of jobDropZone.files) {
-
-			let file = dropZoneFile.file;
-			let password = "";
-
-			await extractAndReadAll(file, password, 
-				(entry, entryData) => {
-
-					let languageID = jobLanguage.options[jobLanguage.selectedIndex].getAttribute('language-id');
-					let isCorrectLanguage = languages[languageID][2].includes(getExtension(entry.name));
-					let hasNoPassword = password == "";
-
-					if (isCorrectLanguage && hasNoPassword){
-						jobFormData.append("{{ FILES_NAME }}", new Blob([entryData]), entryData.name);
-						console.log("Valid: ", entry.name);
-					}else{
-						console.log('Invalid:', entry.name);
-					}
-				}
-			);
+		let language = jobLanguage.options[jobLanguage.selectedIndex].getAttribute('language-id');
+		for (let dropZoneFile of jobDropZone.files){
+			let archive = dropZoneFile.file;
+			let files = await getArchiveFiles(archive);
+			if (await isSingleSubmission(files, language)){
+				appendDataToForm(archive.name, await extractSingle(files, language));
+			}else{
+				await extractBatch(files, language, appendDataToForm);
+			}
 		}
 
 		// Submit a new job with the created form
@@ -281,15 +276,14 @@
 			jobName.value = jobName.value || zipFile.name.slice(0, zipFile.name.length - 4);
 
 			// Update form programming language
-			archiveOpenFile(zipFile, "", (archive) => {
+			JSZip.loadAsync(zipFile).then((zip)=>{
 				let d = {};
-				for (let key in languages) {
+				for (let key in languages){
 					d[key] = 0;
 				}
-				archive.entries.forEach((entry) => {
-					let extension = getExtension(entry.name);
-					for (let key in languages) {
-						console.log()
+				zip.forEach(function (relativePath, file) {
+					let extension = getExtension(file.name);
+					for (let key in languages){
 						if(languages[key][2].includes(extension)){
 							d[key] += 1;
 						}
@@ -313,6 +307,12 @@
 			createJobButton.disabled = true;
 		}
 	};
+
+
+
+	// Job Stitching
+
+	
 
 </script>
 
