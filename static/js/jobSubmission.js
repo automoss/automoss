@@ -1,18 +1,18 @@
 /**
- * Returns the extension of a file, when given a list of valid extensions.
+ * Determines whether or not a file has an extension from a list of given extensions.
  */
-function getExtension(fileName, validExtensions){
-	for (var extension of validExtensions){
+function hasExtension(fileName, extensions){
+	for (var extension of extensions){
 		if (fileName.endsWith("."+extension)){
-			return extension;
+			return true;
 		}
 	}
-	return null;
+	return false;
 }
 
 const ARCHIVE_EXTENSIONS = ["tar", "tar.gz", "tar.xz", "zip"]
 function isArchive(fileName){
-	return getExtension(fileName, ARCHIVE_EXTENSIONS) != null;
+	return hasExtension(fileName, ARCHIVE_EXTENSIONS);
 }
 
 const PROGRAM_EXTENSIONS = {
@@ -26,7 +26,7 @@ const PROGRAM_EXTENSIONS = {
 	"MP": ["asm", "s"]
 };
 function isSource(fileName, language){
-	return getExtension(fileName, PROGRAM_EXTENSIONS[language]) != null;
+	return hasExtension(fileName, PROGRAM_EXTENSIONS[language]);
 }
 
 /**
@@ -79,10 +79,12 @@ function getRootIndex(files){
 		var pathWithName = file.name;
 		var name = getFileNameFromPath(pathWithName);
 		var path = pathWithName.trimRight(name.length);
-		if (prevPath != "" && path != prevPath){
-			var diff = findFirstDiffIndex(path, prevPath);
-			var same = path.substring(0, diff);
-			return same.lastIndexOf("/")+1; // shift left in path to beginning of contained folder
+		if (prevPath != ""){
+			if (path != prevPath){
+				var diff = findFirstDiffIndex(path, prevPath);
+				var same = path.substring(0, diff);
+				return same.lastIndexOf("/")+1; // shift left in path to beginning of contained folder
+			}
 		}
 		if (isArchive(name)){
 			prevPath = path;
@@ -187,14 +189,6 @@ async function extractBatch(files, language, onExtract){
 }
 
 // Extend scope of functions to rest of WebApp
-window.getExtension = getExtension;
-window.isArchive = isArchive;
-window.isSource = isSource;
-window.extractBatch = extractBatch;
-window.extractSingle = extractSingle;
 window.isSingleSubmission = isSingleSubmission;
-window.getArchiveFiles = getArchiveFiles;
-window.getRootIndex = getRootIndex;
-
-window.ARCHIVE_EXTENSIONS = ARCHIVE_EXTENSIONS;
-window.PROGRAM_EXTENSIONS = PROGRAM_EXTENSIONS;
+window.extractSingle = extractSingle;
+window.extractBatch = extractBatch;

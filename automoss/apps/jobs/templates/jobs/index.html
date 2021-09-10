@@ -212,10 +212,7 @@
 			let archive = dropZoneFile.file;
 			let files = await getArchiveFiles(archive);
 			if (await isSingleSubmission(files, language)){
-				var extension = getExtension(archive.name);
-				if (extension != null){
-					appendDataToForm(archive.name.substring(0, extension.length), await extractSingle(files, language));
-				}
+				appendDataToForm(archive.name, await extractSingle(files, language));
 			}else{
 				await extractBatch(files, language, appendDataToForm);
 			}
