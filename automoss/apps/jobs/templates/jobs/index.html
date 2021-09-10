@@ -101,7 +101,6 @@
 
 
 <script src="{% static "lib/jszip.min.js" %}"></script>
-{% comment %} <script src="{% static "lib/uncompress/uncompress.js" %}"></script> {% endcomment %}
 <script src="{% static "js/job.js" %}"></script>
 <script src="{% static "js/jobSubmission.js" %}"></script>
 
@@ -196,38 +195,6 @@
 		return name.split('.').pop();
 	}
 
-	{% comment %} let loadFormatsPromise = new Promise((resolve, reject) => {
-		loadArchiveFormats(["zip", "tar", "rar"], () => {
-			resolve();
-		});
-	}); {% endcomment %}
-
-	{% comment %} async function extractAndReadAll(file, password, onRead) {
-		
-		// Wait until formats have been loaded
-		await loadFormatsPromise;
-
-		// Wait until archived has been opened
-		let openArchivePromise = new Promise((resolve, reject) => {
-			archiveOpenFile(file, password, (archive) => {
-				resolve(archive);
-			});
-		});
-		let archive = await openArchivePromise;
-
-		// Wait until all the files have been read
-		let readPromises = []
-		readPromises.push(Promise.all(archive.entries.map(async (entry) => {
-			return new Promise((resolve, reject)=>{
-				entry.readData(function(entryData){
-					onRead(entry, entryData);
-					resolve();
-				});
-			});
-		})));
-		await Promise.all(readPromises);
-	} {% endcomment %}
-
 	createJobForm.onsubmit = async (e) => {
 
 		e.preventDefault();
@@ -245,7 +212,10 @@
 			let archive = dropZoneFile.file;
 			let files = await getArchiveFiles(archive);
 			if (await isSingleSubmission(files, language)){
-				appendDataToForm(archive.name, await extractSingle(files, language));
+				var extension = getExtension(archive.name);
+				if (extension != null){
+					appendDataToForm(archive.name.substring(0, extension.length), await extractSingle(files, language));
+				}
 			}else{
 				await extractBatch(files, language, appendDataToForm);
 			}
@@ -307,13 +277,6 @@
 			createJobButton.disabled = true;
 		}
 	};
-
-
-
-	// Job Stitching
-
-	
-
 </script>
 
 {% endblock %}

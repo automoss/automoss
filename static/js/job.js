@@ -46,8 +46,7 @@ class Job extends HTMLTableRowElement{
 				break;
 			case uploadingStatus:
 				classes.push('bg-warning')
-				break;
-			
+				break;		
 			default:
 				classes.push('bg-danger')
 				break;

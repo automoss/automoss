@@ -1,23 +1,18 @@
-function hasValidExtension(fileName, validExtensions){
+/**
+ * Returns the extension of a file, when given a list of valid extensions.
+ */
+function getExtension(fileName, validExtensions){
 	for (var extension of validExtensions){
 		if (fileName.endsWith("."+extension)){
-			return true;
+			return extension;
 		}
 	}
-	return false;
+	return null;
 }
 
-function getFileNameFromPath(filePath){
-    var dirSepIndex = filePath.lastIndexOf("/");
-    if (dirSepIndex != -1){
-        return filePath.substring(dirSepIndex+1);
-    }
-    return filePath;
-}
-
-const ARCHIVE_EXTENSIONS = ["tar", "tar.gz", "tar.xz", "rar", "zip"]
+const ARCHIVE_EXTENSIONS = ["tar", "tar.gz", "tar.xz", "zip"]
 function isArchive(fileName){
-	return hasValidExtension(fileName, ARCHIVE_EXTENSIONS)
+	return getExtension(fileName, ARCHIVE_EXTENSIONS) != null;
 }
 
 const PROGRAM_EXTENSIONS = {
@@ -31,9 +26,24 @@ const PROGRAM_EXTENSIONS = {
 	"MP": ["asm", "s"]
 };
 function isSource(fileName, language){
-	return hasValidExtension(fileName, PROGRAM_EXTENSIONS[language]);
+	return getExtension(fileName, PROGRAM_EXTENSIONS[language]) != null;
 }
 
+/**
+ * Returns a file's name when given its path.
+ */ 
+function getFileNameFromPath(filePath){
+    var dirSepIndex = filePath.lastIndexOf("/");
+    if (dirSepIndex != -1){
+        return filePath.substring(dirSepIndex+1);
+    }
+    return filePath;
+}
+
+/**
+ * Loops through all files and checks if it contains at least 1 source file (for a specific
+ * programming language).
+ */
 async function isSingleSubmission(files, language){
 	for (var file of files){
 		if (isSource(file.name, language)){
@@ -43,7 +53,10 @@ async function isSingleSubmission(files, language){
 	return false;
 }
 
-// https://stackoverflow.com/a/32858679/7840247
+/**
+ * Find the first difference between two strings, and return the index of that character.
+ * Credit: https://stackoverflow.com/a/32858679/7840247
+ */
 function findFirstDiffIndex(a, b){
 	var longerLength = Math.max(a.length, b.length);
 	for (var i = 0; i < longerLength; i++){
@@ -52,18 +65,24 @@ function findFirstDiffIndex(a, b){
 	return -1;
 }
 
+/** 
+ * Job submission relies on the crucial assumption that there exists a single folder (i.e., root)
+ * with a list of files/folders that divide all students in a batch.
+ * 
+ * The following function returns the index of the root folder in a path for a list of files from
+ * a common directory. The algorithm works as follows:
+ * Find two different student archives and then compare their paths to determine the root.
+ */
 function getRootIndex(files){
 	var prevPath = "";
 	for (var file of files){
 		var pathWithName = file.name;
 		var name = getFileNameFromPath(pathWithName);
 		var path = pathWithName.trimRight(name.length);
-		if (prevPath != ""){
-			if (path != prevPath){
-				var diff = findFirstDiffIndex(path, prevPath);
-				var same = path.substring(0, diff);
-				return same.lastIndexOf("/")+1;
-			}
+		if (prevPath != "" && path != prevPath){
+			var diff = findFirstDiffIndex(path, prevPath);
+			var same = path.substring(0, diff);
+			return same.lastIndexOf("/")+1; // shift left in path to beginning of contained folder
 		}
 		if (isArchive(name)){
 			prevPath = path;
@@ -72,6 +91,9 @@ function getRootIndex(files){
 	return -1;
 }
 
+/**
+ * Return a list of all the files in an archive.
+ */
 async function getArchiveFiles(archive){
 	let extractedArchive = await JSZip.loadAsync(archive);
 	const files = [];
@@ -82,29 +104,61 @@ async function getArchiveFiles(archive){
 	return files;
 }
 
+/**
+ * Returns the data from a file as text.
+ */
+async function getFileData(file){
+	let blob = await file.async('blob'); // extract blob from file
+	let data = await new Response(blob).text(); // extract text from blob
+	return data;
+}
+
+/**
+ * Extracts all the source files from a single student's archive, and "stitches" them together.
+ */
 async function extractSingle(files, language){
 	var buffer = "";
 	for (var file of files){
 		if (isSource(file.name, language)){
 			buffer += ">>> " + file.name + " <<<\n";
-			let blob = await file.async('blob');
-			let text = await new Response(blob).text();
-			buffer += (text + "\n\n");
+			buffer += (await getFileData(file) + "\n\n");
 		}
 	}
 	return buffer;
 }
 
+/**
+ * Extracts all a student's archives into one. This is necessary, as students may have multiple
+ * archives in their submission attachments which contain code that needs to be checked.
+ */
 async function extractMultiple(archives, language){
 	var buffer = "";
 	for (var archive of archives){
 		var blob = await archive.async("blob");
-		var file = new File([blob], archive.name, { type: 'application/zip' }); // must convert zipped archive to a file before unzipping
+		var file = new File([blob], archive.name, { type: 'application/zip' }); // convert zipped archive to file before unzipping
 		buffer += await extractSingle(await getArchiveFiles(file), language);
 	}
 	return buffer;
 }
 
+/**
+ * When provided an archive containing a list of students with no particular format, extract and
+ * perform an operation on each of the stiched student submissions.
+ * 
+ * The following assumptions must be made:
+ * - There exists a root folder that divides all students in a batch.
+ * - Archives submitted are one of the accepted file types (i.e., tar, tar.gz, tar.xz or zip).
+ * - Students cannot submit folders, and so once an archive is found, it is considered to be in
+ *   a "terminal" directory.
+ * 
+ * The algorithm works as follows:
+ * - Loop through each file until you encounter a student's archive.
+ * - Continue looping through files, and maintain a list of all the current student's archives.
+ * - Once a new student is detected, extract the previous student's files.
+ * - Repeat until there are no files left.
+ * - Finally, check if the last student had files that weren't extracted (since extractions
+ *   only take place on the event of a student change).
+ */
 async function extractBatch(files, language, onExtract){
 	var prevStudent = "";
 	var rootIndex = getRootIndex(files);
@@ -113,18 +167,18 @@ async function extractBatch(files, language, onExtract){
 		if (isArchive(file.name)){
 			var pathFromStudent = file.name.substring(rootIndex);
 			var pathSepIndex = pathFromStudent.indexOf("/");
-			var student = pathFromStudent;
+			var student = pathFromStudent; // batch could just be a folder containing archives
 			if (pathSepIndex != -1){
-				student = pathFromStudent.substring(0, pathSepIndex);
+				student = pathFromStudent.substring(0, pathSepIndex); // student's folder name
 			}
 			if (student != prevStudent){
 				if (prevStudent != ""){
 					onExtract(prevStudent, await extractMultiple(studentArchives, language));
-					studentArchives = [];
+					studentArchives = []; // clear current student's archives
 				}
 				prevStudent = student;
 			}
-			studentArchives.push(file);
+			studentArchives.push(file); // record this file as a student's archive
 		}
 	}
 	if (studentArchives.length > 0){
@@ -133,6 +187,7 @@ async function extractBatch(files, language, onExtract){
 }
 
 // Extend scope of functions to rest of WebApp
+window.getExtension = getExtension;
 window.isArchive = isArchive;
 window.isSource = isSource;
 window.extractBatch = extractBatch;
@@ -140,3 +195,6 @@ window.extractSingle = extractSingle;
 window.isSingleSubmission = isSingleSubmission;
 window.getArchiveFiles = getArchiveFiles;
 window.getRootIndex = getRootIndex;
+
+window.ARCHIVE_EXTENSIONS = ARCHIVE_EXTENSIONS;
+window.PROGRAM_EXTENSIONS = PROGRAM_EXTENSIONS;
