@@ -102,7 +102,31 @@
 
 <script src="{% static "lib/jszip.min.js" %}"></script>
 <script src="{% static "js/job.js" %}"></script>
+{% comment %} <script type="module" src="{% static "lib/libarchive/libarchive.js" %}"></script> {% endcomment %}
 <script src="{% static "js/jobSubmission.js" %}"></script>
+
+<script type="module">
+
+	import {Archive} from '{% static "lib/libarchive/src/libarchive.js" %}';
+
+	Archive.init({
+		workerUrl: '{% static "lib/libarchive/dist/worker-bundle.js" %}'
+	});
+
+	async function extractFiles(archive){
+		let opened = await Archive.open(archive);
+		await opened.extractFiles();
+		let files = [];
+		let filesArr = await opened.getFilesArray();
+		for (let fileObj of filesArr){
+			files.push(fileObj.file);
+		}
+		return files;
+	}
+
+	window.extractFiles = extractFiles;
+
+</script>
 
 <script>
 	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -195,6 +219,7 @@
 		return name.split('.').pop();
 	}
 
+
 	createJobForm.onsubmit = async (e) => {
 
 		e.preventDefault();
@@ -210,7 +235,7 @@
 		let language = jobLanguage.options[jobLanguage.selectedIndex].getAttribute('language-id');
 		for (let dropZoneFile of jobDropZone.files){
 			let archive = dropZoneFile.file;
-			let files = await getArchiveFiles(archive);
+			let files = await extractFiles(archive);
 			if (await isSingleSubmission(files, language)){
 				appendDataToForm(archive.name, await extractSingle(files, language));
 			}else{
@@ -243,7 +268,7 @@
 			jobName.value = jobName.value || zipFile.name.slice(0, zipFile.name.length - 4);
 
 			// Update form programming language
-			JSZip.loadAsync(zipFile).then((zip)=>{
+			/*JSZip.loadAsync(zipFile).then((zip)=>{
 				let d = {};
 				for (let key in languages){
 					d[key] = 0;
@@ -258,7 +283,7 @@
 				});
 				let bestID = Object.entries(d).reduce((a, b) => a[1] > b[1] ? a : b)[0]
 				jobLanguage.value = languages[bestID][0];
-			});
+			});*/
 
 			createJobButton.disabled = false;
 		}

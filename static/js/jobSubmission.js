@@ -94,28 +94,6 @@ function getRootIndex(files){
 }
 
 /**
- * Return a list of all the files in an archive.
- */
-async function getArchiveFiles(archive){
-	let extractedArchive = await JSZip.loadAsync(archive);
-	const files = [];
-	extractedArchive.forEach(function (relativePath, file) {
-		files.push(file);
-	});
-	Promise.all(files);
-	return files;
-}
-
-/**
- * Returns the data from a file as text.
- */
-async function getFileData(file){
-	let blob = await file.async('blob'); // extract blob from file
-	let data = await new Response(blob).text(); // extract text from blob
-	return data;
-}
-
-/**
  * Extracts all the source files from a single student's archive, and "stitches" them together.
  */
 async function extractSingle(files, language){
@@ -123,7 +101,7 @@ async function extractSingle(files, language){
 	for (var file of files){
 		if (isSource(file.name, language)){
 			buffer += ">>> " + file.name + " <<<\n";
-			buffer += (await getFileData(file) + "\n\n");
+			buffer += (await new Response(file).text() + "\n\n");
 		}
 	}
 	return buffer;
@@ -136,9 +114,7 @@ async function extractSingle(files, language){
 async function extractMultiple(archives, language){
 	var buffer = "";
 	for (var archive of archives){
-		var blob = await archive.async("blob");
-		var file = new File([blob], archive.name, { type: 'application/zip' }); // convert zipped archive to file before unzipping
-		buffer += await extractSingle(await getArchiveFiles(file), language);
+		buffer += await extractSingle(await extractFiles(archive), language);
 	}
 	return buffer;
 }
