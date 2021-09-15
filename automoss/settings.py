@@ -162,7 +162,8 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 
 # Default (None) is the number of CPUs available on your system.
-CELERY_CONCURRENCY = None
+# TODO min(num processors, 4)
+CELERY_CONCURRENCY = 4  # None
 
 # Contexts
 LANGUAGE_CONTEXT = {}
@@ -243,7 +244,7 @@ with capture_in(JOB_CONTEXT):
 
     # Max duration to retry = EXPONENTIAL_BACKOFF_BASE**MAX_RETRIES
     # Total duration        = \sum_{n=0}^{MAX_RETRIES}{EXPONENTIAL_BACKOFF_BASE}^{n}
-    
+
     MIN_RETRY_TIME = 32
     MAX_RETRY_TIME = 256
     MAX_RETRY_DURATION = 86400
