@@ -181,6 +181,23 @@
 <script>
 	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
+	let languages = {{ SUPPORTED_LANGUAGES | js }};
+	let statuses = {{ STATUSES | js }};
+
+	let inQueueStatus = "{{ INQUEUE_STATUS }}";
+	let processingStatus = "{{ PROCESSING_STATUS }}";
+	let parsingStatus = "{{ PARSING_STATUS }}";
+	let completedStatus = "{{ COMPLETED_STATUS }}";
+	let failedStatus = "{{ FAILED_STATUS }}";
+
+
+	let statusMapping = {};
+	statusMapping[inQueueStatus] = 'bg-warning';
+	statusMapping[processingStatus] = 'bg-info';
+	statusMapping[parsingStatus] = 'bg-dark';
+	statusMapping[completedStatus] = 'bg-success';
+	statusMapping[failedStatus] = 'bg-danger';
+
 	class Job extends HTMLTableRowElement{
 		constructor(obj) {
 			super()
@@ -196,7 +213,7 @@
 			this.tableLanguage.innerHTML = languages[this.language][0];
 
 			this.tableStartDate = document.createElement('td')
-			this.tableStartDate.innerHTML = new Date(this.start_date).toLocaleString();
+			this.tableStartDate.innerHTML = new Date(this.creation_date).toLocaleString();
 			
 			let tableStatusCell = document.createElement('td')
 			this.tableStatus = document.createElement('span')
@@ -218,23 +235,7 @@
 
 			this.tableStatus.className = '';
 			
-			let classes = ['badge'];
-			switch(newStatus){
-				
-				case completedStatus:
-					classes.push('bg-success')
-					break;
-				case processingStatus:
-					classes.push('bg-info')
-					break;
-				case uploadingStatus:
-					classes.push('bg-warning')
-					break;
-				
-				default:
-					classes.push('bg-danger')
-					break;
-			}
+			let classes = ['badge', statusMapping[newStatus]];
 
 			this.tableStatus.classList.add(...classes)
 		}
@@ -253,15 +254,6 @@
 	function addJob(job){
 		jobTable.getElementsByTagName('tbody')[0].prepend(new Job(job))
 	}
-
-	let languages = {{ SUPPORTED_LANGUAGES | js }};
-	let statuses = {{ STATUSES | js }};
-
-
-	let completedStatus = "{{ COMPLETED_STATUS }}";
-	let processingStatus = "{{ PROCESSING_STATUS }}";
-	let uploadingStatus = "{{ UPLOADING_STATUS }}";
-	let failedStatus = "{{ FAILED_STATUS }}";
 
 
 	let unfinishedJobs = [];

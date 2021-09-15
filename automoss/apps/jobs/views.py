@@ -110,9 +110,6 @@ class New(View):
                 with open(file_path, 'wb') as fp:
                     fp.write(f.read())
 
-        # TODO set status to 'Uploaded'
-        # Note: different to uploading/processing
-        # All workers might be busy
         process_job.delay(job_id)
 
         # Return useful information

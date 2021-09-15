@@ -1,5 +1,4 @@
 
-import random
 from ..results.models import MOSSResult, Match
 from .models import Job, Submission
 from django.utils.timezone import now
@@ -16,6 +15,7 @@ from ..moss.moss import (
 from ...settings import (
     SUPPORTED_LANGUAGES,
     PROCESSING_STATUS,
+    PARSING_STATUS,
     COMPLETED_STATUS,
     FAILED_STATUS,
     SUBMISSION_TYPES,
@@ -59,6 +59,7 @@ def process_job(job_id):
 
     logger.info(f'Starting job {job_id} with status {job.status}')
 
+    job.start_date = now()
     job.status = PROCESSING_STATUS
     job.save()
 
@@ -106,9 +107,11 @@ def process_job(job_id):
                 )
                 logger.info(f'Generated url: "{url}"')
 
-            # TODO set status to parsing?
-
             logger.info('Start parsing report')
+
+            job.status = PARSING_STATUS
+            job.save()
+
             # Parsing and extraction
             result = MOSS.generate_report(url)
             logger.info(
@@ -148,56 +151,66 @@ def process_job(job_id):
             f'(Attempt {attempt}) Error: {error} | Retrying in {time_to_sleep} seconds')
         time.sleep(time_to_sleep)
 
+    failed = result is None
+
     # Represents when no more processing of the job will occur
     job.completion_date = now()
 
-    failed = result is None
-    job.status = FAILED_STATUS if failed else COMPLETED_STATUS  # TODO detect failure
-    job.save()
+    try:
+        if failed:
+            job.status = FAILED_STATUS
+            return None
 
-    if DEBUG:
-        # Calculate average file_size
-        num_files = len(paths[FILES_NAME])
-        avg_file_size = sum([os.path.getsize(x)
-                            for x in paths[FILES_NAME]])/num_files
-
-        log_info = vars(job).copy()
-        log_info.pop('_state', None)
-        log_info.update({
-            'num_files': num_files,
-            'avg_file_size': avg_file_size,
-            'moss_id': job.user.moss_id,
-            'num_attempts': num_attempts
-        })
-
-        log_info.update(Pinger.ping() or {})
-        logger.debug(f'Job info: {log_info}')
-
-        with open(LOG_FILE, 'a+') as fp:
-            log_info['duration'] = (
-                log_info['completion_date'] - log_info['start_date']).total_seconds()
-            json.dump(log_info, fp, sort_keys=True, default=str)
-            print(file=fp)
-
-    if failed:
-        return None
-
-    moss_result = MOSSResult.objects.create(
-        job=job,
-        url=result.url
-    )
-
-    for match in result.matches:
-        Match.objects.create(
-            moss_result=moss_result,
-            first_submission=Submission.objects.get(
-                job=job, submission_id=match.name_1),
-            second_submission=Submission.objects.get(
-                job=job, submission_id=match.name_2),
-            first_percentage=match.percentage_1,
-            second_percentage=match.percentage_2,
-            lines_matched=match.lines_matched,
-            line_matches=match.line_matches
+        # Parse result
+        moss_result = MOSSResult.objects.create(
+            job=job,
+            url=result.url
         )
 
-    return result.url
+        for match in result.matches:
+            first_submission = Submission.objects.filter(
+                job=job, submission_id=match.name_1).first()
+            second_submission = Submission.objects.filter(
+                job=job, submission_id=match.name_2).first()
+
+            # Ensure matching submission is found (avoid future errors)
+            if first_submission and second_submission:
+                Match.objects.create(
+                    moss_result=moss_result,
+                    first_submission=first_submission,
+                    second_submission=second_submission,
+                    first_percentage=match.percentage_1,
+                    second_percentage=match.percentage_2,
+                    lines_matched=match.lines_matched,
+                    line_matches=match.line_matches
+                )
+
+        job.status = COMPLETED_STATUS
+        return result.url
+
+    finally:
+        job.save()
+
+        if DEBUG:
+            # Calculate average file_size
+            num_files = len(paths[FILES_NAME])
+            avg_file_size = sum([os.path.getsize(x)
+                                for x in paths[FILES_NAME]])/num_files
+
+            log_info = vars(job).copy()
+            log_info.pop('_state', None)
+            log_info.update({
+                'num_files': num_files,
+                'avg_file_size': avg_file_size,
+                'moss_id': job.user.moss_id,
+                'num_attempts': num_attempts
+            })
+
+            log_info.update(Pinger.ping() or {})
+            logger.debug(f'Job info: {log_info}')
+
+            with open(LOG_FILE, 'a+') as fp:
+                log_info['duration'] = (
+                    log_info['completion_date'] - log_info['start_date']).total_seconds()
+                json.dump(log_info, fp, sort_keys=True, default=str)
+                print(file=fp)

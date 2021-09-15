@@ -218,16 +218,18 @@ with capture_in(MOSS_CONTEXT):
 STATUS_CONTEXT = {}
 with capture_in(STATUS_CONTEXT):
     # Statuses
-    UPLOADING_STATUS = 'UPL'
+    INQUEUE_STATUS = 'INQ'
     PROCESSING_STATUS = 'PRO'
+    PARSING_STATUS = 'PAR'
     COMPLETED_STATUS = 'COM'
     FAILED_STATUS = 'FAI'
 
     STATUSES = {
         # 'Code': 'Name',
-        UPLOADING_STATUS: 'Uploading',
+        INQUEUE_STATUS: 'In Queue',
         PROCESSING_STATUS: 'Processing',
-        COMPLETED_STATUS: 'Complete',
+        PARSING_STATUS: 'Parsing',
+        COMPLETED_STATUS: 'Completed',
         FAILED_STATUS: 'Failed'
     }
 
