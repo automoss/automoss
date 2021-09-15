@@ -265,13 +265,7 @@
 
 
 	let unfinishedJobs = [];
-	let result = fetch("{% url "api:jobs:get_jobs" %}", {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'X-CSRFToken': csrftoken
-		}
-	}).then(async (response)=>{
+	let result = fetch("{% url "api:jobs:get_jobs" %}").then(async (response)=>{
 		let json = await response.json()
 
 		json.forEach(item => {
@@ -294,16 +288,9 @@
 			// Do not make any request if all jobs are finished
 			return;
 		}
-		let result = await fetch("{% url "api:jobs:get_statuses" %}", {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': csrftoken
-			},
-			body: JSON.stringify({
-				'job_ids': unfinishedJobs
-			})
-		})
+		let result = await fetch(
+			"{% url "api:jobs:get_statuses" %}?" + new URLSearchParams({job_ids: unfinishedJobs})
+		)
 
 		let json = await result.json();
 

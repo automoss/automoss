@@ -36,8 +36,9 @@ from ...settings import (
 
 
 @register.filter(is_safe=True)
-def js(obj):
+def js(obj):  # TODO move to utils?
     return mark_safe(json.dumps(obj))
+
 
 @method_decorator(login_required, name='dispatch')
 class Index(View):
@@ -55,6 +56,7 @@ class Index(View):
         """ Get jobs """
         return render(request, self.template, self.context)
 
+
 @method_decorator(login_required, name='dispatch')
 class New(View):
     """ Job creation view """
@@ -66,8 +68,10 @@ class New(View):
         # TODO validate form
         language = READABLE_LANGUAGE_MAPPING.get(
             request.POST.get('job-language'))  # TODO throw error if none
+
         max_until_ignored = request.POST.get('job-max-until-ignored')
         max_displayed_matches = request.POST.get('job-max-displayed-matches')
+
         comment = request.POST.get('job-name')
 
         # TODO validate options and reject if incorrect
@@ -106,37 +110,33 @@ class New(View):
                 with open(file_path, 'wb') as fp:
                     fp.write(f.read())
 
+        # TODO set status to 'Uploaded'
+        # Note: different to uploading/processing
+        # All workers might be busy
         process_job.delay(job_id)
 
         # Return useful information
         data = json.loads(serialize('json', [new_job]))[0]['fields']
         return JsonResponse(data, status=200, safe=False)
 
+
 @method_decorator(login_required, name='dispatch')
 class JSONJobs(View):
     """ JSON view of Jobs """
 
-    def post(self, request):
-        """ Post ID's of jobs needed """
+    def get(self, request):
+        """ Get user's jobs """
         results = Job.objects.filter(user=request.user).values()
         return JsonResponse(list(results), status=200, safe=False)
+
 
 @method_decorator(login_required, name='dispatch')
 class JSONStatuses(View):
     """ JSON view of statuses """
 
-    def post(self, request):
-        """ Post ID's to get statuses of """
-        job_ids = []
-        try:
-            body = json.loads(request.body)
-            job_ids = body['job_ids']
-        except (JSONDecodeError, IndexError, MultiValueDictKeyError) as e:
-            pass  # Invalid request - TODO return error
-
-        if not isinstance(job_ids, list):
-            job_ids = []
-
+    def get(self, request):
+        """ Get statuses of requested jobs (by ID) """
+        job_ids = request.GET.get('job_ids', '').split(',')
         results = Job.objects.filter(
             user=request.user, job_id__in=job_ids)
 
