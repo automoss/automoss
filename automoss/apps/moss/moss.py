@@ -62,9 +62,28 @@ class EmptyResponse(FatalMossException):
         super().__init__(self.message, *args, **kwargs)
 
 
+class InvalidRequest(FatalMossException):
+    """Moss did not understand this request"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class InvalidParameter(FatalMossException):
+    """User attempted to set an invalid parameter."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
 class RecoverableMossException(MossException):
     """ Able to recover. Resubmit if this occurs """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class ReportDownloadTimeout(RecoverableMossException):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -95,9 +114,10 @@ class MossAPIWrapper:
     def close(self):
         try:
             self._send_string('end')
+            self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
             return True
-        except Exception as e:
+        except ConnectionError as e:
             return False  # Do not throw error if unable to close
 
     def read_raw(self, buffer):
@@ -113,9 +133,15 @@ class MossAPIWrapper:
         self._send_string(f'X {experimental:d}')
 
     def set_max_matches(self, max_matches):
+        if max_matches < 1:
+            raise InvalidParameter(
+                f'Max matches must be positive ({max_matches} is invalid).')
         self._send_string(f'maxmatches {max_matches}')
 
     def set_max_displayed_matches(self, max_displayed_matches):
+        if max_displayed_matches < 1:
+            raise InvalidParameter(
+                f'Max displayed matches must be positive ({max_displayed_matches} is invalid).')
         self._send_string(f'show {max_displayed_matches}')
 
     def set_language(self, language):
@@ -179,9 +205,7 @@ class MossAPIWrapper:
         self.socket.send(bytes)
 
     def _send_string(self, text):
-        to_send = f'{text}\n'.encode()
-        print(f'sending: {to_send}')
-        return self._send_raw(to_send)
+        return self._send_raw(f'{text}\n'.encode())
 
 
 class MossMatch:
@@ -236,18 +260,23 @@ class Result:
             return await resp.text()
 
     async def fetch_concurrent(self, urls):
-        loop = asyncio.get_event_loop()
-        async with aiohttp.ClientSession() as session:
-            tasks = [loop.create_task(self.fetch(session, u)) for u in urls]
-            return [await result for result in asyncio.as_completed(tasks)]
+        try:
+            loop = asyncio.get_event_loop()
+            async with aiohttp.ClientSession() as session:
+                tasks = [loop.create_task(self.fetch(session, u))
+                         for u in urls]
+                return [await result for result in asyncio.as_completed(tasks)]
+        except asyncio.TimeoutError as e:
+            raise ReportDownloadTimeout(e)
 
     def _parse_matches(self, url):
-        html = requests.get(url, verify=False).text
+        base_url = f"{url.rstrip('/')}/"  # Ensure link ends with a /
+        html = requests.get(base_url, verify=False).text
 
         # TODO parse errors?
         num_matches = html.count('<TR>') - 1
 
-        urls = [f'{url}/match{i}-top.html' for i in range(num_matches)]
+        urls = [f'{base_url}match{i}-top.html' for i in range(num_matches)]
         responses = asyncio.run(self.fetch_concurrent(urls))
 
         for response in responses:
@@ -288,15 +317,34 @@ class MOSS:
                 raise FatalMossException(f'Unable to generate report: {e}')
 
     @classmethod
+    def callback(cls, f, *args, **kwargs):
+        if f and callable(f):
+            f(*args, **kwargs)
+
+    @classmethod
     def generate_url(cls, user_id, language=SUPPORTED_MOSS_LANGUAGES[0],
                      files=None, base_files=None, is_directory=False,
                      experimental=False,
                      max_until_ignored=DEFAULT_MOSS_SETTINGS['max_until_ignored'],
                      max_displayed_matches=DEFAULT_MOSS_SETTINGS['max_displayed_matches'],
-                     comment='', use_basename=False):
+                     comment='', use_basename=False,
+
+                     # Define callbacks
+                     on_start=None,
+                     on_connect=None,
+                     on_file_upload=None,  # Called for every file
+                     on_base_file_upload=None,  # Called for every base file
+
+                     on_upload_start=None,
+                     on_upload_finish=None,
+
+                     on_processing_start=None,
+                     on_processing_finish=None
+                     ):
         """Basic interface for generating a report from MOSS"""
 
         # TODO auto detect language
+        cls.callback(on_start)
 
         # Returns report
         if language not in SUPPORTED_MOSS_LANGUAGES:
@@ -313,6 +361,8 @@ class MOSS:
             moss = MossAPIWrapper(user_id)
             moss.connect()  # TODO retries
 
+            cls.callback(on_connect)
+
             # Set options
             moss.set_directory(is_directory)
             moss.set_experimental(experimental)
@@ -321,30 +371,32 @@ class MOSS:
             moss.set_language(language)
 
             data = moss.read()
-
             # Double check on server-side that language is accepted
             if data == 'no':
                 # TODO detect incorrect options?
                 raise UnsupportedLanguage(language)  # Unsupported language
             elif data != 'yes':
-                pass
-                # TODO do checking
-            else:
-                pass
-                # what does this mean? TODO
+                raise InvalidRequest(
+                    f'Moss did not understand this request. Response: "{data}"')
 
-            print('data =', data)
+            cls.callback(on_upload_start)
 
             # Upload base files
             for base_file in base_files:
                 moss.upload_base_file(base_file, language, use_basename)
+                cls.callback(on_base_file_upload, base_file)
 
             # Upload submissions
             for index, path in enumerate(files, start=1):
                 moss.upload_file(path, language, index, use_basename)
+                cls.callback(on_file_upload, path)
+
+            cls.callback(on_upload_finish)
 
             # Read and return data
+            cls.callback(on_processing_start)
             url = moss.process(comment)
+            cls.callback(on_processing_finish)
 
         except ConnectionError as e:
             # Includes:
