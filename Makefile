@@ -4,23 +4,20 @@ install:
 	pip3 install -r requirements_dev.txt
 	make db
 
-start-db:
-	sudo service mysql start
+start-mysql:
+	@[ "$(shell ps aux | grep mysqld | grep -v grep)" ] && echo "MySQL already running" || (sudo service mysql start )
 
-run: start-db
+run: start-mysql
 	python3 manage.py runserver
 
 migrations:
 	python3 manage.py makemigrations && python3 manage.py migrate --run-syncdb
 
 create-db:
-	python3 automoss/db.py
-
-delete-db:
-	rm -f db.sqlite3
+	python3 automoss/db.py fresh
 
 # https://simpleisbetterthancomplex.com/tutorial/2016/07/26/how-to-reset-migrations.html
-db: start-db delete-db clean create-db migrations
+db: start-mysql clean create-db migrations
 
 admin:
 	python3 manage.py createsuperuser
