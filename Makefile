@@ -19,11 +19,15 @@ db: delete-db clean migrations
 admin:
 	python3 manage.py createsuperuser
 
-clean:
+clean-media:
+	rm -rf media/*
+
+clean-redis:
 	rm -f dump.rdb
+
+clean: clean-media clean-redis
 	find . -path '*/migrations/*.py' -not -name '__init__.py' -delete
 	find . -type d -name __pycache__ -exec rm -r {} \+
-	rm -rf media/* 
 
 test:
 	python3 manage.py test
