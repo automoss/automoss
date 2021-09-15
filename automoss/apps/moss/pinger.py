@@ -21,7 +21,7 @@ PING_OFFSET_THRESHOLD = 30
 PING_KEY = 'CURRENT_PING'
 
 # Used for exponential moving average
-UP_ALPHA = 0.005
+UP_ALPHA = 0.001
 DOWN_ALPHA = 0.25
 
 
@@ -29,7 +29,7 @@ class Pinger:
 
     @staticmethod
     def get_current_ping():
-        return float(REDIS_INSTANCE.get(PING_KEY))
+        return float(REDIS_INSTANCE.get(PING_KEY) or 'inf')
 
     @staticmethod
     def set_current_ping(ping):
@@ -58,7 +58,6 @@ class Pinger:
 
         # TODO get MOSS URL
         data = ping('moss.stanford.edu', count=PING_COUNT)
-
         if data:
             # Valid data to update with
 
@@ -66,15 +65,13 @@ class Pinger:
             current_ping = Pinger.get_current_ping()
             data['current_time'] = time.time()
 
-            if current_ping is None:
+            if current_ping is None or current_ping == float('inf'):
+                # Not set, or infinite ping
                 Pinger.set_current_ping(new_ping)
             else:
                 alpha_to_use = UP_ALPHA if new_ping > current_ping else DOWN_ALPHA
-                Pinger.set_current_ping(
-                    alpha_to_use * new_ping + (1-alpha_to_use) * current_ping)
-
-            to_print = f"UPDATING PING | {data['current_time']}, new={new_ping}, avg={current_ping}"
-            print(to_print)
+                new_ping2 = alpha_to_use * new_ping + (1-alpha_to_use) * current_ping
+                Pinger.set_current_ping(new_ping2)
 
         return data
 
@@ -99,8 +96,7 @@ def ping(server, count=1, wait_sec=1):
             'max': timing[2],
             'mdev': timing[3],
             'total': total,
-            'loss': loss,
-            'raw': output
+            'loss': loss
         }
     except Exception as e:
         print(e)
