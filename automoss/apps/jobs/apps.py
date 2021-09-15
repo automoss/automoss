@@ -12,10 +12,12 @@ class JobsConfig(AppConfig):
         from .tasks import process_job
         from .models import Job
         from ..utils.core import is_main_thread
-
+        from ...celery import app
+        
         if is_main_thread():
+            app.control.purge()
             unfinished_jobs = Job.objects.exclude(
                 status__in=[COMPLETED_STATUS, FAILED_STATUS])
             for job in unfinished_jobs:
-                print('Restarting unfinished job:', job.job_id)
+                print(' * Restarting unfinished job', job.job_id, 'with status', job.status)
                 process_job.delay(job.job_id)
