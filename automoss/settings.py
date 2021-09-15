@@ -90,8 +90,13 @@ WSGI_APPLICATION = 'automoss.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv("DB_NAME"),
+        'HOST': os.getenv("DB_HOST"),
+        'PORT': '3306',
+
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
     }
 }
 
@@ -257,5 +262,5 @@ with capture_in(UI_CONTEXT):
     POLLING_TIME = 1000  # in milliseconds
 
 # Misc Constants
-UUID_LENGTH = 32
+UUID_LENGTH = 36
 MAX_COMMENT_LENGTH = 64
