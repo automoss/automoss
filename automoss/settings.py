@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+from .redis import REDIS_URL
 from .apps.utils.core import capture_in
 from .apps.utils.core import first
 import os
@@ -153,13 +154,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # +-----------------+
 
 # Celery variables
-BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
 
+# Default (None) is the number of CPUs available on your system.
+CELERY_CONCURRENCY = None
+
+# Contexts
 LANGUAGE_CONTEXT = {}
 with capture_in(LANGUAGE_CONTEXT):
     # Supported languages
@@ -239,7 +244,7 @@ with capture_in(JOB_CONTEXT):
     # Max duration to retry = EXPONENTIAL_BACKOFF_BASE**MAX_RETRIES
     # Total duration        = \sum_{n=0}^{MAX_RETRIES}{EXPONENTIAL_BACKOFF_BASE}^{n}
     MAX_RETRIES = 30
-    EXPONENTIAL_BACKOFF_BASE = 2 #1.5  # 1<=x<=2
+    EXPONENTIAL_BACKOFF_BASE = 2  # 1.5  # 1<=x<=2
 
 # UI Defaults
 UI_CONTEXT = {}
