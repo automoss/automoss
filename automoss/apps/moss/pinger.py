@@ -41,7 +41,7 @@ class Pinger:
         if Pinger.get_current_ping() is None:
             return True  # Not yet calibrated, assume in bound
 
-        return ping < Pinger.get_current_ping() + Pinger.PING_OFFSET
+        return ping < Pinger.get_current_ping() + PING_OFFSET_THRESHOLD
 
     @staticmethod
     def determine_load():
