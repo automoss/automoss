@@ -88,6 +88,13 @@ class ReportDownloadTimeout(RecoverableMossException):
         super().__init__(*args, **kwargs)
 
 
+class UnparseableMatch(RecoverableMossException):
+    # Moss returns a completely incorrecly formatted match document
+    # e.g. http://moss.stanford.edu/results/0/3222848531763
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
 class MossConnectionError(RecoverableMossException):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -210,28 +217,32 @@ class MossAPIWrapper:
 
 class MossMatch:
     def __init__(self, html):
-        soup = BeautifulSoup(html, 'lxml')
-        table = soup.find('table')
-        rows = iter(table.find_all('tr'))
+        try:
+            soup = BeautifulSoup(html, 'lxml')
+            table = soup.find('table')
+            rows = iter(table.find_all('tr'))
 
-        header = next(rows)
-        a, _, b, _, _ = header.find_all('th')
-        self.name_1, self.percentage_1 = self._parse_name_percentage(a)
-        self.name_2, self.percentage_2 = self._parse_name_percentage(b)
+            header = next(rows)
 
-        # TODO reconstruct (more accurate) percentages from line matches?
-        self.line_matches = []
-        self.lines_matched = 0
-        for tr in rows:
-            a, _, b, _ = tr.find_all('td')
-            first, second = [self._parse_from_to(x) for x in (a, b)]
-            self.line_matches.append({
-                'first': first,
-                'second': second
-            })
+            a, _, b, _, _ = header.find_all('th')
+            self.name_1, self.percentage_1 = self._parse_name_percentage(a)
+            self.name_2, self.percentage_2 = self._parse_name_percentage(b)
 
-            self.lines_matched += max(x['to'] - x['from']
-                                      for x in (first, second)) + 1
+            # TODO reconstruct (more accurate) percentages from line matches?
+            self.line_matches = []
+            self.lines_matched = 0
+            for tr in rows:
+                a, _, b, _ = tr.find_all('td')
+                first, second = [self._parse_from_to(x) for x in (a, b)]
+                self.line_matches.append({
+                    'first': first,
+                    'second': second
+                })
+
+                self.lines_matched += max(x['to'] - x['from']
+                                          for x in (first, second)) + 1
+        except Exception:
+            raise UnparseableMatch
 
     def _parse_from_to(self, tag):
         info = list(map(int, tag.get_text(strip=True).split('-')))
@@ -280,8 +291,10 @@ class Result:
         responses = asyncio.run(self.fetch_concurrent(urls))
 
         for response in responses:
-            yield MossMatch(response)
-
+            try:
+                yield MossMatch(response)
+            except UnparseableMatch:
+                pass
 
 class MOSS:
 
@@ -307,6 +320,7 @@ class MOSS:
     def generate_report(cls, url):
         try:
             return Result(url)
+
         except Exception as e:
             if is_valid_moss_url(url):
                 # Some timeout error?
