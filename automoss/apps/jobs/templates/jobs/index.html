@@ -100,17 +100,15 @@
 </div>
 
 
-<script src="{% static "lib/jszip.min.js" %}"></script>
 <script src="{% static "js/job.js" %}"></script>
-{% comment %} <script type="module" src="{% static "lib/libarchive/libarchive.js" %}"></script> {% endcomment %}
 <script src="{% static "js/jobSubmission.js" %}"></script>
 
 <script type="module">
 
-	import {Archive} from '{% static "lib/libarchive/src/libarchive.js" %}';
+	import { Archive } from "{% static "lib/libarchive/src/libarchive.js" %}";
 
 	Archive.init({
-		workerUrl: '{% static "lib/libarchive/dist/worker-bundle.js" %}'
+		workerUrl: "{% static "lib/libarchive/dist/worker-bundle.js" %}"
 	});
 
 	async function extractFiles(archive){
@@ -129,7 +127,7 @@
 </script>
 
 <script>
-	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+	const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
 	const languages = {{ SUPPORTED_LANGUAGES | js }};
 	const statuses = {{ STATUSES | js }};
