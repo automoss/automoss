@@ -19,6 +19,7 @@ from .models import Match
 #     }
 #     return render(request, "results/index.html", context)
 
+
 @method_decorator(login_required, name='dispatch')
 class Index(View):
     """ Result Index View """
@@ -27,9 +28,11 @@ class Index(View):
     def get(self, request, job_id):
         """ Get result """
         context = {
-            'matches': Match.objects.filter(moss_result__job__job_id=job_id)#, **match_user_is(request.user))
+            # , **match_user_is(request.user))
+            'matches': Match.objects.filter(moss_result__job__job_id=job_id)
         }
         return render(request, self.template, context)
+
 
 @method_decorator(login_required, name='dispatch')
 class ResultMatch(View):
@@ -39,15 +42,20 @@ class ResultMatch(View):
 
     def get(self, request, job_id, match_id):
         """ Get match """
-        match = Match.objects.get(match_id=match_id)#, **match_user_is(request.user))
+        match = Match.objects.get(
+            match_id=match_id)  # , **match_user_is(request.user))
         submissions = {
             'first': match.first_submission,
             'second': match.second_submission
         }
 
+        # Add IDs to matches to ensure matching
+        match_info = {k: v for k, v in enumerate(match.line_matches, start=1)}
+
         blocks = {}
 
         for submission_type, submission in submissions.items():
+
             file_path = SUBMISSION_UPLOAD_TEMPLATE.format(
                 job_id=job_id,
                 file_type='files',
@@ -57,13 +65,13 @@ class ResultMatch(View):
             with open(file_path) as fp:
                 lines = fp.readlines()
 
-            # sort line matches by submission_type's from field:
-            match.line_matches.sort(key=lambda x: x[submission_type]['from'])
-
-            # for line in lines:
             blocks[submission_type] = []
             current = 0
-            for match_id, match_lines in enumerate(match.line_matches, start=1):
+
+            sorted_info = sorted(
+                match_info.items(), key=lambda item: item[-1][submission_type]['from'])
+            for match_id, match_lines in sorted_info:
+                # TODO maybe return list of lines, not joined
                 blocks[submission_type].append({
                     'text': ''.join(lines[current:match_lines[submission_type]['from']])
                 })
