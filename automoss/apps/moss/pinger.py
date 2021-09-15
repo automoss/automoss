@@ -6,6 +6,7 @@ import platform
 import subprocess
 import time
 from ...redis import REDIS_INSTANCE
+from .moss import MOSS_URL
 
 
 class LoadStatus(Enum):
@@ -55,9 +56,8 @@ class Pinger:
     @staticmethod
     def ping():
         # Pings moss, and updates current known ping
-
         # TODO get MOSS URL
-        data = ping('moss.stanford.edu', count=PING_COUNT)
+        data = ping(MOSS_URL, count=PING_COUNT)
         if data:
             # Valid data to update with
 
@@ -70,8 +70,8 @@ class Pinger:
                 Pinger.set_current_ping(new_ping)
             else:
                 alpha_to_use = UP_ALPHA if new_ping > current_ping else DOWN_ALPHA
-                new_ping2 = alpha_to_use * new_ping + (1-alpha_to_use) * current_ping
-                Pinger.set_current_ping(new_ping2)
+                Pinger.set_current_ping(
+                    alpha_to_use * new_ping + (1-alpha_to_use) * current_ping)
 
         return data
 
@@ -99,14 +99,11 @@ def ping(server, count=1, wait_sec=1):
             'loss': loss
         }
     except Exception as e:
-        print(e)
-        return None
+        return None  # Unable to parse info. Server is most likely down
 
 
 def monitor():
     # Monitor status of MOSS
-    # TODO monitor stddev
-
     while True:
-        data = Pinger.ping()
+        Pinger.ping()
         time.sleep(PING_EVERY)
