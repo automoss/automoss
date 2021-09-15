@@ -258,7 +258,7 @@
 		jobDropZone.reset();
 	};
 
-	jobDropZone.onFileAdded = () => {
+	jobDropZone.onFileAdded = (jobDropZoneFile) => {
 		if (jobDropZone.files.length == 1) {
 			zipFile = jobDropZone.files[0].file;
 
@@ -285,6 +285,10 @@
 
 			createJobButton.disabled = false;
 		}
+
+		jobDropZoneFile.addTag("PY", "orange");
+		jobDropZoneFile.addTag("Single", "blue");
+
 	};
 
 	jobDropZone.onFileRemoved = () => {

@@ -28,7 +28,7 @@ drop-zone-file > #info > #remove-button
 }
 drop-zone-file > #info > #remove-button > img
 {
-    content: url("/static/img/remove.png");
+    content: url("/static/img/trash.svg");
     width: 100%;
     height: 100%;
 }

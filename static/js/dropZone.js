@@ -60,7 +60,7 @@ class DropZone extends HTMLElement {
 		this.files.push(dropZoneFile);
 		this.fileList.append(dropZoneFile);
 
-		this.onFileAdded();
+		this.onFileAdded(dropZoneFile);
 	}
 
 	removeFile(file) {
@@ -127,7 +127,7 @@ class DropZone extends HTMLElement {
 		}
 	}
 
-	onFileAdded(){
+	onFileAdded(dropZoneFile){
 	}
 
 	onFileRemoved(){
