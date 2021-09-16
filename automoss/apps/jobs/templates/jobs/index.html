@@ -10,30 +10,48 @@
 <script src="{% static "js/dropZoneFile.js" %}" defer></script>
 <script src="{% static "js/dropZone.js" %}" defer></script>
 <script src="{% static "lib/jszip.min.js" %}" defer></script>
-<script src="{% static "js/job.js" %}" defer></script>
 {% endblock %}
 
 {% block "main-content" %}
 
-<h2 class="mb-3">Jobs</h2>
+<!-- Navigation -->
+<a class="link-dark ps-2" style="text-decoration: none;" href="{% url "jobs:index" %}">
+	Home 
+	<svg class="m-1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 19">
+	<path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+  	</svg> 
+  	Jobs
+</a> 
+
+<!-- Page Title -->
+<h2 class="py-2 px-1 text-bold">
+	<b>Submitted Jobs</b>
+</h2>
+
+<!-- Content -->
+<div class="container-fluid shadow-sm bg-white py-3 px-4 rounded-3">
 
 <!-- Search/Create -->
-<div class="row mb-4">
+<div class="row mb-3">
 	<div class="col-lg-12">
-		<div class="input-group">
+		<div class="input-group px-1 pt-2 justify-content-between">
 			<input class="form-control me-2 rounded" type="search" placeholder="Search..." aria-label="Search">
 			<span class="input-group-btn">
-				<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createJob">Create Job</button>
+				<button type="button" class="btn btn-primary text-light rounded-pill" data-bs-toggle="modal" data-bs-target="#createJob">
+					<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-plus" viewBox="4 2.5 13 13">
+						<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+					  </svg>
+					Create Job</button>
 			</span>
 		</div>
 	</div>
 </div>
 
 <!-- Table -->
-<table id="job-table" class="table table-striped border" style="background-color: white">
+<table id="job-table" class="table table-hover table-striped border rounded-3" style="background-color: white">
 
 	<!-- Headings -->
-	<thead>
+	<thead class="table-dark">
 		<tr>
 			<th scope="col" style="width: 30%">Name</th>
 			<th scope="col" style="width: 30%">Language</th>
@@ -43,7 +61,8 @@
 	</thead>
 	
 	<!-- Jobs -->
-	<tbody></tbody>
+	<tbody>
+	</tbody>
 
 </table>
 
@@ -107,8 +126,11 @@
 		</div>
 	</div>
 </div>
+</div>
 
 <script>
+window.addEventListener('DOMContentLoaded', function(){
+
 	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
 	const container = document.getElementById('createJob');
@@ -136,6 +158,65 @@
 	let uploadingStatus = "{{ UPLOADING_STATUS }}";
 	let failedStatus = "{{ FAILED_STATUS }}";
 
+	class Job extends HTMLTableRowElement{
+		constructor(obj) {
+			super()
+			Object.assign(this, obj)
+
+			this.setAttribute('job_id', obj.job_id)
+			this.setAttribute('status', obj.status)
+
+			this.tableComment = document.createElement('td')
+			this.tableComment.innerHTML = this.comment;
+			
+			this.tableLanguage = document.createElement('td')
+			this.tableLanguage.innerHTML = languages[this.language][0];
+
+			this.tableStartDate = document.createElement('td')
+			this.tableStartDate.innerHTML = new Date(this.start_date).toLocaleString();
+			
+			let tableStatusCell = document.createElement('td')
+			this.tableStatus = document.createElement('span')
+			tableStatusCell.append(this.tableStatus)
+			
+			this.append(this.tableComment)
+			this.append(this.tableLanguage)
+			this.append(this.tableStartDate)
+			this.append(tableStatusCell)
+
+			this.setStatus(this.status)
+		}
+
+		setStatus(newStatus){
+			this.tableStatus.innerHTML = statuses[newStatus]
+			if(newStatus == completedStatus){
+				this.tableComment.innerHTML = `<a href="/jobs/${this.job_id}/result/" class="text-primary" style="text-decoration: none;">${this.comment}</a>`
+			}
+
+			this.tableStatus.className = '';
+			
+			let classes = ['badge'];
+			switch(newStatus){
+				
+				case completedStatus:
+					classes.push('bg-success')
+					break;
+				case processingStatus:
+					classes.push('bg-info')
+					break;
+				case uploadingStatus:
+					classes.push('bg-warning')
+					break;
+				
+				default:
+					classes.push('bg-danger')
+					break;
+			}
+
+			this.tableStatus.classList.add(...classes)
+		}
+	}
+	customElements.define('job-row', Job, { extends: 'tr' });
 
 	let unfinishedJobs = [];
 	let result = fetch("{% url "api:jobs:get_jobs" %}", {
@@ -329,7 +410,7 @@
 		updateFormData();
 	};
 
-
+})
 </script>
 
 
