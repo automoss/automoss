@@ -260,6 +260,12 @@
 			}
 		}
 
+		// Can't submit only 1 student
+		if (numStudents <= 1){
+			displayError("Please submit more than 1 students' files.");
+			return;
+		}
+
 		// Submit a new job with the created form
 		let result = await fetch("{% url "jobs:new" %}", {
 			method: 'POST',
