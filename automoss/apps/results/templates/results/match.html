@@ -79,7 +79,8 @@ document.querySelectorAll(".match").forEach(m => {
             }else{
                 toScrollTo = x.offsetTop - (parent.offsetHeight - x.offsetHeight)/2;
             }
-            parent.scrollTo({top: toScrollTo, behavior: 'smooth'});
+            parent.scrollTo({top: toScrollTo, left: 0, behavior: 'smooth'});
+
         })
 
     }); 
