@@ -13,6 +13,7 @@ from .redis import REDIS_URL
 from .apps.utils.core import capture_in
 from .apps.utils.core import first
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -88,9 +89,13 @@ WSGI_APPLICATION = 'automoss.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# If running unit tests, create an in-memory sqlite3 database.
+# Otherwise, create a mysql database
+DATABASE_ENGINE = 'sqlite3' if 'test' in sys.argv else 'mysql'
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': f'django.db.backends.{DATABASE_ENGINE}',
         'NAME': os.getenv("DB_NAME"),
         'HOST': os.getenv("DB_HOST"),
         'PORT': '3306',
