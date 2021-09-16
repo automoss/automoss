@@ -37,7 +37,7 @@ class DropZoneFile extends HTMLElement {
 		// Info > Tags
 		this.tags = document.createElement("div");
 		this.tags.id = "tags";
-		this.info.append(this.tags);
+		this.info.append(this.tags);	
 
 		// Info > Remove Button
 		this.removeButton = document.createElement("button");

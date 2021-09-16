@@ -44,10 +44,12 @@ function getFileNameFromPath(filePath){
  * Loops through all files and checks if it contains at least 1 source file (for a specific
  * programming language).
  */
-async function isSingleSubmission(files, language){
+async function isSingleSubmission(files){
 	for (var file of files){
-		if (isSource(file.name, language)){
-			return true;
+		for (var language of Object.keys(PROGRAM_EXTENSIONS)){
+			if (isSource(file.name, language)){
+				return true;
+			}
 		}
 	}
 	return false;
@@ -165,6 +167,8 @@ async function extractBatch(files, language, onExtract){
 }
 
 // Extend scope of functions to rest of WebApp
+window.isArchive = isArchive;
+window.isSource = isSource;
 window.isSingleSubmission = isSingleSubmission;
 window.extractSingle = extractSingle;
 window.extractBatch = extractBatch;
