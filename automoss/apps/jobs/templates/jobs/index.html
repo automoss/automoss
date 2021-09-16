@@ -89,7 +89,8 @@
 				</div>
 
 				<!-- Footer -->
-				<div class="modal-footer">
+				<div class="modal-footer d-flex justify-content-between">
+					<label class="text-danger" id="job-error-message"></label>
 					<div style="position: relative; min-height: 40px;">
 						<button id="create-job-button" type="submit" class="btn btn-primary" disabled>Create</button>
 					</div>
@@ -102,6 +103,7 @@
 
 <script src="{% static "js/job.js" %}"></script>
 <script src="{% static "js/jobSubmission.js" %}"></script>
+<link href="https://cdn.jsdelivr.net/animatecss/3.5.2/animate.min.css" rel="stylesheet" crossorigin="anonymous">
 
 <script type="module">
 
@@ -138,7 +140,7 @@
 	const failedStatus = "{{ FAILED_STATUS }}";
 
 	
-	// Jobs Table
+	// ----- Jobs Table -----
 
 	let jobTable = document.getElementById('job-table')
 	function addJob(job) {
@@ -201,9 +203,10 @@
 	},{{ POLLING_TIME }});
 
 
-	// Create Job
+	// ----- Create Job -----
 
-	let createJobModal = new bootstrap.Modal(document.getElementById('create-job-modal'));
+	let createJobModalElement = document.getElementById('create-job-modal');
+	let createJobModal = new bootstrap.Modal(createJobModalElement);
 	let createJobForm = document.getElementById('create-job-form')
 
 	let jobDropZone = document.getElementById('job-drop-zone')
@@ -211,8 +214,26 @@
 	let jobLanguage = document.getElementById('job-language')
 	let jobMaxMatchesUntilIgnored = document.getElementById('job-max-until-ignored');
 	let jobMaxMatchesDisplayed = document.getElementById('job-max-displayed-matches');
+	let jobErrorMessage = document.getElementById("job-error-message");
 	let createJobButton = document.getElementById('create-job-button');
 
+	let isDisplayingError = false;
+	function displayError(message){
+		if (isDisplayingError){
+			return;
+		}
+		jobErrorMessage.textContent = message;
+		createJobModalElement.classList.add("animated", "shake");
+		isDisplayingError = true;
+
+		setTimeout(function(){ 
+			jobErrorMessage.textContent = "";
+			createJobModalElement.classList.remove("animated", "shake");
+			isDisplayingError = false;
+		}, 3000);
+
+		//$dialog.one('webkitAnimationEnd oanimationend msAnimationEnd animationend', function() {});
+	}
 
 	createJobForm.onsubmit = async (e) => {
 
@@ -220,9 +241,11 @@
 
 		// Create a new form (and capture name, language, max matches until ignored and max matches displayed)
 		let jobFormData = new FormData(createJobForm);
+		let numStudents = 0;
 
 		function appendDataToForm(name, data){
 			jobFormData.append("{{ FILES_NAME }}", new Blob([data]), name);
+			numStudents++;
 		}
 
 		// Capture file data separately and append to created form
