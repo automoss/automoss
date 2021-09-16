@@ -3,37 +3,54 @@
 
 {% block "base-content" %}
 
-<div class="d-flex flex-column" style="min-height: 100vh; background-image: url({% static "img/shapes.png" %});">
-	<nav class="navbar navbar-expand navbar-dark bg-primary">
-		<div class="container container-fluid px-0">
+<!-- Page Area -->
+<div class="d-flex flex-column bg-light" style="min-height: 100vh">
+	<!-- Navbar -->
+	<nav class="navbar navbar-dark bg-dark shadow">
+		<div class="container-fluid px-5 py-1">
 			<a class="navbar-brand" href="{% url "jobs:index" %}">
-				<h1 class="my-0">Auto<b>MOSS</b></h1>
+				<h1 class="d-inline">Auto<b class="text-secondary">M<svg class="pb-1" xmlns="http://www.w3.org/2000/svg" width="29" height="29" fill="currentColor" class="bi bi-exclude" viewBox="0 0 16 16">
+  				<path d="M0 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2H2a2 2 0 0 1-2-2V2zm12 2H5a1 1 0 0 0-1 1v7h7a1 1 0 0 0 1-1V4z"/>
+				</svg>SS</b> </h1>
 			</a>
-			<a class="navbar-text navbar-right">
-				<div class="dropdown">
-					<label style="color: white; vertical-align: middle;">
-						Welcome back, {{ user }}!
-					</label>
-					<a href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-						<img src="{% static "img/account.png" %}" height=30px style="margin-left: 10px"></img>
-					</a>
-					<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink">
-						<li><a class="dropdown-item" href="#">Profile</a></li>
-						<li><hr class="dropdown-divider"></li>
-						<li><a class="dropdown-item" href="{% url 'users:logout' %}">Logout</a></li>
-					</ul>
-				</div>
-			</a>
+				
+			<!-- Dropdown Menu -->
+			<div class="dropdown">
+				<a class="btn btn-outline-info rounded-pill border-2 mx-2 dropdown-toggle" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
+					<svg class="mb-1 me-1" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16">
+						<path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+					</svg>
+					<span>{{ user }}</span>
+				</a>
+				<ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton2">
+				  <li><a class="dropdown-item text-light" href="#">
+					<svg class="me-1" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill" viewBox="2 2 16 16">
+							<path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+						</svg>  
+					Profile</a></li>
+				  <li><a class="dropdown-item text-light" href="{% url 'users:logout' %}">
+					<svg class="me-1" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+						<path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+						<path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+					  </svg>
+					Logout</a></li>
+				</ul>
+			  </div>
 		</div>
 	</nav>
 	
-	<div class="container flex-grow-1" style="padding: 50px 0 50px 0;">
-		{% block "main-content" %}{% endblock %}
+	<!-- Main Content Area -->
+	<div class="container-fluid flex-grow-1 py-4 px-5 bg-light" >
+		{% block "main-content" %}
+		
+		{% endblock %}
 	</div>
 	
-	<footer class="bg-primary shadow text-center p-3">
-		<label style="color: white;">Copyright © 2021 AutoMOSS. All Rights Reserved.</label>
+	<!-- Page Footer -->
+	<footer class="py-3 m-0 shadow-lg bg-dark text-center">
+		<label class="text-white">Copyright © 2021 <span class="text-secondary">AutoMOSS</span>. All Rights Reserved.</label>
 	</footer>
+
 </div>
 
 {% endblock %}
