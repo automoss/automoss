@@ -13,7 +13,7 @@ class Job extends HTMLTableRowElement{
 		this.tableLanguage.innerHTML = languages[this.language][0];
 
 		this.tableStartDate = document.createElement('td')
-		this.tableStartDate.innerHTML = new Date(this.start_date).toLocaleString();
+		this.tableStartDate.innerHTML = new Date(this.creation_date).toLocaleString();
 		
 		let tableStatusCell = document.createElement('td')
 		this.tableStatus = document.createElement('span')
@@ -35,22 +35,7 @@ class Job extends HTMLTableRowElement{
 
 		this.tableStatus.className = '';
 		
-		let classes = ['badge'];
-		switch(newStatus){
-			
-			case completedStatus:
-				classes.push('bg-success')
-				break;
-			case processingStatus:
-				classes.push('bg-info')
-				break;
-			case uploadingStatus:
-				classes.push('bg-warning')
-				break;		
-			default:
-				classes.push('bg-danger')
-				break;
-		}
+		let classes = ['badge', statusMapping[newStatus]];
 
 		this.tableStatus.classList.add(...classes)
 	}
