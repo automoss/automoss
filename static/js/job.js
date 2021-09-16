@@ -30,7 +30,7 @@ class Job extends HTMLTableRowElement{
 	setStatus(newStatus){
 		this.tableStatus.innerHTML = statuses[newStatus]
 		if(newStatus == completedStatus){
-			this.tableComment.innerHTML = `<a href="/jobs/${this.job_id}/result/" style="text-decoration: none;">${this.comment}</a>`
+			this.tableComment.innerHTML = `<a href="/jobs/${this.job_id}/result/" class="text-secondary" style="text-decoration: none;">${this.comment}</a>`
 		}
 
 		this.tableStatus.className = '';
