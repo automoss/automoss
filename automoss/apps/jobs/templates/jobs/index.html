@@ -1,91 +1,12 @@
 {% extends "main.html" %}
-
 {% load static %}
 
 {% block "main-content" %}
 
-<div class="mb-3"> <h2>Jobs</h2> </div>
+<h2 class="mb-3">Jobs</h2>
 
-<style>
-	.files
-	{
-		outline: 2px dashed #cccccc;
-		outline-offset: -10px;
-		-webkit-transition: outline-offset .15s ease-in-out, background-color .15s linear;
-		transition: outline-offset .15s ease-in-out, background-color .15s linear;
-		padding: 120px 0px 85px 35%;
-		text-align: center !important;
-		margin: 0;
-		width: 100% !important;
-	}
-	.files input
-	{
-		cursor: pointer;
-		position: absolute;
-		opacity: 0;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		width:100%;
-	}
-	.files input:focus
-	{     
-		outline: 2px dashed #92b0b3;  
-		outline-offset: -10px;
-		-webkit-transition: outline-offset .15s ease-in-out, background-color .15s linear;
-		transition: outline-offset .15s ease-in-out, background-color .15s linear; border:1px solid #92b0b3;
-	}
-	.files
-	{ 
-		position:relative
-	}
-	.files:after 
-	{  
-		pointer-events: none;
-		position: absolute;
-		top: 60px;
-		left: 0;
-		width: 70px;
-		right: 0;
-		height: 70px;
-		content: "";
-		background-image: url({% static "img/upload.png" %});
-		display: block;
-		margin: 0 auto;
-		background-size: 100%;
-		background-repeat: no-repeat;
-	}
-	.files[selected]:after{
-		background-image: url({% static "img/zip.png" %});
-	}
-	
-	.color input
-	{ 
-		background-color:#f1f1f1;
-	}
-	.files:before 
-	{
-		position: absolute;
-		bottom: 10px;
-		left: 0;
-		pointer-events: none;
-		width: 100%;
-		right: 0;
-		height: 57px;
-		content: "Choose a file, or drag it here.";
-		display: block;
-		margin: 0 auto;
-		color: darkslategray;
-		text-align: center;
-	}
-	.files[selected]:before{
-		content: "File selected";
-	}
-
-</style>
-
-<div class="row">
+<!-- Search/Create -->
+<div class="row mb-4">
 	<div class="col-lg-12">
 		<div class="input-group">
 			<input class="form-control me-2 rounded" type="search" placeholder="Search..." aria-label="Search">
@@ -94,68 +15,12 @@
 			</span>
 		</div>
 	</div>
-</div><br>
-
-<div class="modal fade" id="createJob" tabindex="-1" aria-labelledby="createJobLabel" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered">
-		<div class="modal-content">
-			<form id="create-job-form">
-				{% csrf_token %}
-
-				<div class="modal-header">
-					<h5 class="modal-title" id="createJobLabel">Create Job</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-					<div class="modal-body">
-
-						<!-- Submission files -->
-						<div id="file-dropzone" class="mb-3 files">
-							<input id="job-submission-files" type="file" class="form-control-file" accept=".zip">
-						</div>
-					
-						<!-- Name -->
-						<div class="mb-3">
-							<label for="job-name">Name:</label>
-							<input id="job-name" type="text" name="job-name" class="form-control" autocomplete="off" data-lpignore="true" data-form-type="text">
-						</div>
-
-						<!-- Language -->
-						<div class="mb-3">
-							<label for="job-language">Language:</label>
-							<select class="form-select" id="job-language" name="job-language" data-form-type="other">
-
-							{% for language, info in SUPPORTED_LANGUAGES.items %}
-								<option language-id={{language}}>{{info.0}} </option>
-							{% endfor %}
-
-							</select>
-						</div>
-
-						<!-- Max until ignored -->
-						<div class="mb-3">
-							<label for="job-max-until-ignored">Max until ignored:</label><br>
-							<input id="job-max-until-ignored" type="number" name="job-max-until-ignored" value="{{ DEFAULT_MOSS_SETTINGS.max_until_ignored }}">
-						</div>
-
-						<!-- Max displayed matches -->
-						<div class="mb-3">
-							<label for="job-max-displayed-matches">Max displayed matches:</label><br>
-							<input id="job-max-displayed-matches" type="number" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}">
-						</div>
-					</div>
-				<div class="modal-footer">
-					<div style="position: relative; min-height: 40px;">
-						<button id="create-job-button" type="submit" class="btn btn-primary" disabled>Create</button>
-					</div>
-				</div>
-			</form>
-		</div>
-	</div>
 </div>
 
+<!-- Table -->
 <table id="job-table" class="table table-striped border" style="background-color: white">
 
-	<!-- Column headings -->
+	<!-- Headings -->
 	<thead>
 		<tr>
 			<th scope="col" style="width: 30%">Name</th>
@@ -170,13 +35,74 @@
 
 </table>
 
-<div id="no-jobs-message" class="container text-center" style="display:none">
-	No jobs have been created yet!
+<div id="no-jobs-message" class="container text-center" style="display: none">No jobs have been created yet!</div>
+
+<!-- Modal -->
+<div class="modal fade" id="createJob" tabindex="-1" aria-labelledby="createJobLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<form id="create-job-form">
+
+				{% csrf_token %}
+
+				<div class="modal-header">
+					<h5 class="modal-title" id="createJobLabel">Create Job</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+
+				<div class="modal-body" id="create-job-body">
+
+					<!-- Drop Zone -->
+					<link href="{% static "css/dropZoneFile.css" %}" rel="stylesheet">
+					<link href="{% static "css/dropZone.css" %}" rel="stylesheet">
+					<div class="mb-3">
+						<drop-zone id="drop-zone"></drop-zone>
+					</div>
+					<script src="{% static "js/dropZoneFile.js" %}"></script>
+					<script src="{% static "js/dropZone.js" %}"></script>
+
+					<!-- Name -->
+					<div class="mb-3">
+						<label for="job-name">Name:</label>
+						<input class="form-control" id="job-name" type="text" name="job-name" autocomplete="off" data-lpignore="true" data-form-type="text">
+					</div>
+
+					<!-- Language -->
+					<div class="mb-3">
+						<label for="job-language">Language:</label>
+						<select class="form-select" id="job-language" name="job-language" data-form-type="other">
+							{% for language, info in SUPPORTED_LANGUAGES.items %}
+								<option language-id={{language}}>{{info.0}} </option>
+							{% endfor %}
+						</select>
+					</div>
+
+					<!-- Max until ignored -->
+					<div class="mb-3">
+						<label for="job-max-until-ignored">Max matches until ignored:</label>
+						<input class="form-control" id="job-max-until-ignored" type="number" name="job-max-until-ignored" value="{{ DEFAULT_MOSS_SETTINGS.max_until_ignored }}">
+					</div>
+
+					<!-- Max displayed matches -->
+					<div class="mb-3">
+						<label for="job-max-displayed-matches">Max matches displayed:</label>
+						<input class="form-control" id="job-max-displayed-matches" type="number" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}">
+					</div>
+				</div>
+
+				<div class="modal-footer">
+					<div style="position: relative; min-height: 40px;">
+						<button id="create-job-button" type="submit" class="btn btn-primary" data-bs-dismiss="modal" disabled>Create</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"
-    integrity="sha512-xQBQYt9UcgblF6aCMrwU1NkVA7HCXaSN2oq0so80KO+y68M+n64FOcqgav4igHe6D5ObBLIf68DWv+gfBowczg=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="{% static "lib/jszip.min.js" %}"></script>
+
+<script src="{% static "js/job.js" %}"></script>
 
 <script>
 	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -247,6 +173,10 @@
 	const modal = new bootstrap.Modal(container);
 	
 	let languageSelect = document.getElementById('job-language')
+	let jobName = document.getElementById('job-name');
+	let maxMatchesUntilIgnored = document.getElementById('job-max-until-ignored');
+	let maxMatchesDisplayed = document.getElementById('job-max-displayed-matches');
+	let createJobButton = document.getElementById('create-job-button');
 
 
 	let jobTable = document.getElementById('job-table')
@@ -293,79 +223,13 @@
 			if(isTerminalState(value)){
 				unfinishedJobs = unfinishedJobs.filter(item => item !== key)
 			}
-
 		}
 		
 		// TODO update jobs information
 	},{{ POLLING_TIME }});
 
-	let dropzone = document.getElementById('file-dropzone')
-	dropzone.addEventListener('dragenter', function(){
-		dropzone.style.backgroundColor = "#EFFAFF";
-	});
-
-	dropzone.addEventListener('dragleave', function(){
-		dropzone.style.backgroundColor = "#FFFFFF";
-	});
-
-	dropzone.addEventListener('drop', function(){
-		dropzone.style.backgroundColor = "#FFFFFF";
-	});
-
-	function getFileName(name){
-		return name.split('.').shift();
-	}
     let form = document.getElementById('create-job-form')
 
-    let input = document.getElementById('job-submission-files')
-	input.onchange = (e) => {
-
-		let zipFile = input.files[0];
-		if (!zipFile) {
-			// TODO - display error, no files
-			return;
-		}
-
-		let zipName = zipFile.name;
-
-		if(getExtension(zipName) != 'zip'){
-			input.value = '';
-			return;
-		}
-
-		document.getElementById('create-job-button').disabled = false;
-
-		// TODO Check that it is a zip file
-
-		dropzone.setAttribute('selected', true);
-
-		let jobName = document.getElementById('job-name')
-		jobName.value = jobName.value || getFileName(zipName)
-		
-		// TODO select extension based on most popular
-		JSZip.loadAsync(zipFile).then((zip)=>{
-			
-			// initialise counts:
-			let d = {};
-			for (let key in languages){
-				d[key] = 0;
-			}
-
-			zip.forEach(function (relativePath, file) {
-				let extension = getExtension(file.name);
-
-				for (let key in languages){
-					console.log()
-					if(languages[key][2].includes(extension)){
-						d[key] += 1;
-					}
-				}
-			});
-
-			let bestID = Object.entries(d).reduce((a, b) => a[1] > b[1] ? a : b)[0]
-			languageSelect.value = languages[bestID][0];
-		});
-	}
 
     // TODO increase list
 
@@ -376,6 +240,7 @@
 	// TODO
 	{% comment %} data.append("{{ BASE_FILES_NAME }}", blob, zipEntry.name) {% endcomment %}
 
+	const dropzone = document.getElementById('drop-zone')
 	// https://stackoverflow.com/a/50472925
 	form.onsubmit = async (e) => {
 
@@ -385,7 +250,7 @@
 		let data = new FormData(form);
 
 		// Read zip file
-		let zipFile = input.files[0];
+		let zipFile = dropzone.files[0].file;
 		if (!zipFile) {
 			// TODO - display error, no files
 			return;
@@ -435,11 +300,73 @@
 
 		unfinishedJobs.push(json['job_id'])
 
-		// Reset previous job settings:
-		dropzone.removeAttribute('selected');
+
+
+		// RESET
 		form.reset();
+		dropzone.reset();
 	};
 
+
+	function updateFormData(){
+
+
+		if (dropzone.files.length > 0)
+		{
+			zipFile = dropzone.files[0].file; // TODO just first for now...
+
+			// name
+			jobName.value = jobName.value || zipFile.name.slice(0, zipFile.name.length - 4);
+
+			// programming language
+			JSZip.loadAsync(zipFile).then((zip)=>{
+				
+				// initialise counts:
+				let d = {};
+				for (let key in languages){
+					d[key] = 0;
+				}
+
+				zip.forEach(function (relativePath, file) {
+					let extension = getExtension(file.name);
+
+					for (let key in languages){
+						console.log()
+						if(languages[key][2].includes(extension)){
+							d[key] += 1;
+						}
+					}
+				});
+
+				let bestID = Object.entries(d).reduce((a, b) => a[1] > b[1] ? a : b)[0]
+				languageSelect.value = languages[bestID][0];
+			});
+
+			createJobButton.disabled = false;
+		}
+		else
+		{
+			jobName.value = "";
+			languageSelect.selectedIndex = 0;
+			maxMatchesUntilIgnored.value = {{ DEFAULT_MOSS_SETTINGS.max_until_ignored }};
+			maxMatchesDisplayed.value = {{ DEFAULT_MOSS_SETTINGS.max_displayed_matches }};
+
+			createJobButton.disabled = true;
+		}
+	}
+
+	dropzone.onFileAdded = () =>
+	{
+		updateFormData();
+	};
+
+	dropzone.onFileRemoved = () =>
+	{
+		updateFormData();
+	};
+
+
 </script>
+
 
 {% endblock %}

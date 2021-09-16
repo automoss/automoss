@@ -1,0 +1,48 @@
+{% extends "users/auth/base.html" %}
+
+{% block "login-content" %}
+
+<form class="d-flex flex-grow-1 flex-column bg-white shadow-lg p-4 m-4 " method="post" action="{% url 'users:login' %}" style="min-width: 400px; max-width: 50%;">
+
+	{% csrf_token %}
+	
+	<h3 class="mb-4">Login</h3>
+
+	{% if errors %}
+		<p style="color: red">Your username or password were incorrect. Please try again.</p>
+	{% endif %}
+
+	{% if next %}
+		{% if user.is_authenticated %}
+			<p>Unauthorized access. Please login to a different account.</p>
+		{% else %}
+			<p style="color: red">Please login to access this page.</p>
+		{% endif %}
+	{% endif %}
+
+	<div class="mb-3">
+		<label for="id_username" class="form-label">Username: </label>
+		<input type="text" name="username" class="form-control" id="id_username">
+	</div>
+	
+	<div class="mb-3">
+		<label for="id_password" class="form-label">Password: </label>
+		<input type="password" name="password" class="form-control" id="id_password">
+	</div>
+
+	<div class="mb-3">
+		<input id="remember-me" type="checkbox" class="form-check-input">
+		<label class="form-check-label" for="remember-me">Remember me?</label>
+	</div>
+
+	<div class="mb-3">
+		<input type="submit" class="btn btn-primary" value="Log in"/>
+	</div>
+
+	<div class="mb-3">
+		Don't have an account yet? <a href="" style="text-decoration: none">Register.</a>
+	</div>
+	
+</form>
+
+{% endblock %}

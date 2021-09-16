@@ -1,0 +1,36 @@
+{% extends "users/auth/base.html" %}
+
+{% block "login-content" %}
+
+<form class="d-flex flex-grow-1 flex-column bg-white shadow-lg p-4 m-4 " method="post" action="{% url 'users:register' %}" style="min-width: 400px; max-width: 50%;">
+
+	{% csrf_token %}
+	
+	<h3 class="mb-4">Register</h3>
+    
+	<div class="mb-3">
+		<label for="id_username" class="form-label">Username: </label>
+		<input type="text" name="username" class="form-control" id="id_username">
+	</div>
+    
+    <div class="mb-3">
+		<label for="id_email" class="form-label">Email: </label>
+		<input type="text" name="email" class="form-control" id="id_email">
+	</div>
+	
+	<div class="mb-3">
+		<label for="id_password" class="form-label">Password: </label>
+		<input type="password" name="password" class="form-control" id="id_password">
+	</div>
+
+	<div class="mb-3">
+		<input type="submit" class="btn btn-primary" value="Register"/>
+	</div>
+
+	<div class="mb-3">
+		Already have an account? <a href="" style="text-decoration: none">Log in.</a>
+	</div>
+	
+</form>
+
+{% endblock %}

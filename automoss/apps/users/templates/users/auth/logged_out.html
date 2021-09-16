@@ -1,0 +1,14 @@
+{% extends "users/auth/base.html" %}
+
+{% block "login-content" %}
+
+<div class="d-flex flex-column bg-white shadow-lg p-4 m-4">
+	<div>
+		<h4 class="mb-4">You have been logged out.</h4>
+	</div>
+	<div class="d-flex justify-content-center">
+		<a class = "btn btn-primary" href="{% url "users:login" %}">Login</a>
+	</div>
+</div>
+
+{% endblock %}
