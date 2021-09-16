@@ -19,6 +19,9 @@ from .models import Match
 #     }
 #     return render(request, "results/index.html", context)
 
+from ..jobs.models import Job
+from ...settings import SUPPORTED_LANGUAGES
+
 
 @method_decorator(login_required, name='dispatch')
 class Index(View):
@@ -32,7 +35,6 @@ class Index(View):
             'matches': Match.objects.filter(moss_result__job__job_id=job_id)
         }
         return render(request, self.template, context)
-
 
 @method_decorator(login_required, name='dispatch')
 class ResultMatch(View):
@@ -93,9 +95,14 @@ class ResultMatch(View):
             '0, 0, 255',
         ]
 
+        job = Job.objects.get(job_id=job_id)
+        # Get highlighter name
+        job_language = SUPPORTED_LANGUAGES[job.language][3]
+        
         context = {
             'blocks': blocks,
-            'colours': colours
+            'colours': colours,
+            'language': job_language
         }
         return render(request, self.template, context)
 

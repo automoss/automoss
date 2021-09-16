@@ -179,17 +179,19 @@ CELERY_CONCURRENCY = 4  # None
 LANGUAGE_CONTEXT = {}
 with capture_in(LANGUAGE_CONTEXT):
     # Supported languages
-    SUPPORTED_LANGUAGES = {
-        # CODE : (Name, moss_name, [extensions])
 
-        'PY': ('Python', 'python', ['py']),  # pyi, pyc, pyd, pyo, pyw, pyz
-        'JA': ('Java', 'java', ['java']),  # class, jar
-        'CP': ('C++', 'cc', ['C', 'cc', 'cpp', 'cxx', 'c++', 'h', 'H', 'hh', 'hpp', 'hxx', 'h++']),
-        'CX': ('C', 'c', ['c', 'h']),
-        'CS': ('C#', 'csharp', ['cs', 'csx']),
-        'JS': ('Javascript', 'javascript', ['js']),  # cjs, mjs
-        'PL': ('Perl', 'perl', ['pl', 'plx', 'pm', 'xs', 't', 'pod']),
-        'MP': ('MIPS assembly', 'mips', ['asm', 's']),
+    # https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md
+
+    SUPPORTED_LANGUAGES = {
+        # CODE : (Name, moss_name, [extensions], highlight_name)
+        'PY': ('Python', 'python', ['py'], 'python'),  # pyi, pyc, pyd, pyo, pyw, pyz
+        'JA': ('Java', 'java', ['java'], 'java'),  # class, jar
+        'CP': ('C++', 'cc', ['C', 'cc', 'cpp', 'cxx', 'c++', 'h', 'H', 'hh', 'hpp', 'hxx', 'h++'], 'cpp'),
+        'CX': ('C', 'c', ['c', 'h'], 'c'),
+        'CS': ('C#', 'csharp', ['cs', 'csx'], 'csharp'),
+        'JS': ('Javascript', 'javascript', ['js'], 'javascript'),  # cjs, mjs
+        'PL': ('Perl', 'perl', ['pl', 'plx', 'pm', 'xs', 't', 'pod'], 'perl'),
+        'MP': ('MIPS assembly', 'mips', ['asm', 's'], 'x86asm'),
 
         # TODO decide which to add, and add extensions
         # 'LP' : ('Lisp', 'lisp', []),
