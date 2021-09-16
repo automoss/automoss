@@ -105,20 +105,69 @@
 <script src="{% static "js/jobSubmission.js" %}"></script>
 <link href="https://cdn.jsdelivr.net/animatecss/3.5.2/animate.min.css" rel="stylesheet" crossorigin="anonymous">
 
+<script src="{% static "lib/uncompress/pako.min.js" %}"></script>
+<script src="{% static "lib/uncompress/uncompress.js" %}"></script>
 <script type="module">
 	import { Archive } from "{% static "lib/libarchive/src/libarchive.js" %}";
 
 	Archive.init({
 		workerUrl: "{% static "lib/libarchive/dist/worker-bundle.js" %}"
 	});
+	
+	let loadFormatsPromise = new Promise((resolve, reject) => {
+		loadArchiveFormats(["zip", "tar", "rar"], () => {
+			resolve();
+		});
+	});
 
-	async function extractFiles(archive){
-		let opened = await Archive.open(archive);
-		await opened.extractFiles();
+	async function extractAll(file, password) {
+		
+		// Wait until formats have been loaded
+		await loadFormatsPromise;
+
+		// Wait until archived has been opened
+		let openArchivePromise = new Promise((resolve, reject) => {
+			archiveOpenFile(file, password, (archive) => {
+				resolve(archive);
+			});
+		});
+		let archive = await openArchivePromise;
+
+		// Wait until all the files have been read
+		let readPromises = []
+
+		archive.entries.forEach(function(entry) {
+			if(entry.is_file){
+				readPromises.push(new Promise((resolve, reject)=>{
+					entry.readData(function(entryData){
+						resolve({name: entry.name, data: entryData});
+					});
+				}));
+			}
+			
+		});
+		return await Promise.all(readPromises);
+	}
+
+
+	async function extractFiles(arch){
 		let files = [];
-		let filesArr = await opened.getFilesArray();
-		for (let fileObj of filesArr){
-			files.push(fileObj.file);
+		
+		if(arch.name.endsWith('tar.xz')){
+			// Use webworker to read
+			// https://github.com/nika-begiashvili/libarchivejs
+			// TODO do not request worker
+			let opened = await Archive.open(arch);
+			await opened.extractFiles();
+
+			for (let fileObj of await opened.getFilesArray()){
+				files.push(fileObj.file);
+			}
+		}else{
+			// Read natively
+			for (let file of await extractAll(arch)){
+				files.push(new File([file.data], file.name))
+			}
 		}
 		return files;
 	}
