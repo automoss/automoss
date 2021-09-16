@@ -15,7 +15,8 @@ class JobsConfig(AppConfig):
         from ...celery import app
         
         if is_main_thread():
-            app.control.purge()
+            num_purged = app.control.purge()
+            print('Purged', num_purged, 'tasks.')
             unfinished_jobs = Job.objects.exclude(
                 status__in=[COMPLETED_STATUS, FAILED_STATUS])
             for job in unfinished_jobs:
