@@ -98,8 +98,10 @@ class ResultMatch(View):
         job = Job.objects.get(job_id=job_id)
         # Get highlighter name
         job_language = SUPPORTED_LANGUAGES[job.language][3]
-        
+
         context = {
+            'submissions': submissions,
+            'match_info': match_info,
             'blocks': blocks,
             'colours': colours,
             'language': job_language
