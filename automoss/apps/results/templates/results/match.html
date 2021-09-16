@@ -1,95 +1,113 @@
 {% extends "main.html" %}
+{% load static %}
 
 {% block "main-content" %}
 
 <link rel="stylesheet"
-      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/github.min.css">
+	  href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/github.min.css">
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
-
-{% comment %} <div class="mb-3"> <h2>Matches</h2> </div> {% endcomment %}
 
 {{submissions}}
 {{match_info}}
+
 <style>
-
 pre {
-    float: left;
-    min-width: 100%;
-    margin:0;
+	float: left;
+	min-width: 100%;
+	margin:0;
 }
-
-
 .match {
-    transition: all ease-out 0.1s;
+	transition: all ease-out 0.1s;
 }
-
 .code-window{
-    position:relative;
+	position:relative;
 }
-
 </style>
 
-<body>
 <div class="container d-flex shadow" style="background-color:white;padding:0; max-height: calc(100vh - 350px)">
-    
-    {% for key, values in blocks.items %}
-    <div class="code-window w-50" style="overflow-x:auto; border: solid 1px">
-        
-        {% for x in values %}
-            <pre {% if x.id %} match="{{x.id}}" class="language-{{language}} match" {% else %} class="language-{{language}}" {% endif %}>{{x.text}}</pre>
-        {% endfor %}
-
-    </div>
-    {% endfor %}
-    
+	{% for key, values in blocks.items %}
+	<div class="code-window w-50" style="overflow-x:auto; border: solid 1px">
+		{% for x in values %}
+			<pre {% if x.id %} match="{{x.id}}" class="language-{{language}} match" {% else %} class="language-{{language}}" {% endif %}>{{x.text}}</pre>
+		{% endfor %}
+	</div>
+	{% endfor %}
 </div>
-</body>
+<button class="btn btn-primary download-pdf" onClick="downloadAsPDF();">Download</button>
+
+<script src="{% static "lib/html2canvas.min.js" %}"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
 <script>
-hljs.configure({
-    cssSelector: 'pre'
-})
-hljs.highlightAll();
+	hljs.configure({
+		cssSelector: 'pre'
+	})
+	hljs.highlightAll();
 
-let colours = {{ colours | js }};
+	let colours = {{ colours | js }};
 
-let hoverOpacity = 0.5;
-let defaultOpacity = 0.2;
-function setMatches(matchID, opacity){
-    document.querySelectorAll(`.match[match="${matchID}"]`).forEach(x=>{
-        x.style.backgroundColor = `rgba(${colours[matchID % colours.length]}, ${opacity})`;
-    })
-}
-document.querySelectorAll(".match").forEach(m => {
-    let matchID = m.getAttribute('match');
-    console.log(matchID);
+	let hoverOpacity = 0.5;
+	let defaultOpacity = 0.2;
+	function setMatches(matchID, opacity){
+		document.querySelectorAll(`.match[match="${matchID}"]`).forEach(x=>{
+			x.style.backgroundColor = `rgba(${colours[matchID % colours.length]}, ${opacity})`;
+		})
+	}
+	document.querySelectorAll(".match").forEach(m => {
+		let matchID = m.getAttribute('match');
+		console.log(matchID);
 
-    m.addEventListener("mouseover", e => {
-        setMatches(matchID, hoverOpacity);
-    });
-    
-    m.addEventListener("mouseout", e => {
-        setMatches(matchID, defaultOpacity);
-    });
-    m.addEventListener("click", e => {
-        console.log(matchID);
-        document.querySelectorAll(`.match[match="${matchID}"]`).forEach(x=>{
-            let parent = x.closest('.code-window');
+		m.addEventListener("mouseover", e => {
+			setMatches(matchID, hoverOpacity);
+		});
+		
+		m.addEventListener("mouseout", e => {
+			setMatches(matchID, defaultOpacity);
+		});
+		m.addEventListener("click", e => {
+			console.log(matchID);
+			document.querySelectorAll(`.match[match="${matchID}"]`).forEach(x=>{
+				let parent = x.closest('.code-window');
 
-            let toScrollTo = 0;
-            if(x.offsetHeight > parent.offsetHeight){
-                toScrollTo = x.offsetTop; // - 10;
-            }else{
-                toScrollTo = x.offsetTop - (parent.offsetHeight - x.offsetHeight)/2;
-            }
-            parent.scrollTo({top: toScrollTo, left: 0, behavior: 'smooth'});
+				let toScrollTo = 0;
+				if(x.offsetHeight > parent.offsetHeight){
+					toScrollTo = x.offsetTop; // - 10;
+				}else{
+					toScrollTo = x.offsetTop - (parent.offsetHeight - x.offsetHeight)/2;
+				}
+				parent.scrollTo({top: toScrollTo, left: 0, behavior: 'smooth'});
+			})
+		}); 
+		setMatches(matchID, defaultOpacity)
+	});
 
-        })
+	function downloadAsPDF(){
+		var jsPDF = window.jspdf.jsPDF;
 
-    }); 
+		const report = new jsPDF('portrait', 'pt', 'a4');
 
-    setMatches(matchID, defaultOpacity)
-});
+        const pdfWidth = report.internal.pageSize.getWidth();
+        const pdfHeight = report.internal.pageSize.getHeight();
 
-</script> 
+		let rootDiv = document.createElement("div");
+		rootDiv.style.backgroundColor = "red";
+		rootDiv.style.width = `${pdfWidth}px`;
+		rootDiv.style.height = `${pdfHeight}px`;
+		rootDiv.style.borderStyle = "solid";
+		rootDiv.style.borderWidth = "5px";
+		rootDiv.style.borderColor = "blue";
+
+
+		rootDiv.append(document.createTextNode("hello world"));
+
+		report.html(rootDiv, {
+			callback: function(report){
+				report.save("report.pdf");
+			}
+		})
+	}
+
+</script>
 
 {% endblock %}
