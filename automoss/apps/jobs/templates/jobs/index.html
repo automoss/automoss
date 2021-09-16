@@ -112,13 +112,21 @@
 		workerUrl: "{% static "lib/libarchive/dist/worker-bundle.js" %}"
 	});
 
+	function renameFile(originalFile, newName){
+		return new File([originalFile], newName, {
+			type: originalFile.type,
+			lastModified: originalFile.lastModified,
+		});
+	}
+
 	async function extractFiles(archive){
 		let opened = await Archive.open(archive);
 		await opened.extractFiles();
 		let files = [];
 		let filesArr = await opened.getFilesArray();
 		for (let fileObj of filesArr){
-			files.push(fileObj.file);
+			let fileNameWithPath = fileObj.path + fileObj.file.name;
+			files.push(renameFile(fileObj.file, fileNameWithPath));
 		}
 		return files;
 	}
