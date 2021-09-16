@@ -79,8 +79,17 @@ class DropZone extends HTMLElement {
 		}
 	}
 
+	hasExtension(fileName, extensions){
+		for (var extension of extensions){
+			if (fileName.endsWith("."+extension)){
+				return true;
+			}
+		}
+		return false;
+	}
+
 	isValidFile(file) {
-		if (!this.getAttribute("filetypes").includes(this.getFileExtension(file.name))) {
+		if (!this.hasExtension(file.name, this.getAttribute("filetypes").split(","))) {
 			this.onFileRejected("You must upload an archive.");
 			return false;
 		} else if (this.files.find(x => x.file.name == file.name)) {
