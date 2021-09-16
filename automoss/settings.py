@@ -9,9 +9,11 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+from .redis import REDIS_URL
 from .apps.utils.core import capture_in
 from .apps.utils.core import first
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -87,10 +89,19 @@ WSGI_APPLICATION = 'automoss.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# If running unit tests, create an in-memory sqlite3 database.
+# Otherwise, create a mysql database
+DATABASE_ENGINE = 'sqlite3' if 'test' in sys.argv else 'mysql'
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': f'django.db.backends.{DATABASE_ENGINE}',
+        'NAME': os.getenv("DB_NAME"),
+        'HOST': os.getenv("DB_HOST"),
+        'PORT': '3306',
+
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
     }
 }
 
@@ -153,27 +164,34 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # +-----------------+
 
 # Celery variables
-BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
 
+# Default (None) is the number of CPUs available on your system.
+# TODO min(num processors, 4)
+CELERY_CONCURRENCY = 4  # None
+
+# Contexts
 LANGUAGE_CONTEXT = {}
 with capture_in(LANGUAGE_CONTEXT):
     # Supported languages
-    SUPPORTED_LANGUAGES = {
-        # CODE : (Name, moss_name, [extensions])
 
-        'PY': ('Python', 'python', ['py']),  # pyi, pyc, pyd, pyo, pyw, pyz
-        'JA': ('Java', 'java', ['java']),  # class, jar
-        'CP': ('C++', 'cc', ['C', 'cc', 'cpp', 'cxx', 'c++', 'h', 'H', 'hh', 'hpp', 'hxx', 'h++']),
-        'CX': ('C', 'c', ['c', 'h']),
-        'CS': ('C#', 'csharp', ['cs', 'csx']),
-        'JS': ('Javascript', 'javascript', ['js']),  # cjs, mjs
-        'PL': ('Perl', 'perl', ['pl', 'plx', 'pm', 'xs', 't', 'pod']),
-        'MP': ('MIPS assembly', 'mips', ['asm', 's']),
+    # https://github.com/highlightjs/highlight.js/blob/main/SUPPORTED_LANGUAGES.md
+
+    SUPPORTED_LANGUAGES = {
+        # CODE : (Name, moss_name, [extensions], highlight_name)
+        'PY': ('Python', 'python', ['py'], 'python'),  # pyi, pyc, pyd, pyo, pyw, pyz
+        'JA': ('Java', 'java', ['java'], 'java'),  # class, jar
+        'CP': ('C++', 'cc', ['C', 'cc', 'cpp', 'cxx', 'c++', 'h', 'H', 'hh', 'hpp', 'hxx', 'h++'], 'cpp'),
+        'CX': ('C', 'c', ['c', 'h'], 'c'),
+        'CS': ('C#', 'csharp', ['cs', 'csx'], 'csharp'),
+        'JS': ('Javascript', 'javascript', ['js'], 'javascript'),  # cjs, mjs
+        'PL': ('Perl', 'perl', ['pl', 'plx', 'pm', 'xs', 't', 'pod'], 'perl'),
+        'MP': ('MIPS assembly', 'mips', ['asm', 's'], 'x86asm'),
 
         # TODO decide which to add, and add extensions
         # 'LP' : ('Lisp', 'lisp', []),
@@ -207,16 +225,18 @@ with capture_in(MOSS_CONTEXT):
 STATUS_CONTEXT = {}
 with capture_in(STATUS_CONTEXT):
     # Statuses
-    UPLOADING_STATUS = 'UPL'
+    INQUEUE_STATUS = 'INQ'
     PROCESSING_STATUS = 'PRO'
+    PARSING_STATUS = 'PAR'
     COMPLETED_STATUS = 'COM'
     FAILED_STATUS = 'FAI'
 
     STATUSES = {
         # 'Code': 'Name',
-        UPLOADING_STATUS: 'Uploading',
+        INQUEUE_STATUS: 'In Queue',
         PROCESSING_STATUS: 'Processing',
-        COMPLETED_STATUS: 'Complete',
+        PARSING_STATUS: 'Parsing',
+        COMPLETED_STATUS: 'Completed',
         FAILED_STATUS: 'Failed'
     }
 
@@ -238,8 +258,12 @@ with capture_in(JOB_CONTEXT):
 
     # Max duration to retry = EXPONENTIAL_BACKOFF_BASE**MAX_RETRIES
     # Total duration        = \sum_{n=0}^{MAX_RETRIES}{EXPONENTIAL_BACKOFF_BASE}^{n}
-    MAX_RETRIES = 30
-    EXPONENTIAL_BACKOFF_BASE = 2 #1.5  # 1<=x<=2
+
+    MIN_RETRY_TIME = 32
+    MAX_RETRY_TIME = 256
+    MAX_RETRY_DURATION = 86400
+    EXPONENTIAL_BACKOFF_BASE = 1.5  # 1.5  # 1<=x<=2
+    FIRST_RETRY_INSTANT = True
 
 # UI Defaults
 UI_CONTEXT = {}
@@ -247,5 +271,5 @@ with capture_in(UI_CONTEXT):
     POLLING_TIME = 1000  # in milliseconds
 
 # Misc Constants
-UUID_LENGTH = 32
+UUID_LENGTH = 36
 MAX_COMMENT_LENGTH = 64

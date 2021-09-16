@@ -3,6 +3,7 @@ python-dotenv
 whitenoise
 celery
 redis
+pymysql
 asyncio
 aiohttp
 coverage

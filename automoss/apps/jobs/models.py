@@ -57,8 +57,12 @@ class Job(models.Model):
         choices=to_choices(STATUSES),
         default=first(STATUSES),
     )
+    # Date and time job was created
+    creation_date = models.DateTimeField(default=now)
+
     # Date and time job was started
-    start_date = models.DateTimeField(default=now)
+    start_date = models.DateTimeField(null=True, blank=True)
+
     # Date and time job was completed
     completion_date = models.DateTimeField(null=True, blank=True)
 

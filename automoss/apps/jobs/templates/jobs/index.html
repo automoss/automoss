@@ -106,7 +106,6 @@
 <link href="https://cdn.jsdelivr.net/animatecss/3.5.2/animate.min.css" rel="stylesheet" crossorigin="anonymous">
 
 <script type="module">
-
 	import { Archive } from "{% static "lib/libarchive/src/libarchive.js" %}";
 
 	Archive.init({
@@ -129,15 +128,25 @@
 </script>
 
 <script>
-	const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-	const languages = {{ SUPPORTED_LANGUAGES | js }};
-	const statuses = {{ STATUSES | js }};
+	let languages = {{ SUPPORTED_LANGUAGES | js }};
+	let statuses = {{ STATUSES | js }};
 
-	const completedStatus = "{{ COMPLETED_STATUS }}";
-	const processingStatus = "{{ PROCESSING_STATUS }}";
-	const uploadingStatus = "{{ UPLOADING_STATUS }}";
-	const failedStatus = "{{ FAILED_STATUS }}";
+	let inQueueStatus = "{{ INQUEUE_STATUS }}";
+	let processingStatus = "{{ PROCESSING_STATUS }}";
+	let parsingStatus = "{{ PARSING_STATUS }}";
+	let completedStatus = "{{ COMPLETED_STATUS }}";
+	let failedStatus = "{{ FAILED_STATUS }}";
+
+
+	let statusMapping = {};
+	statusMapping[inQueueStatus] = 'bg-warning';
+	statusMapping[processingStatus] = 'bg-info';
+	statusMapping[parsingStatus] = 'bg-dark';
+	statusMapping[completedStatus] = 'bg-success';
+	statusMapping[failedStatus] = 'bg-danger';
+
 
 	
 	// ----- Jobs Table -----
@@ -154,13 +163,7 @@
 	}
 
 	let unfinishedJobs = [];
-	let result = fetch("{% url "api:jobs:get_jobs" %}", {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'X-CSRFToken': csrftoken
-		}
-	}).then(async (response)=>{
+	let result = fetch("{% url "api:jobs:get_jobs" %}").then(async (response)=>{
 		let json = await response.json()
 
 		json.forEach(item => {
@@ -178,16 +181,9 @@
 		if(unfinishedJobs.length == 0) {
 			return;
 		}
-		let result = await fetch("{% url "api:jobs:get_statuses" %}", {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRFToken': csrftoken
-			},
-			body: JSON.stringify({
-				'job_ids': unfinishedJobs
-			})
-		})
+		let result = await fetch(
+			"{% url "api:jobs:get_statuses" %}?" + new URLSearchParams({job_ids: unfinishedJobs})
+		)
 
 		let json = await result.json();
 
