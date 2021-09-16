@@ -100,10 +100,6 @@ class DropZone extends HTMLElement {
 		}
 	}
 
-	getFileExtension(fileName) {
-		return fileName.split('.').pop();
-	}
-
 	getFileSize(fileSize) {
 		let sizeKB = fileSize / 1024;
 		let sizeMB = sizeKB / 1024;

@@ -26,7 +26,15 @@ const PROGRAM_EXTENSIONS = {
 	"MP": ["asm", "s"]
 };
 function isSource(fileName, language){
-	return hasExtension(fileName, PROGRAM_EXTENSIONS[language]);
+	let extensions = [];
+	if (language != null){
+		extensions = PROGRAM_EXTENSIONS[language];	
+	}else{
+		for (let key of Object.keys(PROGRAM_EXTENSIONS)){
+			extensions = extensions.concat(PROGRAM_EXTENSIONS[key]);
+		}
+	}
+	return hasExtension(fileName, extensions);
 }
 
 /**
@@ -41,18 +49,22 @@ function getFileNameFromPath(filePath){
 }
 
 /**
- * Loops through all files and checks if it contains at least 1 source file (for a specific
- * programming language).
+ * Loops through all files and counts the number of archives and source files.
+ * Single submissions will contain more source files than archives, while
+ * batches will contain more archives than source files.
  */
 async function isSingleSubmission(files){
+	let numSourceFiles = 0;
+	let numArchives = 0;
 	for (var file of files){
-		for (var language of Object.keys(PROGRAM_EXTENSIONS)){
-			if (isSource(file.name, language)){
-				return true;
-			}
+		if (isSource(file.name)){
+			numSourceFiles++;
+		}else if (isArchive(file.name)){
+			numArchives++;
 		}
 	}
-	return false;
+	console.log(numSourceFiles + " - " + numArchives)
+	return numSourceFiles > numArchives;
 }
 
 /**
