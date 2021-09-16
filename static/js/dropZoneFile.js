@@ -7,7 +7,7 @@ class DropZoneFile extends HTMLElement {
 		this.classList.add("position-relative");
 		this.classList.add("d-flex");
 		this.classList.add("w-100");
-		this.classList.add("mt-1");
+		this.classList.add("mt-2");
 
 		// Progress Bar
 		this.progressBar = document.createElement("div");
