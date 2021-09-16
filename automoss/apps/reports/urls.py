@@ -5,8 +5,6 @@ from . import views
 app_name = "reports"
 
 urlpatterns = [
-    # TODO Generated Report - View Report
-
-    # Report Index - View MOSS Report
-    path('', views.Index.as_view(), name="index")
+    # Download
+    path('download', views.Index.download_pdf, name="download")
 ]
