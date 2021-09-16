@@ -17,13 +17,13 @@
               <label for="id_course_code" class="form-label">Course Code</label>
               <input type="text" name="course_code" class="form-control{% if form.errors.course_code %} is-invalid{% endif %}" id="id_course_code" maxlength="150" required>
               <div class="valid-feedback">
-                Looks good!
+                <!-- Looks good! -->
               </div>
-              <div class="invalid-feedback">
+              <div id="course_invalid" class="invalid-feedback">
               {% if form.errors.course_code %}
               {{ form.errors.course_code}}
               {% else %}
-              That is not a valid course code.
+              <!-- That is not a valid course code. -->
               {% endif %}
               </div>
             </div>
@@ -32,13 +32,13 @@
                 <label for="id_email" class="form-label">Primary Email Address</label>
                 <input type="email" name="primary_email_address" class="form-control{% if form.errors.primary_email_address %} is-invalid{% endif %}" id="id_email" required>
                 <div class="valid-feedback">
-                  Looks good!
+                  <!-- Looks good! -->
                 </div>
-                <div class="invalid-feedback">
+                <div id="email_invalid" class="invalid-feedback">
                 {% if form.errors.primary_email_address %}
                 {{ form.errors.primary_email_address }}
                 {% else %}
-                That is not a valid email address.
+                <!-- That is not a valid email address. -->
                 {% endif %}
                 </div>
               </div>
@@ -47,13 +47,13 @@
                 <label for="id_moss_id" class="form-label">MOSS ID</label>
                 <input type="text" name="moss_id" class="form-control{% if form.errors.moss_id %} is-invalid{% endif %}" id="id_moss_id" maxlength="32" required>
                 <div class="valid-feedback">
-                  Looks good!
+                  <!-- Looks good! -->
                 </div>
-                <div class="invalid-feedback">
+                <div id="moss_id_invalid" class="invalid-feedback">
                 {% if form.errors.moss_id %}
                 {{ form.errors.moss_id }}
                 {% else %}
-                That is not a valid MOSS ID.
+                <!-- That is not a valid MOSS ID. -->
                 {% endif %}
                 </div>
               </div>
@@ -62,13 +62,13 @@
                 <label for="id_password1" class="form-label">Password</label>
                 <input type="password" name="password1" class="form-control{% if form.errors.password1 %} is-invalid{% endif %}" id="id_password1" required>
                 <div class="valid-feedback">
-                  Looks good!
+                  <!-- Looks good! -->
                 </div>
-                <div class="invalid-feedback">
+                <div id="password_1_invalid" class="invalid-feedback">
                 {% if form.errors.password1 %}
                 {{ form.errors.password1 }}
                 {% else %}
-                That is an insecure password.
+                <!-- That is an insecure password. -->
                 {% endif %}
                 </div>
               </div>
@@ -77,13 +77,13 @@
                 <label for="id_password2" class="form-label">Confirm Password</label>
                 <input type="password" name="password2" class="form-control{% if form.errors.password2 %} is-invalid{% endif %}" id="id_password2" required>
                 <div class="valid-feedback">
-                  Looks good!
+                  <!-- Looks good! -->
                 </div>
-                <div class="invalid-feedback">
+                <div id="password_2_invalid" class="invalid-feedback">
                 {% if form.errors.password2 %}
                 {{ form.errors.password2 }}
                 {% else %}
-                The passwords do not match.
+                <!-- The passwords do not match. -->
                 {% endif %}
                 </div>
               </div>
@@ -91,7 +91,9 @@
             <div class="mb-3">
                 <input type="submit" class="btn btn-primary" value="Register"/>
             </div>
-
+            <div class="mb-3">
+              Already have an account? <a href="{% url 'users:login' %}" style="text-decoration: none">Login.</a>
+            </div> 
         </form>
 
 	</div>
