@@ -149,13 +149,13 @@ function archiveOpenFile(file, password, cb) {
 	reader.onload = function(evt) {
 		let array_buffer = reader.result;
 
-		// TODO if tar.gz or tar.xz, uncompress and send tar through
+		// if tar.gz or tar.xz, uncompress and send tar through
 
 		if(file_name.endsWith('gz')){
 			array_buffer = pako.inflate(array_buffer)
-		}
-		else if(file_name.endsWith('xz')){
-			// TODO add support for XZ	
+		} else if(file_name.endsWith('xz')){
+			let res = toXZ(new Uint8Array(array_buffer), 0, 0, 0, 2**28, function(cur, max_) {});
+			array_buffer = res.buffer;
 		}
 
 		// Open the file as an archive

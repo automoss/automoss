@@ -107,12 +107,12 @@
 
 <script src="{% static "lib/uncompress/pako.min.js" %}"></script>
 <script src="{% static "lib/uncompress/uncompress.js" %}"></script>
-<script type="module">
-	import { Archive } from "{% static "lib/libarchive/src/libarchive.js" %}";
 
-	Archive.init({
-		workerUrl: "{% static "lib/libarchive/dist/worker-bundle.js" %}"
-	});
+
+<script type="text/javascript" src="{% static "lib/xz/archive.lib.min.js" %}"></script>
+<script type="text/javascript" src="{% static "lib/xz/xz.js" %}"></script>
+
+<script>
 	
 	let loadFormatsPromise = new Promise((resolve, reject) => {
 		loadArchiveFormats(["zip", "tar", "rar"], () => {
@@ -158,22 +158,8 @@
 
 	async function extractFiles(arch){
 		let files = [];
-		
-		if(arch.name.endsWith('tar.xz') || arch.name.endsWith('tar.bz2')){
-			// Use webworker to read
-			// https://github.com/nika-begiashvili/libarchivejs
-			// TODO do not request worker
-			let opened = await Archive.open(arch);
-			await opened.extractFiles();
-			for (let fileObj of await opened.getFilesArray()){
-				let fileNameWithPath = fileObj.path + fileObj.file.name;
-				files.push(renameFile(fileObj.file, fileNameWithPath));
-			}
-		}else{
-			// Read natively
-			for (let file of await extractAll(arch)){
-				files.push(new File([file.data], file.name))
-			}
+		for (let file of await extractAll(arch)){
+			files.push(new File([file.data], file.name))
 		}
 		return files;
 	}
