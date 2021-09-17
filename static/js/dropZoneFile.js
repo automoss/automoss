@@ -15,9 +15,7 @@ class DropZoneFile extends HTMLElement {
         this.progressBar.id = "progress-bar";
         this.progressBar.classList.add("position-absolute");
 		this.progressBar.classList.add("progress-bar");
-		this.progressBar.classList.add("progress-bar-striped");
-		this.progressBar.classList.add("progress-bar-animated");
-		this.progressBar.classList.add("bg-success");
+		this.progressBar.classList.add("bg-secondary");
 		this.append(this.progressBar);
 
 		// Info

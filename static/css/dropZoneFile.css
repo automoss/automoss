@@ -9,7 +9,7 @@ drop-zone-file
 }
 drop-zone-file > #progress-bar
 {
-    height: 40px;
+    height: 42px;
     border-radius: 5px;
     width: 0%;
 }
