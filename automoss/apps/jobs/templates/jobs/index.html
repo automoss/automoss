@@ -273,33 +273,26 @@
 		//$dialog.one('webkitAnimationEnd oanimationend msAnimationEnd animationend', function() {});
 	}
 
+	function overwriteJobData(jobDropZoneFile, name, data){
+		jobDropZoneFile.data.push({name: name, data: data});
+	}
+
 	createJobForm.onsubmit = async (e) => {
 
 		e.preventDefault();
 
 		// Create a new form (and capture name, language, max matches until ignored and max matches displayed)
 		let jobFormData = new FormData(createJobForm);
-		let numStudents = 0;
-
-		function appendDataToForm(name, data){
-			jobFormData.append("{{ FILES_NAME }}", new Blob([data]), name);
-			numStudents++;
-		}
-
-		// Capture file data separately and append to created form
-		let language = jobLanguage.options[jobLanguage.selectedIndex].getAttribute('language-id');
-		for (let dropZoneFile of jobDropZone.files){
-			let archive = dropZoneFile.file;
-			let files = await extractFiles(archive);
-			if (await isSingleSubmission(files)){
-				appendDataToForm(archive.name, await extractSingle(files, language));
-			}else{
-				await extractBatch(files, language, appendDataToForm);
+		let counter = 0;
+		for (let jobDropZoneFile of jobDropZone.files){
+			for (let data of jobDropZoneFile.data){
+				jobFormData.append("{{ FILES_NAME }}", new Blob([data.data]), data.name);
+				counter++;
 			}
 		}
 
 		// Can't submit only 1 student
-		if (numStudents <= 1){
+		if (counter <= 1){
 			displayError("Please submit more than 1 students' files.");
 			return;
 		}
@@ -323,11 +316,13 @@
 
 	jobDropZone.onFileAdded = async (jobDropZoneFile) => {
 
+		createJobButton.disabled = true;
+
 		function getExtension(name){
 			return name.split('.').pop();
 		}
 
-		function getProgrammingLanguage(files){
+		function getProgrammingLanguageId(files){
 			let d = {};
 			for (let key in languages){
 				d[key] = 0;
@@ -340,30 +335,49 @@
 					}
 				}
 			}
-			let bestID = Object.entries(d).reduce((a, b) => a[1] > b[1] ? a : b)[0]
-			return languages[bestID][0];
+			return Object.entries(d).reduce((a, b) => a[1] > b[1] ? a : b)[0]
 		}
 
 		let archive = jobDropZoneFile.file;
 		let files = await extractFiles(archive);
+		console.log("0");
+
+		let length = files.length * 2;
+		let counter = 0;
 
 		// Type
 		let single = await isSingleSubmission(files);
+
+		let langTestFiles = files;
 		if (!single){
-			let tmp = [];
 			for (let file of files){
 				if (isArchive(file.name)){
 					let tmpArchive = await extractFiles(file);
 					for (let tmpFile of tmpArchive){
-						tmp.push(tmpFile);
+						langTestFiles.push(tmpFile);
 					}
+					counter++;
+					jobDropZoneFile.setProgress(counter / length);
 				}
 			}
-			files = files.concat(tmp);
 		}
 
 		// Programming Language
-		let language = getProgrammingLanguage(files);
+		let languageId = getProgrammingLanguageId(langTestFiles);
+		let language = languages[languageId][0];
+
+		// 
+		if (single){
+			overwriteJobData(jobDropZoneFile, archive.name, await extractSingle(files, languageId));
+			jobDropZoneFile.setProgress(1);
+
+		}else{
+			await extractBatch(files, languageId, (name, data) => {
+				overwriteJobData(jobDropZoneFile, name, data);
+				counter++;
+				jobDropZoneFile.setProgress(counter / length);
+			});
+		}
 
 		// Tags
 		jobDropZoneFile.addTag(single ? "Single" : "Batch", "lightblue");
@@ -372,9 +386,8 @@
 		if (jobDropZone.files.length == 1) {
 			jobName.value = jobName.value || archive.name.slice(0, archive.name.length - 4);
 			jobLanguage.value = language;
-
-			createJobButton.disabled = false;
 		}
+		createJobButton.disabled = false;
 	};
 
 	jobDropZone.onFileRemoved = () => {
