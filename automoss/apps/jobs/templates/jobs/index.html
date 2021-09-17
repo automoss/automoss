@@ -500,10 +500,8 @@
 		jobDropZoneFile.addTag(single ? "Single" : "Batch", single ? "var(--bs-dark)" : "var(--bs-dark)");
 		jobDropZoneFile.addTag(language, "var(--bs-dark)");
 
-		if (jobDropZone.files.length == 1) {
-			jobName.value = jobName.value || archive.name.slice(0, archive.name.length - 4);
-			jobLanguage.value = language;
-		}
+		jobName.value = jobName.value || archive.name.slice(0, archive.name.length - 4);
+		jobLanguage.value = language;
 		createJobButton.disabled = false;
 	};
 
