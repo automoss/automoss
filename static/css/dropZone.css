@@ -4,9 +4,9 @@ drop-zone > #zone
     justify-content: center;
     align-items: center;
     position: relative;
-    border-color: #CCC;
+    border-color: var(--bs-gray-500);
     border-radius: 20px;
-    border-width: 2px;
+    border-width: 1px;
     border-style: dashed;
     height: 150px;
     width: 100%;
@@ -14,15 +14,15 @@ drop-zone > #zone
 drop-zone > #zone > #zone-icon
 {
     position: absolute;
-    height: 100px;
-    width: 100px;
-    top: 10px;
-    content: url("/static/img/upload.png");
+    height: 85px;
+    width: 85px;
+    top: 15px;
+    content: url("/static/img/upload.svg");
 }
 drop-zone > #zone > #zone-text
 {
     position: absolute;
-    color: #AAA;
+    color: var(--bs-dark);
     bottom: 20px;
 }
 drop-zone > #zone > #zone-info
