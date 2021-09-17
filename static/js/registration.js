@@ -17,6 +17,7 @@
     // Reset element to valid state
     function resetValidity(element, invalidDiv){
       element.setCustomValidity("")
+      element.classList.remove("is-invalid")
       invalidDiv.innerHTML = ""
     }
 
