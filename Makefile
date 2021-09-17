@@ -1,7 +1,8 @@
 
 install:
+	sudo apt-get update
 	sudo apt-get install redis mysql-server libmysqlclient-dev
-	pip3 install -r requirements_dev.txt
+	pip3 install -r requirements_dev.txt --upgrade
 	make db
 
 start-mysql:

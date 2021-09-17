@@ -1,4 +1,5 @@
 class DropZoneFile extends HTMLElement {
+	data = []
 
     constructor(file, dropZone) {
         super();
@@ -52,7 +53,7 @@ class DropZoneFile extends HTMLElement {
     }
 
     setProgress(progress) {
-        this.progressBar.style.width = progress;
+        this.progressBar.style.width = `${progress*100}%`;
     }
 
 	addTag(name, colour){
