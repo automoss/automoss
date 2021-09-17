@@ -249,6 +249,29 @@
 
 			this.setStatus(this.status)
 		}
+		
+		getText(node) {
+			let text = '';
+			if (node.nodeType === document.TEXT_NODE){
+				text += node.nodeValue + ' ';
+			}else{
+				for (let child of node.childNodes){
+					text += this.getText(child);
+				}
+			}
+			return text;
+		}
+
+		contains(text){
+			return this.getText(this).toLowerCase().includes(text.toLowerCase());
+		}
+
+		show(){
+			this.style.display = "table-row";
+		}
+		hide(){
+			this.style.display = "none";
+		}
 
 		setStatus(newStatus){
 			this.tableStatus.innerHTML = statuses[newStatus]
