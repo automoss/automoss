@@ -30,10 +30,8 @@
     </a>
 {% endblock %}
 
-{% comment %} <div class="mb-3"> <h2>Matches</h2> </div> {% endcomment %}
+<div class="mb-3 mt-2 ms-1"><h2 class="fw-bold">Match of "{{ submissions.first.name }}" and "{{ submissions.second.name }}"</h2> </div>
 
-{{submissions}}
-{{match_info}}
 <style>
 
 pre {
@@ -54,10 +52,10 @@ pre {
 </style>
 
 <body>
-<div class="container d-flex shadow" style="background-color:white;padding:0; max-height: calc(100vh - 350px)">
+<div class="container-fluid d-flex shadow-sm bg-white rounded-3 p-1" style="background-color:white; max-height: calc(100vh - 300px)">
     
     {% for key, values in blocks.items %}
-    <div class="code-window w-50" style="overflow-x:auto; border: solid 1px">
+    <div class="code-window m-2 p-1 border border-2 rounded-1 border-dark window-{{ forloop.counter }}" style="overflow-x:auto; width: 45%;">
         
         {% for x in values %}
             <pre {% if x.id %} match="{{x.id}}" class="language-{{language}} match" {% else %} class="language-{{language}}" {% endif %}>{{x.text}}</pre>
@@ -65,7 +63,15 @@ pre {
 
     </div>
     {% endfor %}
-    
+    <div class="bg-dark rounded-3 ms-2 d-flex flex-column pt-2 m-2" style="width:10%; overflow: auto;">
+
+    {% for key,value in match_info.items %}
+
+        <button match="{{key}}" class="btn btn-outline-light border-2 rounded-pill match-button mb-2 mt-1 mx-3">Match {{key}}</button>
+
+    {% endfor %}
+
+    </div>
 </div>
 </body>
 
@@ -115,6 +121,14 @@ document.querySelectorAll(".match").forEach(m => {
 
     setMatches(matchID, defaultOpacity)
 });
+
+let firstWindow = document.querySelector("div.window-1")
+
+document.querySelectorAll("button.match-button").forEach(function(button){
+    button.addEventListener('click', function(){
+        firstWindow.querySelector(`pre[match="${this.getAttribute("match")}"]`).click()
+    })
+})
 
 </script> 
 
