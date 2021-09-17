@@ -54,7 +54,7 @@
 					<link href="{% static "css/dropZoneFile.css" %}" rel="stylesheet">
 					<link href="{% static "css/dropZone.css" %}" rel="stylesheet">
 					<div class="mb-3">
-						<drop-zone id="job-drop-zone" filetypes="zip,tar,tar.gz,tar.xz,rar"></drop-zone>
+						<drop-zone id="job-drop-zone" filetypes="zip,tar,tar.gz,tar.xz,rar,tar.bz2"></drop-zone>
 					</div>
 					<script src="{% static "js/dropZoneFile.js" %}"></script>
 					<script src="{% static "js/dropZone.js" %}"></script>
@@ -105,12 +105,50 @@
 <script src="{% static "js/jobSubmission.js" %}"></script>
 <link href="https://cdn.jsdelivr.net/animatecss/3.5.2/animate.min.css" rel="stylesheet" crossorigin="anonymous">
 
-<script type="module">
-	import { Archive } from "{% static "lib/libarchive/src/libarchive.js" %}";
+<script src="{% static "lib/uncompress/bz2.js" %}"></script>
+<script src="{% static "lib/uncompress/pako.min.js" %}"></script>
+<script src="{% static "lib/uncompress/uncompress.js" %}"></script>
 
-	Archive.init({
-		workerUrl: "{% static "lib/libarchive/dist/worker-bundle.js" %}"
+
+<script type="text/javascript" src="{% static "lib/xz/archive.lib.min.js" %}"></script>
+<script type="text/javascript" src="{% static "lib/xz/xz.js" %}"></script>
+
+<script>
+	
+	let loadFormatsPromise = new Promise((resolve, reject) => {
+		loadArchiveFormats(["zip", "tar", "rar"], () => {
+			resolve();
+		});
 	});
+
+	async function extractAll(file, password) {
+		
+		// Wait until formats have been loaded
+		await loadFormatsPromise;
+
+		// Wait until archived has been opened
+		let openArchivePromise = new Promise((resolve, reject) => {
+			archiveOpenFile(file, password, (archive) => {
+				resolve(archive);
+			});
+		});
+		let archive = await openArchivePromise;
+
+		// Wait until all the files have been read
+		let readPromises = []
+
+		archive.entries.forEach(function(entry) {
+			if(entry.is_file){
+				readPromises.push(new Promise((resolve, reject)=>{
+					entry.readData(function(entryData){
+						resolve({name: entry.name, data: entryData});
+					});
+				}));
+			}
+			
+		});
+		return await Promise.all(readPromises);
+	}
 
 	function renameFile(originalFile, newName){
 		return new File([originalFile], newName, {
@@ -119,14 +157,10 @@
 		});
 	}
 
-	async function extractFiles(archive){
-		let opened = await Archive.open(archive);
-		await opened.extractFiles();
+	async function extractFiles(arch){
 		let files = [];
-		let filesArr = await opened.getFilesArray();
-		for (let fileObj of filesArr){
-			let fileNameWithPath = fileObj.path + fileObj.file.name;
-			files.push(renameFile(fileObj.file, fileNameWithPath));
+		for (let file of await extractAll(arch)){
+			files.push(new File([file.data], file.name))
 		}
 		return files;
 	}
