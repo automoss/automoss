@@ -42,7 +42,7 @@
 <div class="row mb-3">
 	<div class="col-lg-12">
 		<div class="input-group px-1 pt-2 justify-content-between">
-			<input class="form-control me-2 rounded" type="search" placeholder="Search..." aria-label="Search">
+			<input class="form-control me-2 rounded" id="job-search" type="search" placeholder="Search..." aria-label="Search">
 			<span class="input-group-btn">
 				<button type="button" class="btn btn-primary text-light rounded-pill" data-bs-toggle="modal" data-bs-target="#create-job-modal">
 					<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-plus" viewBox="4 2.5 13 13">
@@ -280,6 +280,17 @@
 	function addJob(job) {
 		document.getElementById('no-jobs-message').style.display = 'none'
 		jobTable.getElementsByTagName('tbody')[0].prepend(new Job(job))
+	}
+
+	let jobSearch = document.getElementById('job-search')
+	jobSearch.oninput = function(){
+		for (let child of jobTable.tBodies[0].children){
+			if(child.contains(jobSearch.value)){
+				child.show()
+			}else{
+				child.hide()
+			}
+		}
 	}
 
 	const terminalStates = [completedStatus, failedStatus];
