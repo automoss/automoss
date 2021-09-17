@@ -32,6 +32,7 @@ class Index(View):
         """ Get result """
         context = {
             # , **match_user_is(request.user))
+            'job': Job.objects.get(job_id=job_id),
             'matches': Match.objects.filter(moss_result__job__job_id=job_id)
         }
         return render(request, self.template, context)
@@ -104,7 +105,9 @@ class ResultMatch(View):
             'match_info': match_info,
             'blocks': blocks,
             'colours': colours,
-            'language': job_language
+            'language': job_language,
+            'job': job,
+            'match' : match
         }
         return render(request, self.template, context)
 
