@@ -94,7 +94,7 @@ class DropZone extends HTMLElement {
 			this.onFileRejected("You must upload an archive.");
 			return false;
 		} else if (this.files.find(x => x.file.name == file.name)) {
-			this.onFileRejected("You cannot upload the same file more than once.");
+			this.onFileRejected("That file has already been uploaded.");
 			return false;
 		} else {
 			return true;
