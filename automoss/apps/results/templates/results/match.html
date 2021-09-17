@@ -33,10 +33,9 @@ pre {
 	</div>
 	{% endfor %}
 </div>
-<button class="btn btn-primary download-pdf" onClick="downloadAsPDF();">Download</button>
+<button class="btn btn-primary" onClick="downloadAsPDF();">Download</button>
 
 <script src="{% static "lib/html2canvas.min.js" %}"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 
 <script>
@@ -56,7 +55,6 @@ pre {
 	}
 	document.querySelectorAll(".match").forEach(m => {
 		let matchID = m.getAttribute('match');
-		console.log(matchID);
 
 		m.addEventListener("mouseover", e => {
 			setMatches(matchID, hoverOpacity);
@@ -66,7 +64,6 @@ pre {
 			setMatches(matchID, defaultOpacity);
 		});
 		m.addEventListener("click", e => {
-			console.log(matchID);
 			document.querySelectorAll(`.match[match="${matchID}"]`).forEach(x=>{
 				let parent = x.closest('.code-window');
 
@@ -82,28 +79,55 @@ pre {
 		setMatches(matchID, defaultOpacity)
 	});
 
-	function downloadAsPDF(){
+	async function downloadAsPDF(){
 		var jsPDF = window.jspdf.jsPDF;
 
 		const report = new jsPDF('portrait', 'pt', 'a4');
 
-        const pdfWidth = report.internal.pageSize.getWidth();
-        const pdfHeight = report.internal.pageSize.getHeight();
+		const reportWidth = report.internal.pageSize.getWidth();
+		const reportHeight = report.internal.pageSize.getHeight();
 
-		let rootDiv = document.createElement("div");
-		rootDiv.style.backgroundColor = "red";
-		rootDiv.style.width = `${pdfWidth}px`;
-		rootDiv.style.height = `${pdfHeight}px`;
-		rootDiv.style.borderStyle = "solid";
-		rootDiv.style.borderWidth = "5px";
-		rootDiv.style.borderColor = "blue";
+		let content = document.createElement("div");
+		content.classList.add("p-3");
+		content.style.width = `${reportWidth}px`;
+		content.style.height = `${reportHeight}px`;
 
+		let matches = {}
+		document.querySelectorAll(".match").forEach(match => {
+			let matchID = match.getAttribute('match');
+			let pair = matches[matchID];
+			if (pair == null){
+				matches[matchID] = pair = [];
+			}
+			pair.push(match);
+		});
 
-		rootDiv.append(document.createTextNode("hello world"));
+		for (let matchID of Object.keys(matches)){
+			
+			let codeComparison = document.createElement("div");
+			content.append(codeComparison);
 
-		report.html(rootDiv, {
-			callback: function(report){
-				report.save("report.pdf");
+			let title = document.createElement("h4");
+			title.textContent = `Match #${matchID}`;
+			codeComparison.append(title);
+			codeComparison.classList.add("pb-2");
+			codeComparison.classList.add("d-flex");
+			codeComparison.classList.add("flex-column");
+
+			let pair = matches[matchID];
+			for (let match of pair){
+				await html2canvas(match).then(function(canvas){
+					let image = document.createElement("img");
+					image.classList.add("pb-1");
+					image.setAttribute("src", canvas.toDataURL("image/png"));			
+					codeComparison.append(image);
+				});
+			}
+		}
+
+		report.html(content, {
+			callback: function(r){
+				r.save("report.pdf");
 			}
 		})
 	}
