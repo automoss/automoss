@@ -8,6 +8,7 @@ class DropZone extends HTMLElement {
 		this.zone = document.createElement("div");
 		this.zone.id = "zone";
 		this.append(this.zone);
+		this.zone.classList.add("mb-2");
 
 		// File List
 		this.fileList = document.createElement("div");
@@ -39,9 +40,9 @@ class DropZone extends HTMLElement {
 		this.zone.append(this.zoneInput);
 
 		// Zone > Info
-		this.zoneInfo = document.createElement("img");
-		this.zoneInfo.id = "zone-info";
-		this.zone.append(this.zoneInfo);
+		// this.zoneInfo = document.createElement("img");
+		// this.zoneInfo.id = "zone-info";
+		// this.zone.append(this.zoneInfo);
 	}
 
 	addFiles(files) {
