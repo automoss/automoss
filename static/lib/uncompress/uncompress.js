@@ -156,6 +156,8 @@ function archiveOpenFile(file, password, cb) {
 		} else if(file_name.endsWith('xz')){
 			let res = toXZ(new Uint8Array(array_buffer), 0, 0, 0, 2**28, function(cur, max_) {});
 			array_buffer = res.buffer;
+		} else if(file_name.endsWith('bz2')){
+			array_buffer = bz2.decompress(new Uint8Array(array_buffer)).buffer;
 		}
 
 		// Open the file as an archive

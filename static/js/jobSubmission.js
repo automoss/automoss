@@ -10,7 +10,7 @@ function hasExtension(fileName, extensions){
 	return false;
 }
 
-const ARCHIVE_EXTENSIONS = ["tar", "tar.gz", "tar.xz", "zip"]
+const ARCHIVE_EXTENSIONS = ["tar", "tar.gz", "tar.xz", "tar.bz2", "zip", "rar"]
 function isArchive(fileName){
 	return hasExtension(fileName, ARCHIVE_EXTENSIONS);
 }
