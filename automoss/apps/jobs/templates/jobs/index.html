@@ -94,7 +94,7 @@
 
 					<!-- Drop Zone -->
 					<div class="mb-3">
-						<drop-zone id="job-drop-zone" filetypes="zip,tar,tar.gz,tar.xz,rar"></drop-zone>
+						<drop-zone id="job-drop-zone" filetypes="zip,tar,tar.gz,tar.xz,rar,tar.bz2"></drop-zone>
 					</div>
 
 					<!-- Name -->
@@ -143,21 +143,62 @@
 </div>
 </div>
 
-<script type="module">
-	
-	import { Archive } from "{% static "lib/libarchive/src/libarchive.js" %}";
 
-	Archive.init({
-		workerUrl: "{% static "lib/libarchive/dist/worker-bundle.js" %}"
+
+<script src="{% static "lib/uncompress/bz2.js" %}"></script>
+<script src="{% static "lib/uncompress/pako.min.js" %}"></script>
+<script src="{% static "lib/uncompress/uncompress.js" %}"></script>
+<script type="text/javascript" src="{% static "lib/xz/archive.lib.min.js" %}"></script>
+<script type="text/javascript" src="{% static "lib/xz/xz.js" %}"></script>
+
+<script>
+	
+	let loadFormatsPromise = new Promise((resolve, reject) => {
+		loadArchiveFormats(["zip", "tar", "rar"], () => {
+			resolve();
+		});
 	});
 
-	async function extractFiles(archive){
-		let opened = await Archive.open(archive);
-		await opened.extractFiles();
+	async function extractAll(file, password) {
+		
+		// Wait until formats have been loaded
+		await loadFormatsPromise;
+
+		// Wait until archived has been opened
+		let openArchivePromise = new Promise((resolve, reject) => {
+			archiveOpenFile(file, password, (archive) => {
+				resolve(archive);
+			});
+		});
+		let archive = await openArchivePromise;
+
+		// Wait until all the files have been read
+		let readPromises = []
+
+		archive.entries.forEach(function(entry) {
+			if(entry.is_file){
+				readPromises.push(new Promise((resolve, reject)=>{
+					entry.readData(function(entryData){
+						resolve({name: entry.name, data: entryData});
+					});
+				}));
+			}
+			
+		});
+		return await Promise.all(readPromises);
+	}
+
+	function renameFile(originalFile, newName){
+		return new File([originalFile], newName, {
+			type: originalFile.type,
+			lastModified: originalFile.lastModified,
+		});
+	}
+
+	async function extractFiles(arch){
 		let files = [];
-		let filesArr = await opened.getFilesArray();
-		for (let fileObj of filesArr){
-			files.push(fileObj.file);
+		for (let file of await extractAll(arch)){
+			files.push(new File([file.data], file.name))
 		}
 		return files;
 	}
