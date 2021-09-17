@@ -2,11 +2,36 @@
 
 {% block "main-content" %}
 
-<div class="mb-3"> <h2>Job Result</h2> </div>
-<table id="job-table" class="table table-striped border" style="background-color: white">
+{% block "navigation" %}
+	<a class="link-dark ps-2" style="text-decoration: none;" href="{% url "jobs:index" %}">
+	Home 
+	</a> 
+		<svg class="m-1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 19">
+		<path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+		</svg> 
+	<a class="link-dark" style="text-decoration: none;" href="{% url "jobs:index" %}">
+	Jobs
+	</a> 
+	<svg class="m-1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 19">
+	<path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+	</svg> 
+	<a href="#" style="text-decoration: none;">
+	Matches
+	</a>
+{% endblock %}
+
+<!-- Page Title -->
+<h2 class="py-2 px-1 fw-bold">
+	Results of "{{ job.comment }}"
+</h2>
+
+<!-- Content -->
+<div class="container-fluid shadow-sm bg-white p-3 rounded-3">
+
+<table id="job-table" class="table table-hover table-striped border rounded-3" style="background-color: white">
 
 	<!-- Column headings -->
-	<thead>
+	<thead class="table-dark">
 		<tr>
 			<th scope="col">ID (temp)</th>
 			<th scope="col">Submission 1</th>
@@ -20,7 +45,7 @@
 	<tbody>
 		{% for match in matches %}
 		<tr>
-			<td><a href="match/{{ match.match_id }}">{{ match.match_id }}</a></td> 
+			<td><a style="text-decoration: none;" href="{% url "jobs:results:match" job.job_id match.match_id %}">{{ match.match_id }}</a></td> 
 			<td>{{ match.first_submission.name }}</td>
 			<td>{{ match.first_percentage }}</td>
 			<td>{{ match.second_submission.name }}</td>
@@ -32,5 +57,6 @@
 
 </table>
 
+</div>
 
 {% endblock %}
