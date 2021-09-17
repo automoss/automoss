@@ -3,6 +3,9 @@ import socket
 import os
 import re
 import requests
+import time
+
+import threading
 
 import asyncio
 import aiohttp
@@ -28,23 +31,73 @@ class MossException(Exception):
         super().__init__(*args, **kwargs)
 
 
-class UnsupportedLanguage(MossException):
+class FatalMossException(MossException):
+    """ Cannot recover. Do not resubmit if this occurs """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class UnsupportedLanguage(FatalMossException):
     def __init__(self, language, **kwargs):
         super().__init__(f'Unsupported language: {language}', **kwargs)
 
 
-class NoFiles(MossException):
+class NoFiles(FatalMossException):
     message = 'No files uploaded to compare.'
 
     def __init__(self, *args, **kwargs):
         super().__init__(self.message, *args, **kwargs)
 
 
-class EmptyResponse(MossException):
+class EmptyResponse(FatalMossException):
+    """Moss returned nothing after requesting for URL.
+
+    This means a timeout has occurred and MOSS is unable to run this
+    job successfully without altering the options.
+    """
     message = 'Empty response.'
 
     def __init__(self, *args, **kwargs):
         super().__init__(self.message, *args, **kwargs)
+
+
+class InvalidRequest(FatalMossException):
+    """Moss did not understand this request"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class InvalidParameter(FatalMossException):
+    """User attempted to set an invalid parameter."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class RecoverableMossException(MossException):
+    """ Able to recover. Resubmit if this occurs """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class ReportDownloadTimeout(RecoverableMossException):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class UnparseableMatch(RecoverableMossException):
+    # Moss returns a completely incorrecly formatted match document
+    # e.g. http://moss.stanford.edu/results/0/3222848531763
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class MossConnectionError(RecoverableMossException):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 ERROR_PREFIX = 'Error: '
@@ -62,18 +115,17 @@ class MossAPIWrapper:
 
     def connect(self):
         # TODO add retries
-        try:
-            self.socket.connect((MOSS_URL, 7690))
-            self._send_string(f'moss {self.user_id}')  # authenticate user
-        except ConnectionRefusedError as e:
-            raise MossException(f'Connection Refused: "{e}"')
+        self.socket.connect((MOSS_URL, 7690))
+        self._send_string(f'moss {self.user_id}')  # authenticate user
 
     def close(self):
         try:
             self._send_string('end')
+            self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
-        except Exception as e:
-            raise MossException(f'Unable to close moss session: "{e}"')
+            return True
+        except ConnectionError as e:
+            return False  # Do not throw error if unable to close
 
     def read_raw(self, buffer):
         return self.socket.recv(buffer)
@@ -88,9 +140,15 @@ class MossAPIWrapper:
         self._send_string(f'X {experimental:d}')
 
     def set_max_matches(self, max_matches):
+        if max_matches < 1:
+            raise InvalidParameter(
+                f'Max matches must be positive ({max_matches} is invalid).')
         self._send_string(f'maxmatches {max_matches}')
 
     def set_max_displayed_matches(self, max_displayed_matches):
+        if max_displayed_matches < 1:
+            raise InvalidParameter(
+                f'Max displayed matches must be positive ({max_displayed_matches} is invalid).')
         self._send_string(f'show {max_displayed_matches}')
 
     def set_language(self, language):
@@ -133,23 +191,22 @@ class MossAPIWrapper:
         data = self.read()
         if is_valid_moss_url(data):
             return data
-        else:
 
-            # Check for errors
-            if data.startswith(ERROR_PREFIX):
-                error_message = data[len(ERROR_PREFIX):]
+        # Not a valid URL, check for errors
+        if data.startswith(ERROR_PREFIX):
+            error_message = data[len(ERROR_PREFIX):]
 
-                error = self._ERRORS.get(error_message)
-                if error:  # Found corresponding error
-                    raise error
+            error = self._ERRORS.get(error_message)
+            if error:  # Found corresponding error
+                raise error
 
-                # TODO find errors like this
-                raise MossException(f'Unknown error: {error_message}')
+            # TODO find errors like this
+            raise FatalMossException(f'Unknown error: {error_message}')
 
-            elif data:
-                raise MossException(f'Data extracted: "{data}"')
+        elif data:
+            raise FatalMossException(f'Data extracted: "{data}"')
 
-            raise EmptyResponse
+        raise EmptyResponse
 
     def _send_raw(self, bytes):
         self.socket.send(bytes)
@@ -160,28 +217,32 @@ class MossAPIWrapper:
 
 class MossMatch:
     def __init__(self, html):
-        soup = BeautifulSoup(html, 'lxml')
-        table = soup.find('table')
-        rows = iter(table.find_all('tr'))
+        try:
+            soup = BeautifulSoup(html, 'lxml')
+            table = soup.find('table')
+            rows = iter(table.find_all('tr'))
 
-        header = next(rows)
-        a, _, b, _, _ = header.find_all('th')
-        self.name_1, self.percentage_1 = self._parse_name_percentage(a)
-        self.name_2, self.percentage_2 = self._parse_name_percentage(b)
+            header = next(rows)
 
-        # TODO reconstruct (more accurate) percentages from line matches?
-        self.line_matches = []
-        self.lines_matched = 0
-        for tr in rows:
-            a, _, b, _ = tr.find_all('td')
-            first, second = [self._parse_from_to(x) for x in (a, b)]
-            self.line_matches.append({
-                'first': first,
-                'second': second
-            })
+            a, _, b, _, _ = header.find_all('th')
+            self.name_1, self.percentage_1 = self._parse_name_percentage(a)
+            self.name_2, self.percentage_2 = self._parse_name_percentage(b)
 
-            self.lines_matched += max(x['to'] - x['from']
-                                      for x in (first, second)) + 1
+            # TODO reconstruct (more accurate) percentages from line matches?
+            self.line_matches = []
+            self.lines_matched = 0
+            for tr in rows:
+                a, _, b, _ = tr.find_all('td')
+                first, second = [self._parse_from_to(x) for x in (a, b)]
+                self.line_matches.append({
+                    'first': first,
+                    'second': second
+                })
+
+                self.lines_matched += max(x['to'] - x['from']
+                                          for x in (first, second)) + 1
+        except Exception:
+            raise UnparseableMatch
 
     def _parse_from_to(self, tag):
         info = list(map(int, tag.get_text(strip=True).split('-')))
@@ -210,23 +271,30 @@ class Result:
             return await resp.text()
 
     async def fetch_concurrent(self, urls):
-        loop = asyncio.get_event_loop()
-        async with aiohttp.ClientSession() as session:
-            tasks = [loop.create_task(self.fetch(session, u)) for u in urls]
-            return [await result for result in asyncio.as_completed(tasks)]
+        try:
+            loop = asyncio.get_event_loop()
+            async with aiohttp.ClientSession() as session:
+                tasks = [loop.create_task(self.fetch(session, u))
+                         for u in urls]
+                return [await result for result in asyncio.as_completed(tasks)]
+        except asyncio.TimeoutError as e:
+            raise ReportDownloadTimeout(e)
 
     def _parse_matches(self, url):
-        html = requests.get(url, verify=False).text
+        base_url = f"{url.rstrip('/')}/"  # Ensure link ends with a /
+        html = requests.get(base_url, verify=False).text
 
         # TODO parse errors?
         num_matches = html.count('<TR>') - 1
 
-        urls = [f'{url}/match{i}-top.html' for i in range(num_matches)]
+        urls = [f'{base_url}match{i}-top.html' for i in range(num_matches)]
         responses = asyncio.run(self.fetch_concurrent(urls))
 
         for response in responses:
-            yield MossMatch(response)
-
+            try:
+                yield MossMatch(response)
+            except UnparseableMatch:
+                pass
 
 class MOSS:
 
@@ -252,8 +320,20 @@ class MOSS:
     def generate_report(cls, url):
         try:
             return Result(url)
+
         except Exception as e:
-            raise MossException(f'Unable to generate report: {e}')
+            if is_valid_moss_url(url):
+                # Some timeout error?
+                # TODO add built-in retry functionality to parsing report
+                raise RecoverableMossException(
+                    f'Unable to generate report: {e}')
+            else:
+                raise FatalMossException(f'Unable to generate report: {e}')
+
+    @classmethod
+    def callback(cls, f, *args, **kwargs):
+        if f and callable(f):
+            f(*args, **kwargs)
 
     @classmethod
     def generate_url(cls, user_id, language=SUPPORTED_MOSS_LANGUAGES[0],
@@ -261,10 +341,24 @@ class MOSS:
                      experimental=False,
                      max_until_ignored=DEFAULT_MOSS_SETTINGS['max_until_ignored'],
                      max_displayed_matches=DEFAULT_MOSS_SETTINGS['max_displayed_matches'],
-                     comment='', use_basename=False):
+                     comment='', use_basename=False,
+
+                     # Define callbacks
+                     on_start=None,
+                     on_connect=None,
+                     on_file_upload=None,  # Called for every file
+                     on_base_file_upload=None,  # Called for every base file
+
+                     on_upload_start=None,
+                     on_upload_finish=None,
+
+                     on_processing_start=None,
+                     on_processing_finish=None
+                     ):
         """Basic interface for generating a report from MOSS"""
 
         # TODO auto detect language
+        cls.callback(on_start)
 
         # Returns report
         if language not in SUPPORTED_MOSS_LANGUAGES:
@@ -281,6 +375,8 @@ class MOSS:
             moss = MossAPIWrapper(user_id)
             moss.connect()  # TODO retries
 
+            cls.callback(on_connect)
+
             # Set options
             moss.set_directory(is_directory)
             moss.set_experimental(experimental)
@@ -289,26 +385,40 @@ class MOSS:
             moss.set_language(language)
 
             data = moss.read()
-
             # Double check on server-side that language is accepted
             if data == 'no':
+                # TODO detect incorrect options?
                 raise UnsupportedLanguage(language)  # Unsupported language
             elif data != 'yes':
-                pass
+                raise InvalidRequest(
+                    f'Moss did not understand this request. Response: "{data}"')
+
+            cls.callback(on_upload_start)
 
             # Upload base files
             for base_file in base_files:
                 moss.upload_base_file(base_file, language, use_basename)
+                cls.callback(on_base_file_upload, base_file)
 
             # Upload submissions
             for index, path in enumerate(files, start=1):
                 moss.upload_file(path, language, index, use_basename)
+                cls.callback(on_file_upload, path)
+
+            cls.callback(on_upload_finish)
 
             # Read and return data
+            cls.callback(on_processing_start)
             url = moss.process(comment)
+            cls.callback(on_processing_finish)
 
-        except Exception as e:
-            raise MossException(f'Exception: "{e}"')
+        except ConnectionError as e:
+            # Includes:
+            #  - BrokenPipeError
+            #  - ConnectionAbortedError
+            #  - ConnectionRefusedError
+            #  - ConnectionResetError.
+            raise MossConnectionError(e)
 
         finally:  # Close session as soon as possible
             moss.close()

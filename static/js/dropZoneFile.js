@@ -7,7 +7,7 @@ class DropZoneFile extends HTMLElement {
 		this.classList.add("position-relative");
 		this.classList.add("d-flex");
 		this.classList.add("w-100");
-		this.classList.add("mt-1");
+		this.classList.add("mt-2");
 
 		// Progress Bar
 		this.progressBar = document.createElement("div");
@@ -30,9 +30,14 @@ class DropZoneFile extends HTMLElement {
 		// Info > Name
 		this.name = document.createElement("label");
         this.name.id = "name";
-		this.name.textContent = file.name + ` (${dropZone.getFileSize(file.size)})`;
+		this.name.textContent = file.name + ` (${dropZone.getFileSize(file.size)})`; // [${tags.join("], [")}]
 		this.name.classList.add("flex-fill");
 		this.info.append(this.name);
+
+		// Info > Tags
+		this.tags = document.createElement("div");
+		this.tags.id = "tags";
+		this.info.append(this.tags);	
 
 		// Info > Remove Button
 		this.removeButton = document.createElement("button");
@@ -49,6 +54,17 @@ class DropZoneFile extends HTMLElement {
     setProgress(progress) {
         this.progressBar.style.width = progress;
     }
+
+	addTag(name, colour){
+		let tag = document.createElement("span");
+		tag.classList.add("badge");
+		tag.classList.add("rounded-pill");
+		tag.classList.add("me-1");
+		tag.classList.add("px-2");
+		tag.style.backgroundColor = colour;
+		tag.textContent = name;
+		this.tags.append(tag);
+	}
 }
 
 customElements.define('drop-zone-file', DropZoneFile);

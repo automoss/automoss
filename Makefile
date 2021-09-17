@@ -1,29 +1,36 @@
 
 install:
-	sudo apt-get install redis
+	sudo apt-get install redis mysql-server libmysqlclient-dev
 	pip3 install -r requirements_dev.txt
 	make db
 
-run:
+start-mysql:
+	@[ "$(shell ps aux | grep mysqld | grep -v grep)" ] && echo "MySQL already running" || (sudo service mysql start )
+
+run: start-mysql
 	python3 manage.py runserver
 
 migrations:
 	python3 manage.py makemigrations && python3 manage.py migrate --run-syncdb
 
-delete-db:
-	rm -f db.sqlite3
+create-db:
+	python3 automoss/db.py fresh
 
 # https://simpleisbetterthancomplex.com/tutorial/2016/07/26/how-to-reset-migrations.html
-db: delete-db clean migrations
+db: start-mysql clean create-db migrations
 
 admin:
 	python3 manage.py createsuperuser
 
-clean:
+clean-media:
+	rm -rf media/*
+
+clean-redis:
 	rm -f dump.rdb
+
+clean: clean-media clean-redis
 	find . -path '*/migrations/*.py' -not -name '__init__.py' -delete
 	find . -type d -name __pycache__ -exec rm -r {} \+
-	rm -rf media/* 
 
 test:
 	python3 manage.py test

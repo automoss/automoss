@@ -60,3 +60,21 @@ class capture_globals(capture_in):
 
 def is_main_thread():
     return os.environ.get('RUN_MAIN') != 'true' and 'runserver' in sys.argv
+
+
+# TODO move?
+# capped exponential backoff with max retries (max time)
+def retry(min_time, max_time, base, max_retry_duration, first_instant):
+    attempt_number = 0
+    if first_instant:
+        yield attempt_number, 0
+        attempt_number += 1
+
+    total_elapsed = 0
+    while total_elapsed < max_retry_duration:
+        time = min(max(base ** attempt_number, min_time),
+                    max_time)  # Current sleep time
+
+        yield attempt_number, time
+        attempt_number += 1
+        total_elapsed += time

@@ -31,11 +31,11 @@ class DropZone extends HTMLElement {
 		this.zoneInput = document.createElement("input");
 		this.zoneInput.id = "zone-input";
 		this.zoneInput.type = "file";
-		this.zoneInput.multiple = false;
+		this.zoneInput.multiple = true;
 		this.zoneInput.addEventListener('dragenter', () => this.setHighlighted(true));
 		this.zoneInput.addEventListener('dragleave', () => this.setHighlighted(false));
 		this.zoneInput.addEventListener('drop', () => this.setHighlighted(false));
-		this.zoneInput.addEventListener("change", () => this.addFile(this.zoneInput.files[0]));
+		this.zoneInput.addEventListener("change", () => this.addFiles(this.zoneInput.files));
 		this.zone.append(this.zoneInput);
 
 		// Zone > Info
@@ -44,9 +44,14 @@ class DropZone extends HTMLElement {
 		this.zone.append(this.zoneInfo);
 	}
 
-	addFile(file) {
+	addFiles(files) {
+		for (let file of files) {
+			this.addFile(file);
+		}
 		this.zoneInput.value = '';
+	}
 
+	addFile(file) {
 		if (!this.isValidFile(file)) {
 			return;
 		}
@@ -55,7 +60,7 @@ class DropZone extends HTMLElement {
 		this.files.push(dropZoneFile);
 		this.fileList.append(dropZoneFile);
 
-		this.onFileAdded();
+		this.onFileAdded(dropZoneFile);
 	}
 
 	removeFile(file) {
@@ -64,6 +69,7 @@ class DropZone extends HTMLElement {
 			this.files.splice(index, 1);
 		}
 		file.remove();
+		
 		this.onFileRemoved();
 	}
 	
@@ -73,18 +79,25 @@ class DropZone extends HTMLElement {
 		}
 	}
 
+	hasExtension(fileName, extensions){
+		for (var extension of extensions){
+			if (fileName.endsWith("."+extension)){
+				return true;
+			}
+		}
+		return false;
+	}
+
 	isValidFile(file) {
-		if (this.getFileExtension(file.name) != "zip") {
-			return false; // must upload a zip file
-		} else if (this.files.find(x => x.name == file.name)) {
-			return false; // cannot upload the same file more than once
+		if (!this.hasExtension(file.name, this.getAttribute("filetypes").split(","))) {
+			this.onFileRejected("You must upload an archive.");
+			return false;
+		} else if (this.files.find(x => x.file.name == file.name)) {
+			this.onFileRejected("You cannot upload the same file more than once.");
+			return false;
 		} else {
 			return true;
 		}
-	}
-
-	getFileExtension(fileName) {
-		return fileName.split('.').pop();
 	}
 
 	getFileSize(fileSize) {
@@ -121,10 +134,13 @@ class DropZone extends HTMLElement {
 		}
 	}
 
-	onFileAdded(){
+	onFileAdded(dropZoneFile){
 	}
 
 	onFileRemoved(){
+	}
+
+	onFileRejected(reason){
 	}
 }
 
