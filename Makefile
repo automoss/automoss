@@ -29,7 +29,7 @@ clean-redis:
 	rm -f dump.rdb
 
 clean: clean-media clean-redis
-	find . -path '*/migrations/*.py' -not -name '__init__.py' -delete
+	find . -path '*/migrations/*.py' -delete
 	find . -type d -name __pycache__ -exec rm -r {} \+
 
 test:
