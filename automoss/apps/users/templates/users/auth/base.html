@@ -3,9 +3,9 @@
 
 {% block "base-content" %}
 
-<style> body { overflow: hidden; /* Hide scrollbars */ } </style>
+<style> body {background-color: var(--bs-dark);/* Hide scrollbars */ } </style>
 
-<div class="row">
+<!-- <div class="row">
 	<div class="col d-none d-lg-block" style="max-width: 40%; background-color: #3554a9;">
 		<div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 100vh;">	
 			<img class="img-fluid" src={% static "img/login-background.svg" %}>		
@@ -18,8 +18,35 @@
 		</div>
 	</div>
 	<div class="col d-flex align-items-center justify-content-center" style="min-height: 100vh; background-image: url({% static "img/shapes.png" %})">
-		{% block "login-content" %}{% endblock %}
+		
 	</div>
+</div> -->
+
+
+<style>
+	.circle {
+		height: 200px;
+		width: 200px;
+		border-radius: 50%;
+		position: absolute;
+		z-index: -1;
+		display: inline-block;
+		background-color: red;
+	  }
+	</style>
+
+	<span class="circle bg-warning" style="top: -9rem; left: -5rem; height: 36rem; width: 36rem;"></span>
+	<span class="circle bg-info" style="top: 16rem; right: 4rem; height: 20rem; width: 20rem;"></span>
+	<span class="circle bg-danger" style="top: -4rem; right: 36rem; height: 13rem; width: 13rem;"></span>
+	<span class="circle bg-secondary" style="bottom: -20rem; left: -1rem; height: 35rem; width: 35rem;"></span>
+	<span class="circle bg-primary" style="bottom: -8rem; right: 9rem; height: 23rem; width: 23rem;"></span>
+
+<div class="d-flex flex-grow-1 flex-column bg-transparent justify-content-center align-items-center" style="min-height: 100vh; position: relative;">
+	<div class="mb-4 pb-3"><h1 class="d-inline text-light pb-3 mb-3" style="font-size: 4em;">Auto<b class="text-secondary">M<svg class="pb-1" xmlns="http://www.w3.org/2000/svg" width="45" height="45" fill="currentColor" class="bi bi-exclude" viewBox="0 0 17 16">
+		<path d="M0 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2H2a2 2 0 0 1-2-2V2zm12 2H5a1 1 0 0 0-1 1v7h7a1 1 0 0 0 1-1V4z"/>
+	</svg>SS</b> </h1>
+	</div>
+	{% block "login-content" %}{% endblock %}
 </div>
 
 {% endblock %}

@@ -8,14 +8,14 @@
 
 {% block "login-content" %}
 
-		<form id="register" class="p-4 m-4 flex-grow-1 shadow-lg needs-validation" method="post" action="{% url 'users:register' %}" style="background-color: white; min-width: 350px; max-width: 50%;" novalidate>
+		<form id="register" class="d-flex flex-grow flex-column text-dark bg-light rounded-3 shadow-lg p-4 m-4 needs-validation" method="post" action="{% url 'users:register' %}" style="min-width: 550px; max-width: 30%;" novalidate>
             {% csrf_token %}
             <!-- Title -->
-            <h3 class="mb-4">Register</h3>
+            <h3 class="mb-4 fw-bold">Register</h3>
             <!-- Course Code -->
             <div class="mb-3">
-              <label for="id_course_code" class="form-label">Course Code</label>
-              <input type="text" name="course_code" class="form-control{% if form.errors.course_code %} is-invalid{% endif %}" id="id_course_code" maxlength="150" required>
+              <label for="id_course_code" class="form-label fw-bold">Course Code</label>
+              <input type="text" name="course_code" class="form-control bg-light border-dark border-2{% if form.errors.course_code %} is-invalid{% endif %}" id="id_course_code" maxlength="150" required>
               <div class="valid-feedback">
                 <!-- Looks good! -->
               </div>
@@ -29,8 +29,8 @@
             </div>
             <!-- Email Address -->
             <div class="mb-3">
-                <label for="id_email" class="form-label">Primary Email Address</label>
-                <input type="email" name="primary_email_address" class="form-control{% if form.errors.primary_email_address %} is-invalid{% endif %}" id="id_email" required>
+                <label for="id_email" class="form-label fw-bold">Primary Email Address</label>
+                <input type="email" name="primary_email_address" class="form-control bg-light border-dark border-2{% if form.errors.primary_email_address %} is-invalid{% endif %}" id="id_email" required>
                 <div class="valid-feedback">
                   <!-- Looks good! -->
                 </div>
@@ -44,8 +44,8 @@
               </div>
             <!-- MOSS ID -->
             <div class="mb-3">
-                <label for="id_moss_id" class="form-label">MOSS ID</label>
-                <input type="text" name="moss_id" class="form-control{% if form.errors.moss_id %} is-invalid{% endif %}" id="id_moss_id" maxlength="32" required>
+                <label for="id_moss_id" class="form-label fw-bold">MOSS ID</label>
+                <input type="text" name="moss_id" class="form-control bg-light border-dark border-2{% if form.errors.moss_id %} is-invalid{% endif %}" id="id_moss_id" maxlength="32" required>
                 <div class="valid-feedback">
                   <!-- Looks good! -->
                 </div>
@@ -59,8 +59,8 @@
               </div>
             <!-- Password -->
             <div class="mb-3">
-                <label for="id_password1" class="form-label">Password</label>
-                <input type="password" name="password1" class="form-control{% if form.errors.password1 %} is-invalid{% endif %}" id="id_password1" required>
+                <label for="id_password1" class="form-label fw-bold">Password</label>
+                <input type="password" name="password1" class="form-control bg-light border-dark border-2{% if form.errors.password1 %} is-invalid{% endif %}" id="id_password1" required>
                 <div class="valid-feedback">
                   <!-- Looks good! -->
                 </div>
@@ -74,8 +74,8 @@
               </div>
             <!-- Password Confirmation -->
             <div class="mb-3">
-                <label for="id_password2" class="form-label">Confirm Password</label>
-                <input type="password" name="password2" class="form-control{% if form.errors.password2 %} is-invalid{% endif %}" id="id_password2" required>
+                <label for="id_password2" class="form-label fw-bold">Confirm Password</label>
+                <input type="password" name="password2" class="form-control bg-light border-dark border-2{% if form.errors.password2 %} is-invalid{% endif %}" id="id_password2" required>
                 <div class="valid-feedback">
                   <!-- Looks good! -->
                 </div>
@@ -89,7 +89,13 @@
               </div>
             <!-- Submit -->
             <div class="mb-3">
-                <input type="submit" class="btn btn-primary" value="Register"/>
+                <button type="submit" class="btn btn-primary rounded-pill text-light mt-3">
+                  <svg class="pb-1 me-1" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                  </svg>
+                  Register
+                  </button>
             </div>
             <div class="mb-3">
               Already have an account? <a href="{% url 'users:login' %}" style="text-decoration: none">Login.</a>
