@@ -158,14 +158,13 @@
 		});
 	});
 
-	async function extractAll(file, password) {
-		
+	async function extractAll(file, read=true) {
 		// Wait until formats have been loaded
 		await loadFormatsPromise;
 
 		// Wait until archived has been opened
 		let openArchivePromise = new Promise((resolve, reject) => {
-			archiveOpenFile(file, password, (archive) => {
+			archiveOpenFile(file, '', (archive) => {
 				resolve(archive);
 			});
 		});
@@ -177,12 +176,15 @@
 		archive.entries.forEach(function(entry) {
 			if(entry.is_file){
 				readPromises.push(new Promise((resolve, reject)=>{
-					entry.readData(function(entryData){
-						resolve({name: entry.name, data: entryData});
-					});
+					if(read){
+						entry.readData(function(entryData){
+							resolve({name: entry.name, data: entryData});
+						});
+					}else{
+						resolve({name: entry.name})
+					}
 				}));
 			}
-			
 		});
 		return await Promise.all(readPromises);
 	}
@@ -201,7 +203,13 @@
 		}
 		return files;
 	}
-
+	async function extractFileNames(arch){
+		let files = [];
+		for (let file of await extractAll(arch, false)){
+			files.push({name:file.name})
+		}
+		return files;
+	}
 	window.extractFiles = extractFiles;
 
 </script>
@@ -464,11 +472,12 @@
 		// Type
 		let single = await isSingleSubmission(files);
 
-		let langTestFiles = files;
+		let t0 = performance.now();
+		let langTestFiles = [...files];
 		if (!single){
 			for (let file of files){
 				if (isArchive(file.name)){
-					let tmpArchive = await extractFiles(file);
+					let tmpArchive = await extractFileNames(file);
 					for (let tmpFile of tmpArchive){
 						langTestFiles.push(tmpFile);
 					}
@@ -478,10 +487,14 @@
 			}
 		}
 
+		let t1 = performance.now();
+		console.log('Took', t1-t0)
+
 		// Programming Language
 		let languageId = getProgrammingLanguageId(langTestFiles);
 		let language = languages[languageId][0];
 
+		console.log(language)
 		// 
 		if (single){
 			overwriteJobData(jobDropZoneFile, archive.name, await extractSingle(files, languageId));
