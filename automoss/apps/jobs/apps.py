@@ -13,7 +13,8 @@ class JobsConfig(AppConfig):
         from .models import Job
         from ..utils.core import is_main_thread
         from ...celery import app
-        
+        from ...settings import INQUEUE_STATUS
+
         if is_main_thread():
             num_purged = app.control.purge()
             print('Purged', num_purged, 'tasks.')
@@ -21,4 +22,6 @@ class JobsConfig(AppConfig):
                 status__in=[COMPLETED_STATUS, FAILED_STATUS])
             for job in unfinished_jobs:
                 print(' * Restarting unfinished job', job.job_id, 'with status', job.status)
+                job.status = INQUEUE_STATUS
+                job.save()
                 process_job.delay(job.job_id)
