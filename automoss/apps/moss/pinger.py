@@ -30,10 +30,17 @@ DOWN_ALPHA = 0.25
 class Pinger:
 
     @staticmethod
+    def _set_ping(key, ping):
+        if ping is None:
+            ping = ''
+        
+        REDIS_INSTANCE.set(key, ping)
+
+    @staticmethod
     def _get_ping(key):
         try:
             return float(REDIS_INSTANCE.get(key))
-        except TypeError:
+        except (TypeError, ValueError):
             return None
 
     @staticmethod
@@ -42,7 +49,7 @@ class Pinger:
 
     @staticmethod
     def set_average_ping(ping):
-        return REDIS_INSTANCE.set(AVERAGE_PING_KEY, ping)
+        Pinger._set_ping(AVERAGE_PING_KEY, ping)
 
     @staticmethod
     def get_latest_ping():
@@ -50,7 +57,7 @@ class Pinger:
 
     @staticmethod
     def set_latest_ping(ping):
-        return REDIS_INSTANCE.set(LATEST_PING_KEY, ping)
+        Pinger._set_ping(LATEST_PING_KEY, ping)
 
     @staticmethod
     def in_bound(ping):
