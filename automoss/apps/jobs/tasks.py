@@ -16,6 +16,7 @@ from ...settings import (
     SUPPORTED_LANGUAGES,
     PROCESSING_STATUS,
     PARSING_STATUS,
+    INQUEUE_STATUS,
     COMPLETED_STATUS,
     FAILED_STATUS,
     SUBMISSION_TYPES,
@@ -51,10 +52,11 @@ def process_job(job_id):
 
     job = Job.objects.get(job_id=job_id)
 
-    if job.status == COMPLETED_STATUS:
-        # Do not process completed jobs
-        # Necessary because redis stores a list of these jobs in the database when the server goes offline
-        # Alternative: Delete dump.rdb on server start (bad idea)?
+    if job.status != INQUEUE_STATUS:
+        # A job will only be started if it is in the queue.
+        # Prevents jobs from being processed more than once.
+        # Necessary because redis and celery store their own caches/lists
+        # of jobs, which may cause process_job to be run more than once.
         return
 
     logger.info(f'Starting job {job_id} with status {job.status}')
@@ -126,16 +128,18 @@ def process_job(job_id):
             # Job ended after
             error = e
 
-            load_status = Pinger.determine_load()
+            load_status, ping, average_ping = Pinger.determine_load()
+            ping_message = f'({ping} vs. {average_ping})'
+
             if load_status == LoadStatus.NORMAL:
                 logger.debug(
-                    f'Moss is not under load - job ({job_id}) will never finish')
+                    f'Moss is not under load {ping_message} - job ({job_id}) will never finish')
                 break
 
             elif load_status == LoadStatus.UNDER_LOAD:
-                logger.debug(f'Moss is under load, retrying job ({job_id})')
+                logger.debug(f'Moss is under load {ping_message}, retrying job ({job_id})')
             else:
-                logger.debug(f'Moss is down, retrying job ({job_id})')
+                logger.debug(f'Moss is down {ping_message}, retrying job ({job_id})')
 
         except FatalMossException as e:
             break  # Will be handled below (result is None)
