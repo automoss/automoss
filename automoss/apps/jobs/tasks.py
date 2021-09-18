@@ -128,16 +128,18 @@ def process_job(job_id):
             # Job ended after
             error = e
 
-            load_status = Pinger.determine_load()
+            load_status, ping, average_ping = Pinger.determine_load()
+            ping_message = f'({ping} vs. {average_ping})'
+
             if load_status == LoadStatus.NORMAL:
                 logger.debug(
-                    f'Moss is not under load - job ({job_id}) will never finish')
+                    f'Moss is not under load {ping_message} - job ({job_id}) will never finish')
                 break
 
             elif load_status == LoadStatus.UNDER_LOAD:
-                logger.debug(f'Moss is under load, retrying job ({job_id})')
+                logger.debug(f'Moss is under load {ping_message}, retrying job ({job_id})')
             else:
-                logger.debug(f'Moss is down, retrying job ({job_id})')
+                logger.debug(f'Moss is down {ping_message}, retrying job ({job_id})')
 
         except FatalMossException as e:
             break  # Will be handled below (result is None)

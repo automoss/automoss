@@ -1,7 +1,7 @@
 
 
 # Used for exponential moving average
-from enum import Enum
+from enum import IntEnum
 import platform
 import subprocess
 import time
@@ -9,17 +9,18 @@ from ...redis import REDIS_INSTANCE
 from .moss import MOSS_URL
 
 
-class LoadStatus(Enum):
+class LoadStatus(IntEnum):
     NORMAL = 1
     UNDER_LOAD = 2
     DOWN = 3
 
 
 # Pinging - to determine whether MOSS is under load
-PING_EVERY = 60  # Ping every x seconds
-PING_COUNT = 10  # Get more accurate measurement
+PING_EVERY = 30  # Ping every x seconds
+PING_COUNT = 5  # Get more accurate measurement
 PING_OFFSET_THRESHOLD = 30
-PING_KEY = 'CURRENT_PING'
+AVERAGE_PING_KEY = 'AVERAGE_PING'
+LATEST_PING_KEY = 'LATEST_PING'
 
 # Used for exponential moving average
 UP_ALPHA = 0.001
@@ -29,49 +30,76 @@ DOWN_ALPHA = 0.25
 class Pinger:
 
     @staticmethod
-    def get_current_ping():
-        return float(REDIS_INSTANCE.get(PING_KEY) or 'inf')
+    def _get_ping(key):
+        try:
+            return float(REDIS_INSTANCE.get(key))
+        except TypeError:
+            return None
 
     @staticmethod
-    def set_current_ping(ping):
-        return REDIS_INSTANCE.set(PING_KEY, ping)
+    def get_average_ping():
+        return Pinger._get_ping(AVERAGE_PING_KEY)
+
+    @staticmethod
+    def set_average_ping(ping):
+        return REDIS_INSTANCE.set(AVERAGE_PING_KEY, ping)
+
+    @staticmethod
+    def get_latest_ping():
+        return Pinger._get_ping(LATEST_PING_KEY)
+
+    @staticmethod
+    def set_latest_ping(ping):
+        return REDIS_INSTANCE.set(LATEST_PING_KEY, ping)
 
     @staticmethod
     def in_bound(ping):
-        if Pinger.get_current_ping() is None:
+        if Pinger.get_average_ping() is None:
             return True  # Not yet calibrated, assume in bound
 
-        return ping < Pinger.get_current_ping() + PING_OFFSET_THRESHOLD
+        return ping < Pinger.get_average_ping() + PING_OFFSET_THRESHOLD
 
     @staticmethod
-    def determine_load():
-        ping_data = Pinger.ping()
-        if ping_data is None:
-            return LoadStatus.DOWN
-        elif Pinger.in_bound(ping_data['avg']):
-            return LoadStatus.NORMAL
+    def determine_load(refresh=False):
+        if refresh:
+            current_ping = Pinger.ping()
         else:
-            return LoadStatus.UNDER_LOAD
+            current_ping = Pinger.get_latest_ping()
+        
+        average_ping = Pinger.get_average_ping()
+
+        if current_ping is None:
+            status = LoadStatus.DOWN, 
+        elif Pinger.in_bound(current_ping):
+            status = LoadStatus.NORMAL
+        else:
+            status = LoadStatus.UNDER_LOAD
+
+        return status, current_ping, average_ping
 
     @staticmethod
     def ping():
         # Pings moss, and updates current known ping
-        # TODO get MOSS URL
         data = ping(MOSS_URL, count=PING_COUNT)
         if data:
             # Valid data to update with
 
             new_ping = data['avg']
-            current_ping = Pinger.get_current_ping()
+            Pinger.set_latest_ping(new_ping)
+
+            current_ping = Pinger.get_average_ping()
             data['current_time'] = time.time()
 
-            if current_ping is None or current_ping == float('inf'):
-                # Not set, or infinite ping
-                Pinger.set_current_ping(new_ping)
+            if current_ping is None:
+                # Not set, or infinite ping (down)
+                Pinger.set_average_ping(new_ping)
             else:
                 alpha_to_use = UP_ALPHA if new_ping > current_ping else DOWN_ALPHA
-                Pinger.set_current_ping(
+                Pinger.set_average_ping(
                     alpha_to_use * new_ping + (1-alpha_to_use) * current_ping)
+        else:
+            # Set latest ping to "None" (i.e., moss is down)
+            Pinger.set_latest_ping(None)
 
         return data
 
