@@ -97,7 +97,7 @@
 
 						<!-- Drop Zone -->
 						<div class="mb-3">
-							<drop-zone id="job-drop-zone" filetypes="zip,tar,tar.gz,tar.xz,rar,tar.bz2"></drop-zone>
+							<drop-zone id="job-drop-zone" filetypes="zip,tar,tar.gz,tar.xz,rar,tar.bz2" text="Drag and drop <b>student</b> files here!"></drop-zone>
 						</div>
 
 						<!-- Name -->
@@ -118,14 +118,26 @@
 
 						<!-- Max Matches Until Ignored -->
 						<div class="mb-3">
-							<label for="job-max-until-ignored">Max matches until ignored:</label>
-							<input class="form-control" id="job-max-until-ignored" type="number" name="job-max-until-ignored" value="{{ DEFAULT_MOSS_SETTINGS.max_until_ignored }}">
+							<label for="job-max-until-ignored" class="form-label">Max matches until ignored:</label>
+							<div class="d-flex">
+								<input type="range" class="form-range" min="0" step="1" max="1000" id="job-max-until-ignored" name="job-max-until-ignored" value="{{DEFAULT_MOSS_SETTINGS.max_until_ignored}}" oninput="this.nextElementSibling.value = this.value">
+								<output style="width: 50px; text-align: right;">{{DEFAULT_MOSS_SETTINGS.max_until_ignored}}</output>
+							</div>
 						</div>
 
 						<!-- Max Matches Displayed -->
 						<div class="mb-3">
-							<label for="job-max-displayed-matches">Max matches displayed:</label>
-							<input class="form-control" id="job-max-displayed-matches" type="number" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}">
+							<label for="job-max-displayed-matches" class="form-label">Max matches displayed:</label>
+							<div class="d-flex">
+								<input type="range" class="form-range" min="0" step="1" max="1000" id="job-max-displayed-matches" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}" oninput="this.nextElementSibling.value = this.value">
+								<output style="width: 50px; text-align: right;">{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}</output>
+							</div>
+						</div>
+
+						<!-- Base Files -->
+						<div class="mb-3">
+							<label for="job-attach-base-files">Attach base files?</label>
+							<input class="form-check-input ms-1" id="job-attach-base-files" type="checkbox" value="" name="job-attach-base-files" onchange="updateDropZoneTarget();">
 						</div>
 					</div>
 
@@ -149,11 +161,12 @@
 <!-- Templated Variables -->
 <script>
 
-	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+	const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
 	let SUPPORTED_LANGUAGES = {{ SUPPORTED_LANGUAGES | js }};
 	let SUPPORTED_ARCHIVES = {{ SUPPORTED_ARCHIVES | js }};
 	let FILES_NAME = "{{ FILES_NAME }}";
+	let BASE_FILES_NAME = "{{ BASE_FILES_NAME }}";
 
 	let statuses = {{ STATUSES | js }};
 	let inQueueStatus = "{{ INQUEUE_STATUS }}";
