@@ -146,19 +146,14 @@
 	</div>
 </div>
 
-<!-- Expose Templated Variables -->
+<!-- Templated Variables -->
 <script>
 
 	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
 	let SUPPORTED_LANGUAGES = {{ SUPPORTED_LANGUAGES | js }};
-	window.SUPPORTED_LANGUAGES = SUPPORTED_LANGUAGES;
-
 	let SUPPORTED_ARCHIVES = {{ SUPPORTED_ARCHIVES | js }};
-	window.SUPPORTED_ARCHIVES = SUPPORTED_ARCHIVES;
-
 	let FILES_NAME = "{{ FILES_NAME }}";
-	window.FILES_NAME = FILES_NAME;
 
 	let statuses = {{ STATUSES | js }};
 	let inQueueStatus = "{{ INQUEUE_STATUS }}";
@@ -168,20 +163,11 @@
 	let failedStatus = "{{ FAILED_STATUS }}";
 
 	let NEW_JOB_URL = "{% url "jobs:new" %}";
-	window.NEW_JOB_URL = NEW_JOB_URL;
-
 	let GET_JOBS_URL = "{% url "api:jobs:get_jobs" %}";
-	window.GET_JOBS_URL = GET_JOBS_URL;
-
 	let GET_JOB_STATUSES_URL = "{% url "api:jobs:get_statuses" %}";
-	window.GET_JOB_STATUSES_URL = GET_JOB_STATUSES_URL;
 
 	let POLLING_TIME = {{ POLLING_TIME | js }};
-	window.POLLING_TIME = POLLING_TIME;
-
 	let DEFAULT_MOSS_SETTINGS = {{ DEFAULT_MOSS_SETTINGS | js }};
-	window.DEFAULT_MOSS_SETTINGS = DEFAULT_MOSS_SETTINGS;
-
 
 </script>
 
