@@ -212,6 +212,10 @@ with capture_in(LANGUAGE_CONTEXT):
         # 'AS' : ('ASCII', 'ascii', []) # All?
     }
 
+ARCHIVE_CONTEXT = {}
+with capture_in(ARCHIVE_CONTEXT):
+    SUPPORTED_ARCHIVES = ["rar", "tar", "tar.bz2", "tar.gz", "tar.xz", "zip"]
+
 MOSS_CONTEXT = {}
 with capture_in(MOSS_CONTEXT):
     # Moss defaults

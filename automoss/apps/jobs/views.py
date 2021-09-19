@@ -26,6 +26,7 @@ from ...settings import (
     SUBMISSION_CONTEXT,
     MOSS_CONTEXT,
     LANGUAGE_CONTEXT,
+    ARCHIVE_CONTEXT,
     UI_CONTEXT,
 
     READABLE_LANGUAGE_MAPPING,
@@ -47,6 +48,7 @@ class Index(View):
     context = {
         **STATUS_CONTEXT,
         **LANGUAGE_CONTEXT,
+        **ARCHIVE_CONTEXT,
         **UI_CONTEXT,
         **SUBMISSION_CONTEXT,
         **MOSS_CONTEXT
