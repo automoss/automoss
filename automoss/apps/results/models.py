@@ -21,9 +21,16 @@ class MOSSResult(models.Model):
         """ Report to string method """
         return f"Report at {self.url}"
 
+class MatchManager(models.Manager):
+    """ Custom Match manager """
+    def user_matches(self, user):
+        """ Returns set of matches belonging to user """
+        return self.get_queryset().filter(moss_result__job__user=user)
 
 class Match(models.Model):
     """ Class to model MOSS Match """
+    # Custom manager
+    objects = MatchManager()
 
     match_id = models.CharField(
         primary_key=False,
