@@ -27,7 +27,7 @@ class DropZoneFile extends HTMLElement {
 		// Info > Name
 		this.name = document.createElement("label");
         this.name.id = "name";
-		this.name.textContent = file.name + ` (${dropZone.getFileSize(file.size)})`; // [${tags.join("], [")}]
+		this.name.textContent = file.name + ` (${dropZone.getFileSize(file.size)})`;
 		this.name.classList.add("flex-fill");
 		this.info.append(this.name);
 

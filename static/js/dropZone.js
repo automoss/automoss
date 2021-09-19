@@ -25,7 +25,7 @@ class DropZone extends HTMLElement {
 		// Zone > Text
 		this.zoneText = document.createElement("label");
 		this.zoneText.id = "zone-text";
-		this.zoneText.textContent = "Drag and drop assignment files here!";
+		this.zoneText.innerHTML = this.getAttribute("text");
 		this.zone.append(this.zoneText);
 
 		// Zone > Input
@@ -40,9 +40,9 @@ class DropZone extends HTMLElement {
 		this.zone.append(this.zoneInput);
 
 		// Zone > Info
-		// this.zoneInfo = document.createElement("img");
-		// this.zoneInfo.id = "zone-info";
-		// this.zone.append(this.zoneInfo);
+		this.zoneInfo = document.createElement("img");
+		this.zoneInfo.id = "zone-info";
+		this.zone.append(this.zoneInfo);
 	}
 
 	addFiles(files) {
