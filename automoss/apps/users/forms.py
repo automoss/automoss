@@ -86,6 +86,6 @@ class UserCreationForm(forms.ModelForm):
 class LoginForm(AuthenticationForm):
     """ User login form """
     error_messages = {
-        'invalid_login': 'The username and password entered were incorrect.',
+        'invalid_login': 'The course code and password entered were incorrect.',
         'inactive': 'That account is diabled.',
     }

@@ -15,7 +15,7 @@
             <!-- Course Code -->
             <div class="mb-3">
               <label for="id_course_code" class="form-label fw-bold">Course Code: </label>
-              <input type="text" name="course_code" class="form-control bg-light border-dark border-2{% if form.errors.course_code %} is-invalid{% endif %}" id="id_course_code" maxlength="150" required>
+              <input type="text" name="course_code" class="form-control bg-light border-dark border-2{% if form.errors.course_code %} is-invalid{% endif %}" id="id_course_code" maxlength="150" placeholder="e.g. CS123XYZ" required>
               <div id="course_invalid" class="invalid-feedback">
               {% if form.errors.course_code %}
               {{ form.errors.course_code}}
@@ -25,7 +25,7 @@
             <!-- Email Address -->
             <div class="mb-3">
                 <label for="id_email" class="form-label fw-bold">Primary Email Address: </label>
-                <input type="email" name="primary_email_address" class="form-control bg-light border-dark border-2{% if form.errors.primary_email_address %} is-invalid{% endif %}" id="id_email" required>
+                <input type="email" name="primary_email_address" class="form-control bg-light border-dark border-2{% if form.errors.primary_email_address %} is-invalid{% endif %}" id="id_email" placeholder="e.g. cs123xyz@gmail.com" required>
                 <div id="email_invalid" class="invalid-feedback">
                 {% if form.errors.primary_email_address %}
                 {{ form.errors.primary_email_address }}
@@ -35,7 +35,7 @@
             <!-- MOSS ID -->
             <div class="mb-3">
                 <label for="id_moss_id" class="form-label fw-bold">MOSS ID: </label>
-                <input type="text" name="moss_id" class="form-control bg-light border-dark border-2{% if form.errors.moss_id %} is-invalid{% endif %}" id="id_moss_id" maxlength="32" required>
+                <input type="text" name="moss_id" class="form-control bg-light border-dark border-2{% if form.errors.moss_id %} is-invalid{% endif %}" id="id_moss_id" maxlength="32" placeholder="e.g. 123456789" required>
                 <div id="moss_id_invalid" class="invalid-feedback">
                 {% if form.errors.moss_id %}
                 {{ form.errors.moss_id }}
@@ -45,7 +45,7 @@
             <!-- Password -->
             <div class="mb-3">
                 <label for="id_password1" class="form-label fw-bold">Password: </label>
-                <input type="password" name="password1" class="form-control bg-light border-dark border-2{% if form.errors.password1 %} is-invalid{% endif %}" id="id_password1" required>
+                <input type="password" name="password1" class="form-control bg-light border-dark border-2{% if form.errors.password1 %} is-invalid{% endif %}" id="id_password1" placeholder="Enter a password" required>
                 <div id="password_1_invalid" class="invalid-feedback">
                 {% if form.errors.password1 %}
                 {{ form.errors.password1 }}
@@ -55,7 +55,7 @@
             <!-- Password Confirmation -->
             <div class="mb-3">
                 <label for="id_password2" class="form-label fw-bold">Confirm Password: </label>
-                <input type="password" name="password2" class="form-control bg-light border-dark border-2{% if form.errors.password2 %} is-invalid{% endif %}" id="id_password2" required>
+                <input type="password" name="password2" class="form-control bg-light border-dark border-2{% if form.errors.password2 %} is-invalid{% endif %}" id="id_password2" placeholder="Confirm your password" required>
                 <div id="password_2_invalid" class="invalid-feedback">
                 {% if form.errors.password2 %}
                 {{ form.errors.password2 }}

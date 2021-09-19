@@ -25,8 +25,8 @@
 	{% endif %}
 
 	<div class="mb-3">
-		<label for="id_username" class="form-label text-dark fw-bold">Username: </label>
-		<input type="text" name="username" class="form-control bg-light border-dark border-2 {% if form.errors.username %} is-invalid{% endif %}" id="id_username" required>
+		<label for="id_username" class="form-label text-dark fw-bold">Course Code: </label>
+		<input type="text" name="username" class="form-control bg-light border-dark border-2 {% if form.errors.username %} is-invalid{% endif %}" id="id_username" placeholder="e.g. CS123ABC" required>
 		<div id="username_invalid" class="invalid-feedback">
 			{% if form.errors.username %}
 			{{ form.errors.username }}
@@ -36,7 +36,7 @@
 	
 	<div class="mb-3">
 		<label for="id_password" class="form-label text-dark fw-bold">Password: </label>
-		<input type="password" name="password" class="form-control bg-light border-dark border-2 {% if form.errors.password %} is-invalid{% endif %}" id="id_password" required>
+		<input type="password" name="password" class="form-control bg-light border-dark border-2 {% if form.errors.password %} is-invalid{% endif %}" id="id_password" placeholder="Enter your password" required>
 		<div id="password_invalid" class="invalid-feedback">
 			{% if form.errors.password %}
 			{{ form.errors.password }}
