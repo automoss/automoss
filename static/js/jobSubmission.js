@@ -73,6 +73,13 @@ async function isSingleSubmission(files){
 }
 
 /**
+ * Trims the end of a string by n characters.
+ */
+ function trimRight(str, n){
+	return str.slice(0, str.length - n)
+}
+
+/**
  * Find the first difference between two strings, and return the index of that character.
  * Credit: https://stackoverflow.com/a/32858679/7840247
  */
@@ -97,7 +104,7 @@ function getRootIndex(files){
 	for (var file of files){
 		var pathWithName = file.name;
 		var name = getFileNameFromPath(pathWithName);
-		var path = pathWithName.trimRight(name.length);
+		var path = trimRight(pathWithName, name.length);
 		if (prevPath != ""){
 			if (path != prevPath){
 				var diff = findFirstDiffIndex(path, prevPath);
@@ -270,7 +277,6 @@ function displayError(message){
 	}, 3000);
 }
 
-
 createJobForm.onsubmit = async (e) => {
 
 	e.preventDefault();
@@ -287,15 +293,18 @@ createJobForm.onsubmit = async (e) => {
 
 	// Capture file data separately and append to created form
 	for (let jobDropZoneFile of jobDropZone.files){	
-
 		let archive = jobDropZoneFile.file;
 		let languageId = jobLanguage.options[jobLanguage.selectedIndex].getAttribute("language-id");
-		
 		let files = await extractFiles(archive, languageId);
 		if (await isSingleSubmission(files, languageId)){
 			appendStudentToForm(archive.name, await extractSingle(files, languageId));
+			jobDropZoneFile.setProgress(1);
 		}else{
-			await extractBatch(files, languageId, appendStudentToForm);
+			let counter = 0;
+			await extractBatch(files, languageId, (name, data) => {
+				appendStudentToForm(name, data);
+				jobDropZoneFile.setProgress((counter++) / files.length);
+			});
 		}
 	}
 	
@@ -374,7 +383,7 @@ jobDropZone.onFileAdded = async (jobDropZoneFile) => {
 	jobDropZoneFile.addTag(language, "var(--bs-dark)");
 
 	if (jobDropZone.files.length == 1){
-		jobName.value = jobName.value || archive.name;
+		jobName.value = jobName.value || trimRight(archive.name, getExtension(archive.name).length+1);
 		jobLanguage.value = language;
 		createJobButton.disabled = false;
 	}
