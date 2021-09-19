@@ -28,11 +28,11 @@ drop-zone > #zone > #zone-text
 drop-zone > #zone > #zone-info
 {
     position: absolute;
-    height: 25px;
-    width: 25px;
+    height: 20px;
+    width: 20px;
     top: 10px;
     right: 10px;
-    content: url("/static/img/info.png");
+    content: url("/static/img/info.svg");
 }
 drop-zone > #zone > #zone-input
 {
