@@ -280,55 +280,62 @@ function displayError(message){
 createJobForm.onsubmit = async (e) => {
 
 	e.preventDefault();
+	createJobButton.disabled = true;
 
-	// Create a new form (and capture name, language, max matches until ignored and max matches displayed)
-	let jobFormData = new FormData(createJobForm);
-	
-	// Function used to append student data to the form
-	let students = 0;
-	function appendStudentToForm(name, data){
-		jobFormData.append(FILES_NAME, new Blob([data]), name);
-		students++;
-	}
-
-	// Capture file data separately and append to created form
-	for (let jobDropZoneFile of jobDropZone.files){	
-		let archive = jobDropZoneFile.file;
-		let languageId = jobLanguage.options[jobLanguage.selectedIndex].getAttribute("language-id");
-		let files = await extractFiles(archive, languageId);
-		if (await isSingleSubmission(files, languageId)){
-			appendStudentToForm(archive.name, await extractSingle(files, languageId));
-			jobDropZoneFile.setProgress(1);
-		}else{
-			let counter = 0;
-			await extractBatch(files, languageId, (name, data) => {
-				appendStudentToForm(name, data);
-				jobDropZoneFile.setProgress((counter++) / files.length);
-			});
+	try{
+		// Create a new form (and capture name, language, max matches until ignored and max matches displayed)
+		let jobFormData = new FormData(createJobForm);
+		
+		// Function used to append student data to the form
+		let students = 0;
+		function appendStudentToForm(name, data){
+			jobFormData.append(FILES_NAME, new Blob([data]), name);
+			students++;
 		}
+
+		// Capture file data separately and append to created form
+		for (let jobDropZoneFile of jobDropZone.files){	
+			let archive = jobDropZoneFile.file;
+			let languageId = jobLanguage.options[jobLanguage.selectedIndex].getAttribute("language-id");
+			let files = await extractFiles(archive, languageId);
+			if (await isSingleSubmission(files, languageId)){
+				appendStudentToForm(archive.name, await extractSingle(files, languageId));
+				jobDropZoneFile.setProgress(1);
+			}else{
+				let counter = 0;
+				await extractBatch(files, languageId, (name, data) => {
+					appendStudentToForm(name, data);
+					jobDropZoneFile.setProgress((counter++) / files.length);
+				});
+			}
+		}
+
+		// Prevent user from submitting only one student
+		// if (students <= 1){
+		// 	displayError("Please submit more than 1 students' files.");
+		// 	throw "Too few students.";
+		// }
+		
+		// Submit a new job with the created form
+		let result = await fetch(NEW_JOB_URL, {
+			method: 'POST',
+			body: jobFormData,
+		});
+
+		// Receive the result as a json object and add it to the jobs table
+		let json = await result.json();
+		addJob(json);
+		unfinishedJobs.push(json['job_id']);
+
+		// Hide and reset the form data and dropzone
+		createJobModal.hide();
+		createJobForm.reset();
+		jobDropZone.reset();
+
+	}catch (err){}
+	finally{
+		createJobButton.disabled = false;
 	}
-	
-	// Prevent user from submitting only one student
-	if (students <= 1){
-		displayError("Please submit more than 1 students' files.");
-		return;
-	}
-
-	// Submit a new job with the created form
-	let result = await fetch(NEW_JOB_URL, {
-		method: 'POST',
-		body: jobFormData,
-	});
-
-	// Receive the result as a json object and add it to the jobs table
-	let json = await result.json();
-	addJob(json);
-	unfinishedJobs.push(json['job_id']);
-
-	// Hide and reset the form data and dropzone
-	createJobModal.hide();
-	createJobForm.reset();
-	jobDropZone.reset();
 };
 
 jobDropZone.onFileAdded = async (jobDropZoneFile) => {
