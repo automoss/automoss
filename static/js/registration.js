@@ -153,7 +153,7 @@
         errorList.appendChild(createErrorElement("Password Missing"))
       }
       // Check field is long enough
-      if(passwordElement.value.length < 8){
+      else if(passwordElement.value.length < 8){
         errorList.appendChild(createErrorElement("Must be at least 8 characters long"))
       }
       // Check field contains a lowercase character
