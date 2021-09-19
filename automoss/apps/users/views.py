@@ -28,7 +28,6 @@ class Login(View):
         if login_form.is_valid():
             django_login(request, login_form.get_user())
             redirect_url = request.POST.get('next') or settings.LOGIN_REDIRECT_URL
-            print(request.GET, request.POST)
             # Redirect
             if is_safe_url(redirect_url, settings.ALLOWED_HOSTS, require_https=request.is_secure()): 
                 return redirect(redirect_url)
