@@ -34,7 +34,7 @@ function isSource(fileName, language){
 }
 
 /**
- * Returns a file's name when given its path.
+ * Returns a file"s name when given its path.
  */ 
 function getFileNameFromPath(filePath){
     var dirSepIndex = filePath.lastIndexOf("/");
@@ -131,7 +131,7 @@ async function readFileData(file){
 }
 
 /**
- * Extracts all the source files from a single student's archive, and "stitches" them together.
+ * Extracts all the source files from a single student"s archive, and "stitches" them together.
  */
 async function extractSingle(files, language){
 	var buffer = "";
@@ -159,7 +159,7 @@ async function extractFiles(archive) {
 
 	// Wait until archived file has been opened
 	let openArchivePromise = new Promise((resolve, reject) => {
-		archiveOpenFile(archive, '', (opened) => {
+		archiveOpenFile(archive, "", (opened) => {
 			resolve(opened);
 		});
 	});
@@ -197,11 +197,11 @@ async function extractMultiple(archives, language){
  *   a "terminal" directory.
  * 
  * The algorithm works as follows:
- * - Loop through each file until you encounter a student's archive.
- * - Continue looping through files, and maintain a list of all the current student's archives.
- * - Once a new student is detected, extract the previous student's files.
+ * - Loop through each file until you encounter a student"s archive.
+ * - Continue looping through files, and maintain a list of all the current student"s archives.
+ * - Once a new student is detected, extract the previous student"s files.
  * - Repeat until there are no files left.
- * - Finally, check if the last student had files that weren't extracted (since extractions
+ * - Finally, check if the last student had files that weren"t extracted (since extractions
  *   only take place on the event of a student change).
  */
 async function extractBatch(files, language, onExtract){
@@ -214,16 +214,16 @@ async function extractBatch(files, language, onExtract){
 			var pathSepIndex = pathFromStudent.indexOf("/");
 			var student = pathFromStudent; // Batch could just be a folder containing archives.
 			if (pathSepIndex != -1){
-				student = pathFromStudent.substring(0, pathSepIndex); // Student's folder name.
+				student = pathFromStudent.substring(0, pathSepIndex); // Student"s folder name.
 			}
 			if (student != prevStudent){
 				if (prevStudent != ""){
 					onExtract(prevStudent, await extractMultiple(studentArchives, language));
-					studentArchives = []; // Clear current student's archives.
+					studentArchives = []; // Clear current student"s archives.
 				}
 				prevStudent = student;
 			}
-			studentArchives.push(file); // Record this file as a student's archive.
+			studentArchives.push(file); // Record this file as a student"s archive.
 		}
 	}
 	if (studentArchives.length > 0){
@@ -249,17 +249,17 @@ let loadFormatsPromise = new Promise((resolve, reject) => {
 });
 
 // Document references to job submission elements
-let createJobModalElement = document.getElementById('create-job-modal');
+let createJobModalElement = document.getElementById("create-job-modal");
 let createJobModal = new bootstrap.Modal(createJobModalElement);
-let createJobForm = document.getElementById('create-job-form');
-let jobDropZone = document.getElementById('job-drop-zone');
-let jobName = document.getElementById('job-name');
-let jobLanguage = document.getElementById('job-language');
-let jobMaxMatchesUntilIgnored = document.getElementById('job-max-until-ignored');
-let jobMaxMatchesDisplayed = document.getElementById('job-max-displayed-matches');
+let createJobForm = document.getElementById("create-job-form");
+let jobDropZone = document.getElementById("job-drop-zone");
+let jobName = document.getElementById("job-name");
+let jobLanguage = document.getElementById("job-language");
+let jobMaxMatchesUntilIgnored = document.getElementById("job-max-until-ignored");
+let jobMaxMatchesDisplayed = document.getElementById("job-max-displayed-matches");
+let jobAttachBaseFiles = document.getElementById("job-attach-base-files");
 let jobErrorMessage = document.getElementById("job-error-message");
-let createJobButton = document.getElementById('create-job-button');
-
+let createJobButton = document.getElementById("create-job-button");
 
 let isDisplayingError = false;
 function displayError(message){
@@ -277,6 +277,10 @@ function displayError(message){
 	}, 3000);
 }
 
+function updateDropZoneTarget(){
+	jobDropZone.zoneText.innerHTML = `Drag and drop <b>${jobAttachBaseFiles.checked ? "base" : "student"}</b> files here!`;
+}
+
 createJobForm.onsubmit = async (e) => {
 
 	e.preventDefault();
@@ -288,8 +292,8 @@ createJobForm.onsubmit = async (e) => {
 		
 		// Function used to append student data to the form
 		let students = 0;
-		function appendStudentToForm(name, data){
-			jobFormData.append(FILES_NAME, new Blob([data]), name);
+		function appendStudentToForm(name, data, isBaseFile){
+			jobFormData.append(isBaseFile ? BASE_FILES_NAME : FILES_NAME, new Blob([data]), name);
 			students++;
 		}
 
@@ -297,13 +301,14 @@ createJobForm.onsubmit = async (e) => {
 		for (let jobDropZoneFile of jobDropZone.files){	
 			let archive = jobDropZoneFile.file;
 			let languageId = jobLanguage.options[jobLanguage.selectedIndex].getAttribute("language-id");
+			let isBaseFile = jobDropZoneFile.tags.includes("Base");
 			let files = await extractFiles(archive, languageId);
 			if (await isSingleSubmission(files, languageId)){
-				appendStudentToForm(archive.name, await extractSingle(files, languageId));
+				appendStudentToForm(archive.name, await extractSingle(files, languageId), isBaseFile);
 			}else{
 				let counter = 0;
 				await extractBatch(files, languageId, (name, data) => {
-					appendStudentToForm(name, data);
+					appendStudentToForm(name, data, isBaseFile);
 					jobDropZoneFile.setProgress(++counter / files.length);
 				});
 			}
@@ -312,20 +317,20 @@ createJobForm.onsubmit = async (e) => {
 
 		// Prevent user from submitting only one student
 		// if (students <= 1){
-		// 	displayError("Please submit more than 1 students' files.");
+		// 	displayError("Please submit more than 1 students" files.");
 		// 	throw "Too few students.";
 		// }
 		
 		// Submit a new job with the created form
 		let result = await fetch(NEW_JOB_URL, {
-			method: 'POST',
+			method: "POST",
 			body: jobFormData,
 		});
 
 		// Receive the result as a json object and add it to the jobs table
 		let json = await result.json();
 		addJob(json);
-		unfinishedJobs.push(json['job_id']);
+		unfinishedJobs.push(json["job_id"]);
 
 		// Hide and reset the form data and dropzone
 		createJobModal.hide();
@@ -344,7 +349,7 @@ jobDropZone.onFileAdded = async (jobDropZoneFile) => {
 	let files = await extractFiles(archive);
 
 	function getExtension(name){
-		return name.split('.').pop();
+		return name.split(".").pop();
 	}
 
 	function getProgrammingLanguageId(files){
@@ -388,6 +393,9 @@ jobDropZone.onFileAdded = async (jobDropZoneFile) => {
 	// Tags
 	jobDropZoneFile.addTag(isSingle ? "Single" : "Batch", "var(--bs-dark)");
 	jobDropZoneFile.addTag(language, "var(--bs-dark)");
+	if (jobAttachBaseFiles.checked){
+		jobDropZoneFile.addTag("Base", "var(--bs-dark)");
+	}
 
 	if (jobDropZone.files.length >= 1){
 		jobName.value = jobName.value || trimRight(archive.name, getExtension(archive.name).length+1);
