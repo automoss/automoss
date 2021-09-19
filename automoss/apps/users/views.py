@@ -11,30 +11,6 @@ from .forms import (
     LoginForm,
 )
 
-# TODO Implement handling of '?next=/url/' for redirects due to @login_required
-# def login(request):
-#     """ Login View : Logs user in if valid credentials supplied """
-#     if request.method == "GET":
-#         if request.user.is_authenticated:
-#             return redirect(settings.LOGIN_REDIRECT_URL)
-#         return render(request, "users/login.html")
-#     elif request.method == 'POST':
-#         username = request.POST['username']
-#         password = request.POST['password']
-#         user = authenticate(username=username, password=password)
-#         if user is not None:
-#             if user.is_active:
-#                 django_login(request, user)
-#                 #redirect_url = request.POST.get('next') or settings.LOGIN_REDIRECT_URL
-#                 #if is_safe_url(redirect_url, settings.ALLOWED_HOSTS): #require_https=request.is_secure()
-#                 #    return redirect(redirect_url)
-#                 return redirect(settings.LOGIN_REDIRECT_URL)
-#             else:
-#                 return render(request, "users/login.html", {"errors": "Account diabled!"})
-#         else:
-#             return render(request, "users/login.html", {"errors": "The username and password entered were incorrect!"})
-#     raise Http404(f"Login route with method {request.METHOD}, not found!")
-
 class Login(View):
     """ Login view """
     template = "users/auth/login.html"
@@ -47,20 +23,18 @@ class Login(View):
 
     def post(self, request):
         """ Post login """
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            if user.is_active:
-                django_login(request, user)
-                #redirect_url = request.POST.get('next') or settings.LOGIN_REDIRECT_URL
-                #if is_safe_url(redirect_url, settings.ALLOWED_HOSTS): #require_https=request.is_secure()
-                #    return redirect(redirect_url)
-                return redirect(settings.LOGIN_REDIRECT_URL)
-            else:
-                return render(request, self.template, {"errors": "Account diabled!"})
+        login_form = LoginForm(request=request, data=request.POST)
+        # Clean and authenticate login data
+        if login_form.is_valid():
+            django_login(request, login_form.get_user())
+            redirect_url = request.POST.get('next') or settings.LOGIN_REDIRECT_URL
+            print(request.GET, request.POST)
+            # Redirect
+            if is_safe_url(redirect_url, settings.ALLOWED_HOSTS, require_https=request.is_secure()): 
+                return redirect(redirect_url)
+            return redirect(settings.LOGIN_REDIRECT_URL)
         else:
-            return render(request, self.template, {"errors": "The username and password entered were incorrect!"})
+            return render(request, self.template, {"form": login_form})
 
 @method_decorator(login_required, name='dispatch')
 class Logout(View):
