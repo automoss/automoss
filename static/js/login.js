@@ -35,11 +35,11 @@
       // Validation Checks
       let errorList = document.createElement("ul")
       if(!usernameElement.checkValidity()){
-        errorList.appendChild(createErrorElement("Username Missing"))
+        errorList.appendChild(createErrorElement("Course Code Missing"))
       }
       // Set validity
       if(!isEmpty(errorList)){
-        usernameElement.setCustomValidity("Invalid Username")
+        usernameElement.setCustomValidity("Invalid Course Code")
         usernameInvalid.innerHTML = ""
       }
       else{
