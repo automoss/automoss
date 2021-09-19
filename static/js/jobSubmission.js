@@ -300,14 +300,14 @@ createJobForm.onsubmit = async (e) => {
 			let files = await extractFiles(archive, languageId);
 			if (await isSingleSubmission(files, languageId)){
 				appendStudentToForm(archive.name, await extractSingle(files, languageId));
-				jobDropZoneFile.setProgress(1);
 			}else{
 				let counter = 0;
 				await extractBatch(files, languageId, (name, data) => {
 					appendStudentToForm(name, data);
-					jobDropZoneFile.setProgress((counter++) / files.length);
+					jobDropZoneFile.setProgress(++counter / files.length);
 				});
 			}
+			jobDropZoneFile.setProgress(1);
 		}
 
 		// Prevent user from submitting only one student
@@ -389,7 +389,7 @@ jobDropZone.onFileAdded = async (jobDropZoneFile) => {
 	jobDropZoneFile.addTag(isSingle ? "Single" : "Batch", "var(--bs-dark)");
 	jobDropZoneFile.addTag(language, "var(--bs-dark)");
 
-	if (jobDropZone.files.length == 1){
+	if (jobDropZone.files.length >= 1){
 		jobName.value = jobName.value || trimRight(archive.name, getExtension(archive.name).length+1);
 		jobLanguage.value = language;
 		createJobButton.disabled = false;
