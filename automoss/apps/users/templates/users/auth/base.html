@@ -3,27 +3,14 @@
 
 {% block "base-content" %}
 
-<style> body {background-color: var(--bs-dark); overflow:hidden;/* Hide scrollbars */ } </style>
-
-<!-- <div class="row">
-	<div class="col d-none d-lg-block" style="max-width: 40%; background-color: #3554a9;">
-		<div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 100vh;">	
-			<img class="img-fluid" src={% static "img/login-background.svg" %}>		
-			<h1 style="color: white">
-				Auto<b>MOSS</b>
-			</h1>
-			<p class="text-center fs-5 m-5 mt-0" style="color: white; opacity: 50%;">
-				Automate the process of detecting plagiarism between code for a collection of computer science assignments (using <a href="https://theory.stanford.edu/~aiken/moss/" target="_blank">MOSS by Stanford</a>).
-			</p>
-		</div>
-	</div>
-	<div class="col d-flex align-items-center justify-content-center" style="min-height: 100vh; background-image: url({% static "img/shapes.png" %})">
-		
-	</div>
-</div> -->
-
+<style>  </style>
 
 <style>
+	body {
+		background-color: var(--bs-dark); 
+		overflow: hidden; 
+	}
+
 	.circle {
 		height: 200px;
 		width: 200px;
@@ -33,14 +20,15 @@
 		display: inline-block;
 		background-color: red;
 	  }
-	</style>
+	  
+	ul{
+		margin: 0px 0px;
+	}
 
-	<!-- <span class="circle bg-warning" style="top: -5vw; left: -8vw; height: 30vw; width: 30vw;"></span>
-	<span class="circle bg-info" style="top: 10vw; right: 6vw; height: 17vw; width: 17vw;"></span>
-	<span class="circle bg-danger" style="top: -7vw; right: 32vw; height: 15vw; width: 15vw;"></span>
-	<span class="circle bg-secondary" style="bottom: -10vw; left: 5vw; height: 25vw; width: 25vw;"></span>
-	<span class="circle bg-primary" style="bottom: -5vw; right: 10vw; height: 18vw; width: 18vw;"></span>
-	<span class="circle bg-info" style="bottom: 15vw; left: 30vw; height: 15vw; width: 15vw;"></span> -->
+	div.invalid-feedback {
+		margin: 0px 0px;
+	}
+</style>
 
 	<span class="circle bg-warning" style="top: -5vw; left: -8vw; height: 30vw; width: 30vw;"></span>
 	<span class="circle bg-danger" style="bottom: -10vw; right: -18vw; height: 35vw; width: 35vw;"></span>
