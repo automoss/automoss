@@ -47,7 +47,7 @@ function getFileNameFromPath(filePath){
 /**
  * Renames a given file and returns it.
  */
- function renameFile(file, newName){
+function renameFile(file, newName){
 	return new File([file], newName, {
 		type: file.type,
 		lastModified: file.lastModified,
@@ -69,7 +69,6 @@ async function isSingleSubmission(files){
 			numArchives++;
 		}
 	}
-	console.log(numSourceFiles + " - " + numArchives)
 	return numSourceFiles > numArchives;
 }
 
@@ -132,7 +131,7 @@ async function extractSingle(files, language){
 	for (var file of files){
 		if (isSource(file.name, language)){
 			buffer += ">>> " + file.name + " <<<\n";
-			buffer += (await new Response(file).text() + "\n\n");
+			buffer += (await new Response(new File([await readFileData(file)], file.name)).text() + "\n\n");
 		}
 	}
 	return buffer;
@@ -145,6 +144,11 @@ async function extractFiles(archive) {
 
 	// Wait until formats have been loaded
 	await loadFormatsPromise;
+	
+	// Archive must be a file
+	if (!(archive instanceof File)){
+		archive = new File([await readFileData(archive)], archive.name); // Convert "uncompress file" to a file
+	}
 
 	// Wait until archived file has been opened
 	let openArchivePromise = new Promise((resolve, reject) => {
@@ -154,7 +158,7 @@ async function extractFiles(archive) {
 	});
 	let opened = await openArchivePromise;
 
-	// Wait until all the files have been added to a list
+	// Add all file entries in the archive to a list of files
 	let files = [];
 	opened.entries.forEach(function(file) {
 		if(file.is_file){
@@ -165,8 +169,8 @@ async function extractFiles(archive) {
 }
 
 /**
- * Extracts all a student's archives into one. This is necessary, as students may have multiple
- * archives in their submission attachments which contain code that needs to be checked.
+ * Extracts multiple archives from a single student.
+ * This is necessary, as students may include multiple submission attachments that contain code.
  */
 async function extractMultiple(archives, language){
 	var buffer = "";
@@ -177,12 +181,11 @@ async function extractMultiple(archives, language){
 }
 
 /**
- * When provided an archive containing a list of students with no particular format, extract and
- * perform an operation on each of the stiched student submissions.
+ * Extract and perform an operation a batch of student submissions.
  * 
  * The following assumptions must be made:
  * - There exists a root folder that divides all students in a batch.
- * - Archives submitted are one of the accepted file types (i.e., tar, tar.gz, tar.xz or zip).
+ * - Archives submitted are one of the accepted file types.
  * - Students cannot submit folders, and so once an archive is found, it is considered to be in
  *   a "terminal" directory.
  * 
@@ -202,18 +205,18 @@ async function extractBatch(files, language, onExtract){
 		if (isArchive(file.name)){
 			var pathFromStudent = file.name.substring(rootIndex);
 			var pathSepIndex = pathFromStudent.indexOf("/");
-			var student = pathFromStudent; // batch could just be a folder containing archives
+			var student = pathFromStudent; // Batch could just be a folder containing archives.
 			if (pathSepIndex != -1){
-				student = pathFromStudent.substring(0, pathSepIndex); // student's folder name
+				student = pathFromStudent.substring(0, pathSepIndex); // Student's folder name.
 			}
 			if (student != prevStudent){
 				if (prevStudent != ""){
 					onExtract(prevStudent, await extractMultiple(studentArchives, language));
-					studentArchives = []; // clear current student's archives
+					studentArchives = []; // Clear current student's archives.
 				}
 				prevStudent = student;
 			}
-			studentArchives.push(file); // record this file as a student's archive
+			studentArchives.push(file); // Record this file as a student's archive.
 		}
 	}
 	if (studentArchives.length > 0){
@@ -231,14 +234,12 @@ window.extractBatch = extractBatch;
 
 
 
-
 // Load all supported archive format types
 let loadFormatsPromise = new Promise((resolve, reject) => {
 	loadArchiveFormats(["zip", "tar", "rar"], () => {
 		resolve();
 	});
 });
-
 
 // Document references to job submission elements
 let createJobModalElement = document.getElementById('create-job-modal');
@@ -251,6 +252,7 @@ let jobMaxMatchesUntilIgnored = document.getElementById('job-max-until-ignored')
 let jobMaxMatchesDisplayed = document.getElementById('job-max-displayed-matches');
 let jobErrorMessage = document.getElementById("job-error-message");
 let createJobButton = document.getElementById('create-job-button');
+
 
 let isDisplayingError = false;
 function displayError(message){
@@ -268,9 +270,6 @@ function displayError(message){
 	}, 3000);
 }
 
-function overwriteJobData(jobDropZoneFile, name, data){
-	jobDropZoneFile.data.push({name: name, data: data});
-}
 
 createJobForm.onsubmit = async (e) => {
 
@@ -278,16 +277,30 @@ createJobForm.onsubmit = async (e) => {
 
 	// Create a new form (and capture name, language, max matches until ignored and max matches displayed)
 	let jobFormData = new FormData(createJobForm);
-	let counter = 0;
-	for (let jobDropZoneFile of jobDropZone.files){
-		for (let data of jobDropZoneFile.data){
-			jobFormData.append(FILES_NAME, new Blob([data.data]), data.name);
-			counter++;
-		}
+	
+	// Function used to append student data to the form
+	let students = 0;
+	function appendStudentToForm(name, data){
+		jobFormData.append(FILES_NAME, new Blob([data]), name);
+		students++;
 	}
 
-	// Can't submit only 1 student
-	if (counter <= 1){
+	// Capture file data separately and append to created form
+	for (let jobDropZoneFile of jobDropZone.files){	
+
+		let archive = jobDropZoneFile.file;
+		let languageId = jobLanguage.options[jobLanguage.selectedIndex].getAttribute("language-id");
+		
+		let files = await extractFiles(archive, languageId);
+		if (await isSingleSubmission(files, languageId)){
+			appendStudentToForm(archive.name, await extractSingle(files, languageId));
+		}else{
+			await extractBatch(files, languageId, appendStudentToForm);
+		}
+	}
+	
+	// Prevent user from submitting only one student
+	if (students <= 1){
 		displayError("Please submit more than 1 students' files.");
 		return;
 	}
@@ -310,8 +323,9 @@ createJobForm.onsubmit = async (e) => {
 };
 
 jobDropZone.onFileAdded = async (jobDropZoneFile) => {
-
-	createJobButton.disabled = true;
+	
+	let archive = jobDropZoneFile.file;
+	let files = await extractFiles(archive);
 
 	function getExtension(name){
 		return name.split('.').pop();
@@ -333,59 +347,37 @@ jobDropZone.onFileAdded = async (jobDropZoneFile) => {
 		return Object.entries(d).reduce((a, b) => a[1] > b[1] ? a : b)[0]
 	}
 
-	let archive = jobDropZoneFile.file;
-	let files = await extractFiles(archive);
-	console.log("0");
-
-	let length = files.length * 2;
-	let counter = 0;
-
 	// Type
-	let single = await isSingleSubmission(files);
+	let isSingle = await isSingleSubmission(files);
 
-	let t0 = performance.now();
+	// Programming Language
 	let langTestFiles = [...files];
-	if (!single){
+	if (!isSingle){
+		let counter = 0;
+		let maxArchives = 3;
 		for (let file of files){
 			if (isArchive(file.name)){
-				let tmpArchive = await extractFileNames(file);
+				let tmpArchive = await extractFiles(file);
 				for (let tmpFile of tmpArchive){
 					langTestFiles.push(tmpFile);
 				}
 				counter++;
-				jobDropZoneFile.setProgress(counter / length);
 			}
+			if (counter > maxArchives) break; // Only check three archives
 		}
 	}
-
-	let t1 = performance.now();
-	console.log('Took', t1-t0)
-
-	// Programming Language
 	let languageId = getProgrammingLanguageId(langTestFiles);
 	let language = SUPPORTED_LANGUAGES[languageId][0];
 
-	console.log(language)
-	// 
-	if (single){
-		overwriteJobData(jobDropZoneFile, archive.name, await extractSingle(files, languageId));
-		jobDropZoneFile.setProgress(1);
-
-	}else{
-		await extractBatch(files, languageId, (name, data) => {
-			overwriteJobData(jobDropZoneFile, name, data);
-			counter++;
-			jobDropZoneFile.setProgress(counter / length);
-		});
-	}
-
 	// Tags
-	jobDropZoneFile.addTag(single ? "Single" : "Batch", "var(--bs-dark)");
+	jobDropZoneFile.addTag(isSingle ? "Single" : "Batch", "var(--bs-dark)");
 	jobDropZoneFile.addTag(language, "var(--bs-dark)");
 
-	jobName.value = jobName.value || archive.name.slice(0, archive.name.length - 4);
-	jobLanguage.value = language;
-	createJobButton.disabled = false;
+	if (jobDropZone.files.length == 1){
+		jobName.value = jobName.value || archive.name;
+		jobLanguage.value = language;
+		createJobButton.disabled = false;
+	}
 };
 
 jobDropZone.onFileRemoved = () => {
@@ -394,7 +386,6 @@ jobDropZone.onFileRemoved = () => {
 		jobLanguage.selectedIndex = 0;
 		jobMaxMatchesUntilIgnored.value = DEFAULT_MOSS_SETTINGS.max_until_ignored;
 		jobMaxMatchesDisplayed.value = DEFAULT_MOSS_SETTINGS.max_displayed_matches;
-
 		createJobButton.disabled = true;
 	}
 };

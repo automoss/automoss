@@ -40,7 +40,7 @@ setInterval(async function() {
         return;
     }
     let result = await fetch(
-        GET_JOB_STATUES_URL + "?" + new URLSearchParams({job_ids: unfinishedJobs})
+        GET_JOB_STATUSES_URL + "?" + new URLSearchParams({job_ids: unfinishedJobs})
     )
 
     let json = await result.json();
