@@ -21,8 +21,16 @@ def get_default_comment():
 
 User = get_user_model()
 
+class JobManager(models.Manager):
+    """ Custom Job manager """
+    def user_jobs(self, user):
+        """ Returns set of jobs belonging to user """
+        return self.get_queryset().filter(user=user)
+
 class Job(models.Model):
     """ Class to model Job Entity """
+    # Custom manager
+    objects = JobManager()
     # MOSS user that created the job
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     # Unique identifier used in routing
