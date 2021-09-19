@@ -295,11 +295,10 @@ createJobForm.onsubmit = async (e) => {
 		}
 
 		for (let jobDropZoneFile of jobDropZone.files){
-
 			let archive = jobDropZoneFile.file;
 			let languageId = jobLanguage.options[jobLanguage.selectedIndex].getAttribute("language-id");
-			let isBaseFile = jobDropZoneFile.tags.includes("Base");
-			
+			let isBaseFile = jobDropZoneFile.isBaseFile;
+
 			let files = await extractFiles(archive, languageId);
 
 			if (await isSingleSubmission(files, languageId) || isBaseFile){
@@ -313,7 +312,7 @@ createJobForm.onsubmit = async (e) => {
 			}
 			jobDropZoneFile.setProgress(1);
 		}
-		
+
 		// Submit a new job with the created form
 		let result = await fetch(NEW_JOB_URL, {
 			method: "POST",
@@ -327,10 +326,15 @@ createJobForm.onsubmit = async (e) => {
 
 		// Hide and reset the form and dropzone
 		createJobModal.hide();
-		createJobForm.reset();
-		jobDropZone.reset();
+		setTimeout(() => {
+			createJobForm.reset();
+			jobDropZone.reset();
+			updateDropZoneTarget();
+		}, 200);
 
-	}catch (err){}
+	}catch (err){
+		console.err(err);
+	}
 	finally{
 		createJobButton.disabled = false;
 	}
@@ -386,11 +390,10 @@ jobDropZone.onFileAdded = async (jobDropZoneFile) => {
 	// Tags
 	if (jobAttachBaseFiles.checked){
 		jobDropZoneFile.addTag("Base", "var(--bs-dark)");
+		jobDropZoneFile.isBaseFile = true;
 	}else{
 		jobDropZoneFile.addTag(isSingle ? "Single" : `Batch (${files.length})`, "var(--bs-dark)");
 	}
-	//jobDropZoneFile.addTag(language, "var(--bs-dark)");
-
 
 	if (jobDropZone.files.length >= 1){
 		jobName.value = jobName.value || trimRight(archive.name, getExtension(archive.name).length+1);
