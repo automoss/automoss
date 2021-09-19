@@ -1,6 +1,4 @@
 class DropZoneFile extends HTMLElement {
-	data = []
-
     constructor(file, dropZone) {
         super();
         this.file = file;
