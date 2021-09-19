@@ -10,12 +10,14 @@
 {% block "scripts" %}
 <script src="{% static "js/dropZoneFile.js" %}" defer></script>
 <script src="{% static "js/dropZone.js" %}" defer></script>
-<script src="{% static "js/jobSubmission.js" %}"></script>
-<script src="{% static "lib/uncompress/bz2.js" %}"></script>
-<script src="{% static "lib/uncompress/pako.min.js" %}"></script>
-<script src="{% static "lib/uncompress/uncompress.js" %}"></script>
-<script src="{% static "lib/uncompress/archive.lib.min.js" %}"></script>
-<script src="{% static "lib/uncompress/xz.js" %}"></script>
+<script src="{% static "lib/uncompress/bz2.js" %}" defer></script>
+<script src="{% static "lib/uncompress/pako.min.js" %}" defer></script>
+<script src="{% static "lib/uncompress/uncompress.js" %}" defer></script>
+<script src="{% static "lib/uncompress/archive.lib.min.js" %}" defer></script>
+<script src="{% static "lib/uncompress/xz.js" %}" defer></script>
+<script src="{% static "js/job.js" %}" defer></script>
+<script src="{% static "js/jobSubmission.js" %}" defer></script>
+<script src="{% static "js/jobTable.js" %}" defer></script>
 {% endblock %}
 
 {% block "main-content" %}
@@ -71,468 +73,116 @@
 	</thead>
 	
 	<!-- Jobs -->
-	<tbody>
-	</tbody>
+	<tbody></tbody>
 
 </table>
 <div id="no-jobs-message" class="container text-center" style="display: none">No jobs have been created yet!</div>
 
-<!-- Modal -->
-<div class="modal fade" id="create-job-modal" tabindex="-1" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered">
-		<div class="modal-content">
-			<form id="create-job-form">
+	<!-- Modal -->
+	<div class="modal fade" id="create-job-modal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<form id="create-job-form">
 
-				{% csrf_token %}
+					{% csrf_token %}
 
-				<!-- Header -->
-				<div class="modal-header bg-dark text-light">
-					<h5 class="modal-title"><b>Create Job</b></h5>
-					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close">
-					</button>
-				</div>
-
-				<!-- Body -->
-				<div class="modal-body">
-
-					<!-- Drop Zone -->
-					<div class="mb-3">
-						<drop-zone id="job-drop-zone" filetypes="zip,tar,tar.gz,tar.xz,rar,tar.bz2"></drop-zone>
+					<!-- Header -->
+					<div class="modal-header bg-dark text-light">
+						<h5 class="modal-title"><b>Create Job</b></h5>
+						<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 
-					<!-- Name -->
-					<div class="mb-3">
-						<label for="job-name">Name:</label>
-						<input class="form-control" id="job-name" type="text" name="job-name" autocomplete="off" data-lpignore="true" data-form-type="text">
+					<!-- Body -->
+					<div class="modal-body">
+
+						<!-- Drop Zone -->
+						<div class="mb-3">
+							<drop-zone id="job-drop-zone" filetypes="zip,tar,tar.gz,tar.xz,rar,tar.bz2"></drop-zone>
+						</div>
+
+						<!-- Name -->
+						<div class="mb-3">
+							<label for="job-name">Name:</label>
+							<input class="form-control" id="job-name" type="text" name="job-name" autocomplete="off" data-lpignore="true" data-form-type="text">
+						</div>
+
+						<!-- Language -->
+						<div class="mb-3">
+							<label for="job-language">Language:</label>
+							<select class="form-select" id="job-language" name="job-language" data-form-type="other">
+								{% for language, info in SUPPORTED_LANGUAGES.items %}
+									<option language-id={{language}}>{{info.0}} </option>
+								{% endfor %}
+							</select>
+						</div>
+
+						<!-- Max Matches Until Ignored -->
+						<div class="mb-3">
+							<label for="job-max-until-ignored">Max matches until ignored:</label>
+							<input class="form-control" id="job-max-until-ignored" type="number" name="job-max-until-ignored" value="{{ DEFAULT_MOSS_SETTINGS.max_until_ignored }}">
+						</div>
+
+						<!-- Max Matches Displayed -->
+						<div class="mb-3">
+							<label for="job-max-displayed-matches">Max matches displayed:</label>
+							<input class="form-control" id="job-max-displayed-matches" type="number" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}">
+						</div>
 					</div>
 
-					<!-- Language -->
-					<div class="mb-3">
-						<label for="job-language">Language:</label>
-						<select class="form-select" id="job-language" name="job-language" data-form-type="other">
-							{% for language, info in SUPPORTED_LANGUAGES.items %}
-								<option language-id={{language}}>{{info.0}} </option>
-							{% endfor %}
-						</select>
-					</div>
-
-					<!-- Max Matches Until Ignored -->
-					<div class="mb-3">
-						<label for="job-max-until-ignored">Max matches until ignored:</label>
-						<input class="form-control" id="job-max-until-ignored" type="number" name="job-max-until-ignored" value="{{ DEFAULT_MOSS_SETTINGS.max_until_ignored }}">
-					</div>
-
-					<!-- Max Matches Displayed -->
-					<div class="mb-3">
-						<label for="job-max-displayed-matches">Max matches displayed:</label>
-						<input class="form-control" id="job-max-displayed-matches" type="number" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}">
-					</div>
-				</div>
-
-				<!-- Footer -->
-				<div class="modal-footer d-flex justify-content-between p-2 bg-dark text-light">
-					<label class="text-danger" id="job-error-message"></label>
-					<div style="position: relative; max-height: 50px;">
-						<button id="create-job-button" type="submit" class="btn btn-outline-primary border-2 rounded-pill" disabled>
-							<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-plus" viewBox="4 2.5 13 13">
-								<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-							  </svg>
+					<!-- Footer -->
+					<div class="modal-footer d-flex justify-content-between p-2 bg-dark text-light">
+						<label class="text-danger" id="job-error-message"></label>
+						<div style="position: relative; max-height: 50px;">
+							<button id="create-job-button" type="submit" class="btn btn-outline-primary border-2 rounded-pill" disabled>
+								<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-plus" viewBox="4 2.5 13 13">
+									<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+								</svg>
 							Create</button>
+						</div>
 					</div>
-				</div>
-			</form>
+				</form>
+			</div>
 		</div>
 	</div>
 </div>
-</div>
 
+<!-- Expose Templated Variables -->
 <script>
-	
-
-
-	let loadFormatsPromise = new Promise((resolve, reject) => {
-		loadArchiveFormats(["zip", "tar", "rar"], () => {
-			resolve();
-		});
-	});
-
-	async function extractAll(file, read=true) {
-		// Wait until formats have been loaded
-		await loadFormatsPromise;
-
-		// Wait until archived has been opened
-		let openArchivePromise = new Promise((resolve, reject) => {
-			archiveOpenFile(file, '', (archive) => {
-				resolve(archive);
-			});
-		});
-		let archive = await openArchivePromise;
-
-		// Wait until all the files have been read
-		let readPromises = []
-
-		archive.entries.forEach(function(entry) {
-			if(entry.is_file){
-				readPromises.push(new Promise((resolve, reject)=>{
-					if(read){
-						entry.readData(function(entryData){
-							resolve({name: entry.name, data: entryData});
-						});
-					}else{
-						resolve({name: entry.name})
-					}
-				}));
-			}
-		});
-		return await Promise.all(readPromises);
-	}
-
-	function renameFile(originalFile, newName){
-		return new File([originalFile], newName, {
-			type: originalFile.type,
-			lastModified: originalFile.lastModified,
-		});
-	}
-
-	async function extractFiles(arch){
-		let files = [];
-		for (let file of await extractAll(arch)){
-			files.push(new File([file.data], file.name))
-		}
-		return files;
-	}
-	async function extractFileNames(arch){
-		let files = [];
-		for (let file of await extractAll(arch, false)){
-			files.push({name:file.name})
-		}
-		return files;
-	}
-	window.extractFiles = extractFiles;
-
-</script>
-
-<script>
-	window.addEventListener('DOMContentLoaded', function(){
 
 	const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-	let languages = {{ SUPPORTED_LANGUAGES | js }};
+	let SUPPORTED_LANGUAGES = {{ SUPPORTED_LANGUAGES | js }};
+	window.SUPPORTED_LANGUAGES = SUPPORTED_LANGUAGES;
+
+	let SUPPORTED_ARCHIVES = {{ SUPPORTED_ARCHIVES | js }};
+	window.SUPPORTED_ARCHIVES = SUPPORTED_ARCHIVES;
+
+	let FILES_NAME = "{{ FILES_NAME }}";
+	window.FILES_NAME = FILES_NAME;
+
 	let statuses = {{ STATUSES | js }};
-
-
-
 	let inQueueStatus = "{{ INQUEUE_STATUS }}";
 	let processingStatus = "{{ PROCESSING_STATUS }}";
 	let parsingStatus = "{{ PARSING_STATUS }}";
 	let completedStatus = "{{ COMPLETED_STATUS }}";
 	let failedStatus = "{{ FAILED_STATUS }}";
 
-	class Job extends HTMLTableRowElement{
-		constructor(obj) {
-			super()
-			Object.assign(this, obj)
+	let NEW_JOB_URL = "{% url "jobs:new" %}";
+	window.NEW_JOB_URL = NEW_JOB_URL;
 
-			this.setAttribute('job_id', obj.job_id)
-			this.setAttribute('status', obj.status)
+	let GET_JOBS_URL = "{% url "api:jobs:get_jobs" %}";
+	window.GET_JOBS_URL = GET_JOBS_URL;
 
-			this.tableComment = document.createElement('td')
-			this.tableComment.innerHTML = this.comment;
-			
-			this.tableLanguage = document.createElement('td')
-			this.tableLanguage.innerHTML = languages[this.language][0];
+	let GET_JOB_STATUSES_URL = "{% url "api:jobs:get_statuses" %}";
+	window.GET_JOB_STATUSES_URL = GET_JOB_STATUSES_URL;
 
-			this.tableStartDate = document.createElement('td')
-			this.tableStartDate.innerHTML = new Date(this.creation_date).toLocaleString();
-			
-			let tableStatusCell = document.createElement('td')
-			this.tableStatus = document.createElement('span')
-			tableStatusCell.append(this.tableStatus)
-			
-			this.append(this.tableComment)
-			this.append(this.tableLanguage)
-			this.append(this.tableStartDate)
-			this.append(tableStatusCell)
+	let POLLING_TIME = {{ POLLING_TIME | js }};
+	window.POLLING_TIME = POLLING_TIME;
 
-			this.setStatus(this.status)
-		}
-		
-		getText(node) {
-			let text = '';
-			if (node.nodeType === document.TEXT_NODE){
-				text += node.nodeValue + ' ';
-			}else{
-				for (let child of node.childNodes){
-					text += this.getText(child);
-				}
-			}
-			return text;
-		}
-
-		contains(text){
-			return this.getText(this).toLowerCase().includes(text.toLowerCase());
-		}
-
-		show(){
-			this.style.display = "table-row";
-		}
-		hide(){
-			this.style.display = "none";
-		}
-
-		setStatus(newStatus){
-			this.tableStatus.innerHTML = statuses[newStatus]
-			if(newStatus == completedStatus){
-				this.tableComment.innerHTML = `<a href="/jobs/${this.job_id}/result/" style="text-decoration: none;">${this.comment}</a>`
-			}
-
-			this.tableStatus.className = '';
-			
-			let classes = ['badge', statusMapping[newStatus]];
-
-			this.tableStatus.classList.add(...classes)
-		}
-	}
-	customElements.define('job-row', Job, { extends: 'tr' });
-
-	let statusMapping = {};
-	statusMapping[inQueueStatus] = 'bg-warning';
-	statusMapping[processingStatus] = 'bg-info';
-	statusMapping[parsingStatus] = 'bg-dark';
-	statusMapping[completedStatus] = 'bg-success';
-	statusMapping[failedStatus] = 'bg-danger';
+	let DEFAULT_MOSS_SETTINGS = {{ DEFAULT_MOSS_SETTINGS | js }};
+	window.DEFAULT_MOSS_SETTINGS = DEFAULT_MOSS_SETTINGS;
 
 
-	
-	// ----- Jobs Table -----
-
-	let jobTable = document.getElementById('job-table')
-	function addJob(job) {
-		document.getElementById('no-jobs-message').style.display = 'none'
-		jobTable.getElementsByTagName('tbody')[0].prepend(new Job(job))
-	}
-
-	let jobSearch = document.getElementById('job-search')
-	jobSearch.oninput = function(){
-		for (let child of jobTable.tBodies[0].children){
-			if(child.contains(jobSearch.value)){
-				child.show()
-			}else{
-				child.hide()
-			}
-		}
-	}
-
-	const terminalStates = [completedStatus, failedStatus];
-	function isTerminalState(state){
-		return terminalStates.includes(state)
-	}
-
-	let unfinishedJobs = [];
-	let result = fetch("{% url "api:jobs:get_jobs" %}").then(async (response)=>{
-		let json = await response.json()
-
-		json.forEach(item => {
-			addJob(item);
-			if (!isTerminalState(item.status)){
-				unfinishedJobs.push(item.job_id)
-			}
-		});
-		if(json.length == 0){
-			document.getElementById('no-jobs-message').style.display = 'block'
-		}
-	});
-
-	setInterval(async function() {
-		if(unfinishedJobs.length == 0) {
-			return;
-		}
-		let result = await fetch(
-			"{% url "api:jobs:get_statuses" %}?" + new URLSearchParams({job_ids: unfinishedJobs})
-		)
-
-		let json = await result.json();
-
-		for (let key in json) {
-			var value = json[key];
-
-			document.querySelector(`tr[job_id="${key}"]`).setStatus(value)
-			if(isTerminalState(value)){
-				unfinishedJobs = unfinishedJobs.filter(item => item !== key)
-			}
-		}
-		
-	},{{ POLLING_TIME }});
-
-
-	// ----- Create Job -----
-
-	let createJobModalElement = document.getElementById('create-job-modal');
-	let createJobModal = new bootstrap.Modal(createJobModalElement);
-	let createJobForm = document.getElementById('create-job-form')
-
-	let jobDropZone = document.getElementById('job-drop-zone')
-	let jobName = document.getElementById('job-name');
-	let jobLanguage = document.getElementById('job-language')
-	let jobMaxMatchesUntilIgnored = document.getElementById('job-max-until-ignored');
-	let jobMaxMatchesDisplayed = document.getElementById('job-max-displayed-matches');
-	let jobErrorMessage = document.getElementById("job-error-message");
-	let createJobButton = document.getElementById('create-job-button');
-
-	let isDisplayingError = false;
-	function displayError(message){
-		if (isDisplayingError){
-			return;
-		}
-		jobErrorMessage.textContent = message;
-		createJobModalElement.classList.add("animated", "shake");
-		isDisplayingError = true;
-
-		setTimeout(function(){ 
-			jobErrorMessage.textContent = "";
-			createJobModalElement.classList.remove("animated", "shake");
-			isDisplayingError = false;
-		}, 3000);
-
-		//$dialog.one('webkitAnimationEnd oanimationend msAnimationEnd animationend', function() {});
-	}
-
-	function overwriteJobData(jobDropZoneFile, name, data){
-		jobDropZoneFile.data.push({name: name, data: data});
-	}
-
-	createJobForm.onsubmit = async (e) => {
-
-		e.preventDefault();
-
-		// Create a new form (and capture name, language, max matches until ignored and max matches displayed)
-		let jobFormData = new FormData(createJobForm);
-		let counter = 0;
-		for (let jobDropZoneFile of jobDropZone.files){
-			for (let data of jobDropZoneFile.data){
-				jobFormData.append("{{ FILES_NAME }}", new Blob([data.data]), data.name);
-				counter++;
-			}
-		}
-
-		// Can't submit only 1 student
-		if (counter <= 1){
-			displayError("Please submit more than 1 students' files.");
-			return;
-		}
-
-		// Submit a new job with the created form
-		let result = await fetch("{% url "jobs:new" %}", {
-			method: 'POST',
-			body: jobFormData,
-		});
-
-		// Receive the result as a json object and add it to the jobs table
-		let json = await result.json();
-		addJob(json);
-		unfinishedJobs.push(json['job_id']);
-
-		// Hide and reset the form data and dropzone
-		createJobModal.hide();
-		createJobForm.reset();
-		jobDropZone.reset();
-	};
-
-	jobDropZone.onFileAdded = async (jobDropZoneFile) => {
-
-		createJobButton.disabled = true;
-
-		function getExtension(name){
-			return name.split('.').pop();
-		}
-
-		function getProgrammingLanguageId(files){
-			let d = {};
-			for (let key in languages){
-				d[key] = 0;
-			}
-			for (let file of files){
-				let extension = getExtension(file.name);
-				for (let key in languages){
-					if(languages[key][2].includes(extension)){
-						d[key] += 1;
-					}
-				}
-			}
-			return Object.entries(d).reduce((a, b) => a[1] > b[1] ? a : b)[0]
-		}
-
-		let archive = jobDropZoneFile.file;
-		let files = await extractFiles(archive);
-		console.log("0");
-
-		let length = files.length * 2;
-		let counter = 0;
-
-		// Type
-		let single = await isSingleSubmission(files);
-
-		let t0 = performance.now();
-		let langTestFiles = [...files];
-		if (!single){
-			for (let file of files){
-				if (isArchive(file.name)){
-					let tmpArchive = await extractFileNames(file);
-					for (let tmpFile of tmpArchive){
-						langTestFiles.push(tmpFile);
-					}
-					counter++;
-					jobDropZoneFile.setProgress(counter / length);
-				}
-			}
-		}
-
-		let t1 = performance.now();
-		console.log('Took', t1-t0)
-
-		// Programming Language
-		let languageId = getProgrammingLanguageId(langTestFiles);
-		let language = languages[languageId][0];
-
-		console.log(language)
-		// 
-		if (single){
-			overwriteJobData(jobDropZoneFile, archive.name, await extractSingle(files, languageId));
-			jobDropZoneFile.setProgress(1);
-
-		}else{
-			await extractBatch(files, languageId, (name, data) => {
-				overwriteJobData(jobDropZoneFile, name, data);
-				counter++;
-				jobDropZoneFile.setProgress(counter / length);
-			});
-		}
-
-		// Tags
-		jobDropZoneFile.addTag(single ? "Single" : "Batch", single ? "var(--bs-dark)" : "var(--bs-dark)");
-		jobDropZoneFile.addTag(language, "var(--bs-dark)");
-
-		jobName.value = jobName.value || archive.name.slice(0, archive.name.length - 4);
-		jobLanguage.value = language;
-		createJobButton.disabled = false;
-	};
-
-	jobDropZone.onFileRemoved = () => {
-		if (jobDropZone.files.length == 0) {
-			jobName.value = "";
-			jobLanguage.selectedIndex = 0;
-			jobMaxMatchesUntilIgnored.value = {{ DEFAULT_MOSS_SETTINGS.max_until_ignored }};
-			jobMaxMatchesDisplayed.value = {{ DEFAULT_MOSS_SETTINGS.max_displayed_matches }};
-
-			createJobButton.disabled = true;
-		}
-	};
-
-	jobDropZone.onFileRejected = (reason) => {
-		displayError(reason);
-	}
-
-	})
 </script>
 
 {% endblock %}
