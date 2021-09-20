@@ -26,7 +26,7 @@
 
 	<div class="mb-3">
 		<label for="id_username" class="form-label text-dark fw-bold">Course Code: </label>
-		<input type="text" name="username" class="form-control bg-light border-dark border-2 {% if form.errors.username %} is-invalid{% endif %}" id="id_username" placeholder="e.g. CS123ABC" required>
+		<input type="text" name="username" class="form-control bg-light border-dark border-2 {% if form.errors.username %} is-invalid{% endif %}" id="id_username" placeholder="e.g. CS123ABC" {% if form.username.value %}value="{{ form.username.value }}"{% endif %} required>
 		<div id="username_invalid" class="invalid-feedback">
 			{% if form.errors.username %}
 			{{ form.errors.username }}
