@@ -23,7 +23,7 @@ AVERAGE_PING_KEY = 'AVERAGE_PING'
 LATEST_PING_KEY = 'LATEST_PING'
 
 # Used for exponential moving average
-UP_ALPHA = 0.001
+UP_ALPHA = 0.0001
 DOWN_ALPHA = 0.25
 
 
