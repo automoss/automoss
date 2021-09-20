@@ -48,6 +48,9 @@ class Logout(View):
 class Register(View):
     """ User registration view """
     template = "users/auth/register.html"
+    email_html_template = "users/email/welcome.html"
+    email_txt_template = "users/email/welcome.txt"
+    email_subject_template = "users/email/subject.txt"
     context = {}
 
     def get(self, request):
@@ -63,6 +66,14 @@ class Register(View):
         if user_form.is_valid():
             user = user_form.save()
             django_login(request, user)
+            # send account creation confirmation email
+            user.send_email( 
+                subject_template=self.email_subject_template, 
+                body_template=self.email_txt_template, 
+                html_template=self.email_html_template, 
+                context={ "request" : request },
+                broadcast=False
+            )
             return redirect(settings.LOGIN_REDIRECT_URL)
         return render(request, self.template, {**self.context, 'form': user_form})
             
