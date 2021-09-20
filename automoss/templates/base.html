@@ -10,9 +10,10 @@
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@100;300;400;700&display=swap" rel="stylesheet">
-		<link href="{% static "lib/bootstrap/css/main.min.css" %}" rel="stylesheet" crossorigin="anonymous">
+		<link href="{% static "lib/bootstrap/css/main.min.css" %}" rel="stylesheet">
 		{% block "links" %}{% endblock %}
-		<script src="{% static "lib/bootstrap/js/bootstrap.bundle.min.js" %}" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+		<script src="{% static "lib/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
 		{% block "scripts" %}{% endblock %}
 	</head>
 	<body>{% block "base-content" %}{% endblock %}</body>
