@@ -3,7 +3,7 @@
 import os
 import sys
 import inspect
-
+import random
 
 def get_longest_key(dictionary):
     return max(map(len, dictionary))
@@ -64,7 +64,7 @@ def is_main_thread():
 
 # TODO move?
 # capped exponential backoff with max retries (max time)
-def retry(min_time, max_time, base, max_retry_duration, first_instant):
+def retry(min_time, max_time, base_range, max_retry_duration, first_instant):
     attempt_number = 0
     if first_instant:
         yield attempt_number, 0
@@ -72,6 +72,7 @@ def retry(min_time, max_time, base, max_retry_duration, first_instant):
 
     total_elapsed = 0
     while total_elapsed < max_retry_duration:
+        base = random.uniform(*base_range)
         time = min(max(base ** attempt_number, min_time),
                     max_time)  # Current sleep time
 

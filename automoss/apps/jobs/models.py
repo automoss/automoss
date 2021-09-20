@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 
 from ...settings import (
     STATUSES,
+    EVENTS,
     SUPPORTED_LANGUAGES,
     DEFAULT_MOSS_SETTINGS,
     UUID_LENGTH,
@@ -103,3 +104,24 @@ class Submission(models.Model):
 
     def __str__(self):
         return f'{self.submission_id} ({self.name})'
+
+
+class JobEvent(models.Model):
+    """ Class to model Job events """
+    # Job the event belongs to
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+
+    # Date and time job was created
+    date = models.DateTimeField(default=now)
+
+    # Job status
+    type = models.CharField(
+        max_length=get_longest_key(EVENTS),
+        choices=to_choices(EVENTS)
+    )
+
+    # Message attached to job event
+    message = models.CharField(max_length=128)
+
+    def __str__(self):
+        return f'[{self.date}] {self.job.job_id}: {self.type}' + (f' ({self.message})' if self.message else '')

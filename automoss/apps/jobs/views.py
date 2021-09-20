@@ -18,6 +18,7 @@ from .tasks import process_job
 from .models import (
     Job,
     Submission,
+    JobEvent,
     get_default_comment
 )
 from ..results.models import Match
@@ -32,7 +33,11 @@ from ...settings import (
     READABLE_LANGUAGE_MAPPING,
     SUBMISSION_TYPES,
 
-    SUBMISSION_UPLOAD_TEMPLATE
+    SUBMISSION_UPLOAD_TEMPLATE,
+
+    INQUEUE_EVENT,
+    FILES_NAME,
+    FAILED_STATUS
 )
 
 
@@ -65,18 +70,30 @@ class New(View):
 
     def post(self, request):
         """ Post new job """
-        print(READABLE_LANGUAGE_MAPPING)
-        print(request.POST.get('job-language'))
+        # print(READABLE_LANGUAGE_MAPPING)
+        # print(request.POST.get('job-language'))
         # TODO validate form
         language = READABLE_LANGUAGE_MAPPING.get(
             request.POST.get('job-language'))  # TODO throw error if none
 
+        if language is None:
+            data = {
+                'message': f'Unsupported language selected ({language})'
+            }
+            return JsonResponse(data, status=400)
+
+        if not request.FILES.getlist(FILES_NAME):
+            data = {
+                'message': 'No files submitted'
+            }
+            return JsonResponse(data, status=400)
+
+        # TODO validate options and reject if incorrect
         max_until_ignored = request.POST.get('job-max-until-ignored')
         max_displayed_matches = request.POST.get('job-max-displayed-matches')
 
         comment = request.POST.get('job-name')
 
-        # TODO validate options and reject if incorrect
 
         new_job = Job.objects.create(
             user=request.user,
@@ -88,7 +105,6 @@ class New(View):
 
         job_id = new_job.job_id
 
-        # TODO get from database
         moss_user_id = request.user.moss_id
 
         for file_type in SUBMISSION_TYPES:
@@ -112,9 +128,11 @@ class New(View):
                 with open(file_path, 'wb') as fp:
                     fp.write(f.read())
 
+
+        JobEvent.objects.create(job=new_job, type=INQUEUE_EVENT)
+
         process_job.delay(job_id)
 
-        # Return useful information
         data = json.loads(serialize('json', [new_job]))[0]['fields']
         return JsonResponse(data, status=200, safe=False)
 

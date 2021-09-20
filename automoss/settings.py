@@ -230,6 +230,7 @@ STATUS_CONTEXT = {}
 with capture_in(STATUS_CONTEXT):
     # Statuses
     INQUEUE_STATUS = 'INQ'
+    UPLOADING_STATUS = 'UPL'
     PROCESSING_STATUS = 'PRO'
     PARSING_STATUS = 'PAR'
     COMPLETED_STATUS = 'COM'
@@ -238,6 +239,7 @@ with capture_in(STATUS_CONTEXT):
     STATUSES = {
         # 'Code': 'Name',
         INQUEUE_STATUS: 'In Queue',
+        UPLOADING_STATUS: 'Uploading',
         PROCESSING_STATUS: 'Processing',
         PARSING_STATUS: 'Parsing',
         COMPLETED_STATUS: 'Completed',
@@ -260,19 +262,40 @@ with capture_in(JOB_CONTEXT):
     JOB_UPLOAD_TEMPLATE = f'{MEDIA_ROOT}/{{job_id}}/uploads'
     SUBMISSION_UPLOAD_TEMPLATE = f'{JOB_UPLOAD_TEMPLATE}/{{file_type}}/{{file_id}}'
 
-    # Max duration to retry = EXPONENTIAL_BACKOFF_BASE**MAX_RETRIES
-    # Total duration        = \sum_{n=0}^{MAX_RETRIES}{EXPONENTIAL_BACKOFF_BASE}^{n}
-
     MIN_RETRY_TIME = 32
     MAX_RETRY_TIME = 256
     MAX_RETRY_DURATION = 86400
-    EXPONENTIAL_BACKOFF_BASE = 1.5  # 1.5  # 1<=x<=2
+    EXPONENTIAL_BACKOFF_BASE_RANGE = [1, 2]#1.5  # 1.5  # 1<=x<=2
     FIRST_RETRY_INSTANT = True
+
+JOB_EVENT_CONTEXT = {}
+with capture_in(JOB_EVENT_CONTEXT):
+    INQUEUE_EVENT = 'INQ'
+    UPLOADING_EVENT = 'UPL'
+    PROCESSING_EVENT = 'PRO'
+    PARSING_EVENT = 'PAR'
+    COMPLETED_EVENT = 'COM'
+    FAILED_EVENT = 'FAI'
+    RETRY_EVENT = 'RET'
+    ERROR_EVENT = 'ERR'
+
+    EVENTS = {
+        INQUEUE_EVENT: 'Placed in the processing queue',
+        UPLOADING_EVENT: 'Started uploading to MOSS',
+        PROCESSING_EVENT: 'Started processing',
+        PARSING_EVENT: 'Started parsing',
+        COMPLETED_EVENT: 'Job completed',
+        FAILED_EVENT: 'Job failed',
+        RETRY_EVENT: 'Retrying job',
+        ERROR_EVENT: 'An error occurred'
+    }
+
 
 # UI Defaults
 UI_CONTEXT = {}
 with capture_in(UI_CONTEXT):
     POLLING_TIME = 1000  # in milliseconds
+    MOSS_POLLING_TIME = 30000  # in milliseconds
 
 # Misc Constants
 UUID_LENGTH = 36
