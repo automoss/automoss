@@ -164,6 +164,10 @@
 			// if(passwordElement.value.search("[A-Z]") == -1){
 			// 	errorList.appendChild(createErrorElement("Must contain an uppercase character"))
 			// }
+			// Check field contains both uppercase and lowercase characters
+			if(passwordElement.value.search("[a-z]") == -1 || passwordElement.value.search("[A-Z]") == -1){
+				errorList.appendChild(createErrorElement("Must contain both upper and lowercase letters"))
+			}
 			// Check field contains a digit
 			if(passwordElement.value.search("[0-9]") == -1){
 				errorList.appendChild(createErrorElement("Must contain a digit"))
