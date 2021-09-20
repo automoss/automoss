@@ -25,16 +25,15 @@ drop-zone > #zone > #zone-text
     color: var(--bs-dark);
     bottom: 20px;
 }
-drop-zone > #zone > #zone-info
+/*drop-zone > #zone > #zone-info
 {
     position: absolute;
     height: 17px;
-    display: none;
     width: 17x;
     top: 10px;
     right: 10px;
     content: url("/static/img/info.svg");
-}
+}*/
 drop-zone > #zone > #zone-input
 {
     cursor: pointer;
