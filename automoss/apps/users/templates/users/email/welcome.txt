@@ -1,0 +1,6 @@
+{% autoescape off %}
+
+Welcome to AutoMOSS!
+Your account for {{ user.course_code }} has been successfully created.
+
+{% endautoescape %}
