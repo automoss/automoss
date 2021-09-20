@@ -123,7 +123,7 @@ class JSONJobs(View):
 
     def get(self, request):
         """ Get user's jobs """
-        results = Job.objects.filter(user=request.user).values()
+        results = Job.objects.user_jobs(request.user).values()
         return JsonResponse(list(results), status=200, safe=False)
 
 
@@ -134,8 +134,7 @@ class JSONStatuses(View):
     def get(self, request):
         """ Get statuses of requested jobs (by ID) """
         job_ids = request.GET.get('job_ids', '').split(',')
-        results = Job.objects.filter(
-            user=request.user, job_id__in=job_ids)
+        results = Job.objects.user_jobs(request.user).filter(job_id__in=job_ids)
 
         data = {j.job_id: j.status for j in results}
         return JsonResponse(data, status=200)
