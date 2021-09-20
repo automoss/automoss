@@ -15,7 +15,7 @@
             <!-- Course Code -->
             <div class="mb-3">
               <label for="id_course_code" class="form-label fw-bold">Course Code: </label>
-              <input type="text" name="course_code" class="form-control bg-light border-dark border-2{% if form.errors.course_code %} is-invalid{% endif %}" id="id_course_code" maxlength="150" placeholder="e.g. CS123XYZ" required>
+              <input type="text" name="course_code" class="form-control bg-light border-dark border-2{% if form.errors.course_code %} is-invalid{% endif %}" id="id_course_code" maxlength="150" placeholder="e.g. CS123XYZ" {% if form.course_code.value %}value="{{ form.course_code.value }}"{% endif %} required>
               <div id="course_invalid" class="invalid-feedback">
               {% if form.errors.course_code %}
               {{ form.errors.course_code}}
@@ -25,7 +25,7 @@
             <!-- Email Address -->
             <div class="mb-3">
                 <label for="id_email" class="form-label fw-bold">Primary Email Address: </label>
-                <input type="email" name="primary_email_address" class="form-control bg-light border-dark border-2{% if form.errors.primary_email_address %} is-invalid{% endif %}" id="id_email" placeholder="e.g. cs123xyz@gmail.com" required>
+                <input type="email" name="primary_email_address" class="form-control bg-light border-dark border-2{% if form.errors.primary_email_address %} is-invalid{% endif %}" id="id_email" placeholder="e.g. cs123xyz@gmail.com" {% if form.primary_email_address.value %}value="{{ form.primary_email_address.value }}"{% endif %} required>
                 <div id="email_invalid" class="invalid-feedback">
                 {% if form.errors.primary_email_address %}
                 {{ form.errors.primary_email_address }}
@@ -35,7 +35,7 @@
             <!-- MOSS ID -->
             <div class="mb-3">
                 <label for="id_moss_id" class="form-label fw-bold">MOSS ID: </label>
-                <input type="text" name="moss_id" class="form-control bg-light border-dark border-2{% if form.errors.moss_id %} is-invalid{% endif %}" id="id_moss_id" maxlength="32" placeholder="e.g. 123456789" required>
+                <input type="text" name="moss_id" class="form-control bg-light border-dark border-2{% if form.errors.moss_id %} is-invalid{% endif %}" id="id_moss_id" maxlength="32" placeholder="e.g. 123456789" {% if form.moss_id.value %}value="{{ form.moss_id.value }}"{% endif %} required>
                 <div id="moss_id_invalid" class="invalid-feedback">
                 {% if form.errors.moss_id %}
                 {{ form.errors.moss_id }}
