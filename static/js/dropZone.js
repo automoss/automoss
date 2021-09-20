@@ -33,6 +33,7 @@ class DropZone extends HTMLElement {
 		this.zoneInput.id = "zone-input";
 		this.zoneInput.type = "file";
 		this.zoneInput.multiple = true;
+		this.zoneInput.title = "Supported File Formats: " + this.getAttribute("filetypes").split(",").join(", ");
 		this.zoneInput.addEventListener('dragenter', () => this.setHighlighted(true));
 		this.zoneInput.addEventListener('dragleave', () => this.setHighlighted(false));
 		this.zoneInput.addEventListener('drop', () => this.setHighlighted(false));
