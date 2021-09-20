@@ -60,6 +60,7 @@ class Job extends HTMLTableRowElement{
         
         let statusMapping = {};
         statusMapping[inQueueStatus] = 'bg-warning';
+        statusMapping[uploadingStatus] = 'bg-secondary';
         statusMapping[processingStatus] = 'bg-info';
         statusMapping[parsingStatus] = 'bg-dark';
         statusMapping[completedStatus] = 'bg-success';
