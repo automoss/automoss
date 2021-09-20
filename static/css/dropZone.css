@@ -28,8 +28,9 @@ drop-zone > #zone > #zone-text
 drop-zone > #zone > #zone-info
 {
     position: absolute;
-    height: 20px;
-    width: 20px;
+    height: 17px;
+    display: none;
+    width: 17x;
     top: 10px;
     right: 10px;
     content: url("/static/img/info.svg");
