@@ -299,14 +299,16 @@ class Result:
 class MOSS:
 
     @classmethod
-    def validate_moss_id(cls, user_id):
+    def validate_moss_id(cls, user_id, raise_if_connection_error=False):
         moss = MossAPIWrapper(user_id)
         try:
             moss.connect()
             moss.process()
         except NoFiles:
             return True
-        except Exception:  # Anything else means no
+        except Exception as e:  # Anything else means no
+            if raise_if_connection_error and isinstance(e, ConnectionError):
+                raise e
             return False
         finally:  # Close session as soon as possible
             moss.close()
