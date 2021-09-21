@@ -27,7 +27,7 @@ class TestMossAPI(TestCase):
             return
 
         moss_user_id = 1  # TODO use environment variables
-        result = MOSS().generate(
+        result = MOSS.generate(
             user_id=moss_user_id,
             language='python',
             **paths,

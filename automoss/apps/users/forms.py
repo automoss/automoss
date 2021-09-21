@@ -71,7 +71,7 @@ class UserCreationForm(forms.ModelForm):
         clean_moss_id = self.cleaned_data.get('moss_id')
         valid_id = False
         try:
-            valid_id = MOSS().validate_moss_id(clean_moss_id, raise_if_connection_error=True)
+            valid_id = MOSS.validate_moss_id(clean_moss_id, raise_if_connection_error=True)
         except ConnectionError as ce:
             raise ValidationError(
                 self.error_messages['moss_error'],
