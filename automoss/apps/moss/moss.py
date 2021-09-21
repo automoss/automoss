@@ -20,6 +20,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 MOSS_URL = 'moss.stanford.edu'
 SUPPORTED_MOSS_LANGUAGES = [SUPPORTED_LANGUAGES[l][1]
                             for l in SUPPORTED_LANGUAGES]
+HTTP_RETRY_COUNT = 5
 
 
 def is_valid_moss_url(url):
@@ -267,18 +268,22 @@ class Result:
 
     # https://stackoverflow.com/a/54878794
     async def fetch(self, session, url):
-        async with session.get(url) as resp:
-            return await resp.text()
+        error = None
+        for _ in range(HTTP_RETRY_COUNT):
+            try:
+                async with session.get(url, raise_for_status=True) as resp:
+                    return await resp.text()
+            except (aiohttp.ClientResponseError, asyncio.TimeoutError) as e:
+                error = e  # Retry
+
+        raise ReportDownloadTimeout(error)
 
     async def fetch_concurrent(self, urls):
-        try:
-            loop = asyncio.get_event_loop()
-            async with aiohttp.ClientSession() as session:
-                tasks = [loop.create_task(self.fetch(session, u))
-                         for u in urls]
-                return [await result for result in asyncio.as_completed(tasks)]
-        except asyncio.TimeoutError as e:
-            raise ReportDownloadTimeout(e)
+        loop = asyncio.get_event_loop()
+        async with aiohttp.ClientSession() as session:
+            tasks = [loop.create_task(self.fetch(session, u))
+                     for u in urls]
+            return [await result for result in asyncio.as_completed(tasks)]
 
     def _parse_matches(self, url):
         base_url = f"{url.rstrip('/')}/"  # Ensure link ends with a /
@@ -295,6 +300,7 @@ class Result:
                 yield MossMatch(response)
             except UnparseableMatch:
                 pass
+
 
 class MOSS:
 
