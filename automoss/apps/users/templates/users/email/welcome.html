@@ -26,8 +26,8 @@
               <table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;">
                 <tr>
                   <td style="padding:0 0 36px 0;color:#0e162b;">
-                    <h1 style="font-size:24px;margin:0 0 20px 0;font-family:Arial,sans-serif;">Welcome to AutoMOSS!</h1>
-                    <p style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:Arial,sans-serif;">An account for {{ request.user.course_code }} has been created. You can log in to your account <a href="{{request.scheme}}://{{request.META.HTTP_HOST}}{% url "users:login" %}">here</a>.</p>
+                    <h2 style="font-size:24px;margin:0 0 20px 0;font-family:Arial,sans-serif;">Welcome to AutoMOSS!</h2>
+                    <p style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:Arial,sans-serif;">An account for {{ user.course_code }} has been created. </br> Please verify your account by clicking <a href="{{request.scheme}}://{{request.META.HTTP_HOST}}{% url "users:confirm" user.user_id token %}">here</a>.</p>
                   </td>
                 </tr>
                 <tr>
