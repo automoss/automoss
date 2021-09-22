@@ -3,8 +3,8 @@
 
 {% block "main-content" %}
 
-<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/github.min.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
 
 {% block "navigation" %}
 	<a class="link-dark ps-2" style="text-decoration: none;" href="{% url "jobs:index" %}">
@@ -31,7 +31,7 @@
 {% endblock %}
 
 <div class="mb-2 mt-2 ms-1 d-flex justify-content-between"><h2 class="fw-bold">Match of "{{ submissions.first.name }}" and "{{ submissions.second.name }}"</h2> 
-<button class="btn btn-primary rounded-pill text-light" onClick="downloadAsPDF();"><svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" class="bi bi-download pb-1 me-1" viewBox="0 0 16 16">
+<button class="btn btn-primary rounded-pill text-light" onClick="downloadReport();"><svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" class="bi bi-download pb-1 me-1" viewBox="0 0 16 16">
 	<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
 	<path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
   </svg> Download</button>
@@ -52,30 +52,32 @@ pre {
 }
 </style>
 
-<body>
-<div class="container-fluid d-flex shadow-sm bg-white rounded-3 p-1" style="background-color:white; max-height: calc(100vh - 300px)">
-	
-	{% for key, values in blocks.items %}
-	<div class="code-window m-2 p-1 border border-2 rounded-1 border-dark window-{{ forloop.counter }}" style="overflow-x:auto; width: 44%;">
+<div id="report">
+	<div class="container-fluid d-flex shadow-sm bg-white rounded-3 p-1" style="background-color:white; max-height: calc(100vh - 300px)">
 		
-		{% for x in values %}
-			<pre {% if x.id %} match="{{x.id}}" class="language-{{language}} match" {% else %} class="language-{{language}}" {% endif %}>{{x.text}}</pre>
+		{% for key, values in blocks.items %}
+		<div class="code-window m-2 p-1 border border-2 rounded-1 border-dark window-{{ forloop.counter }}" style="overflow-x:auto; width: 44%;">
+			
+			{% for x in values %}
+				<pre {% if x.id %} match="{{x.id}}" class="language-{{language}} match" {% else %} class="language-{{language}}" {% endif %}>{{x.text}}</pre>
+			{% endfor %}
+
+		</div>
+		{% endfor %}
+		<div class="bg-dark rounded-3 ms-2 d-flex flex-column pt-2 m-2" style="width:12%; overflow: auto;">
+
+		{% for key,value in match_info.items %}
+
+			<button match="{{key}}" class="btn btn-outline-light border-2 rounded-pill match-button mb-2 mt-1 mx-3">Match {{key}}</button>
+
 		{% endfor %}
 
+		</div>
 	</div>
-	{% endfor %}
-	<div class="bg-dark rounded-3 ms-2 d-flex flex-column pt-2 m-2" style="width:12%; overflow: auto;">
 
-	{% for key,value in match_info.items %}
-
-		<button match="{{key}}" class="btn btn-outline-light border-2 rounded-pill match-button mb-2 mt-1 mx-3">Match {{key}}</button>
-
-	{% endfor %}
-
-	</div>
 </div>
 
-</body>
+<script src="{% static "/js/reportGeneration.js" %}"></script>
 
 
 <script>
