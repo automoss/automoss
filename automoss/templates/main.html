@@ -108,7 +108,7 @@
 		let data = await status.json();
 		setStatus(data.status, data.average_ping);
 	}
-	setInterval(updateStatus, 30000);
+	setInterval(updateStatus, 5000);
 	updateStatus();
 
 </script>

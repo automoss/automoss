@@ -23,6 +23,7 @@ class UserCreationForm(forms.ModelForm):
     error_messages = {
         'password_mismatch': 'The two password fields didn’t match.',
         'invalid_moss_id': 'The MOSS ID provided is not valid.',
+        'moss_error': 'MOSS could not verify your ID at this time. Please try again later.'
     }
     password1 = forms.CharField(
         label="Password",
@@ -68,13 +69,20 @@ class UserCreationForm(forms.ModelForm):
 
     def clean_moss_id(self):
         clean_moss_id = self.cleaned_data.get('moss_id')
-        valid_id = MOSS().validate_moss_id(clean_moss_id)
+        valid_id = False
+        try:
+            valid_id = MOSS.validate_moss_id(clean_moss_id, raise_if_connection_error=True)
+        except ConnectionError as ce:
+            raise ValidationError(
+                self.error_messages['moss_error'],
+                code='could_not_verify',
+            )
         if valid_id:
             return clean_moss_id
         raise ValidationError(
                 self.error_messages['invalid_moss_id'],
                 code='invalid_moss_id',
-            )
+        )
 
     def save(self, commit=True):
         user = super().save(commit=False)

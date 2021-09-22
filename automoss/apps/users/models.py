@@ -1,6 +1,9 @@
 from django.db import models
+from django.conf import settings
 from django.utils.timezone import now
 from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager
@@ -8,6 +11,8 @@ from django.contrib.auth.models import (
 from django.contrib.auth.validators import (
     UnicodeUsernameValidator
 )
+
+from .tasks import send_emails
 
 class UserManager(BaseUserManager):
     """ Manager for custom user class
@@ -104,7 +109,7 @@ class User(AbstractBaseUser):
         validators=[course_code_validator],
         error_messages={
             'unique': "A user with that username already exists."
-        })
+    })
     # Email to send administritive content to
     primary_email_address = models.EmailField(
         blank=False,
@@ -150,10 +155,38 @@ class User(AbstractBaseUser):
     def has_module_perms(self, app_label):
        return self.is_staff
 
-    def email_user(self, subject, message, from_email=None, **kwargs):
-        """Send an email to this user."""
-        send_mail(subject, message, from_email, [self.primary_email_address], **kwargs)
+    def send_email(self, subject_template, body_template, html_template, context, broadcast=False):
+        """Send an email to this user and possibly associated emails if broadcast email """
+        # Render templates
+        subject = render_to_string(subject_template, context).strip()
+        body = render_to_string(body_template, context)
+        html = render_to_string(html_template, context)
+        recipients = [str(self.primary_email_address)]
+        # Add to recipient list if broadcast
+        if broadcast:
+            recipients += [str(email) for email in self.email_set.all()]
+        # send emails asynchronously
+        send_emails.delay(
+            from_email=settings.DEFAULT_FROM_EMAIL, 
+            recipients=recipients, 
+            subject=subject, 
+            body=body, 
+            html=html
+        )
 
     def __str__(self):
         """ User to string returns course code """
         return self.course_code
+
+class Email(models.Model):
+    """ Secondary email address associated with a user account """
+    # User foreign key - an email belongs to a user
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # Email address
+    email_address = models.EmailField(
+        blank=False,
+        null=False
+    )
+    def __str__(self):
+        """ Email to string """
+        return self.email_address
