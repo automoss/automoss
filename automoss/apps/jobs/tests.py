@@ -22,7 +22,8 @@ class TestJobs(TestCase):
             'course_code': 'test_user',
             'primary_email_address': 'test@localhost',
             'moss_id': 1,
-            'password': 'Testing123!'}
+            'password': 'Testing123!',
+            'is_verified': True}
         self.login_credentials = {'username': self.credentials.get('course_code'), 'password': self.credentials.get('password')}
         self.test_user = User.objects.create_user(**self.credentials)
 
@@ -59,7 +60,8 @@ class TestResults(TestCase):
             'course_code': 'test_user',
             'primary_email_address': 'test@localhost',
             'moss_id': 1,
-            'password': 'Testing123!'}
+            'password': 'Testing123!',
+            'is_verified' : True}
         self.login_credentials = {'username': self.credentials.get('course_code'), 'password': self.credentials.get('password')}
         self.test_user = User.objects.create_user(**self.credentials)
         # Job Creation
