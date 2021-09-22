@@ -7,7 +7,7 @@ class ConfirmEmailTokenGenerator(PasswordResetTokenGenerator):
         return f"{email.pk}{email.email}{timestamp}{email.is_verified}"
 
 class UserTokenGenerator(PasswordResetTokenGenerator):
-    """ Token generator for generating single-use, expiring tokens for password changing """
+    """ Token generator for generating single-use, expiring tokens for password changing and account confirmation """
     def _make_hash_value(self, user, timestamp):
         """ Creates string to hash based on user state and info that changes """
         return f"{user.user_id}{user.course_code}{user.moss_id}{timestamp}{user.password}{user.is_verified}"
