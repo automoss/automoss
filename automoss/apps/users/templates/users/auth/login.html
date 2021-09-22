@@ -1,15 +1,14 @@
 {% extends "users/auth/base.html" %}
-
 {% load static %}
 
 {% block "scripts" %}
-<script src="{% static "js/login.js" %}" defer></script>
+	{{ block.super }}
+	<script src="{% static "js/login.js" %}" defer></script>
 {% endblock %}
 
 {% block "login-content" %}
 
 <form id="login" class="d-flex flex-grow flex-column text-dark bg-light rounded-3 shadow-lg p-4 m-4" method="post" action="{% url 'users:login' %}" style="min-width: 550px; max-width: 30%;" novalidate>
-
 	{% csrf_token %}
 	
 	<h3 class="mb-4 bg-light"><b>Login</b></h3>
@@ -24,6 +23,7 @@
 	</div>
 	{% endif %}
 
+	<!-- Course Code -->
 	<div class="mb-3">
 		<label for="id_username" class="form-label text-dark fw-bold">Course Code: </label>
 		<input type="text" name="username" class="form-control bg-light border-dark border-2 {% if form.errors.username %} is-invalid{% endif %}" id="id_username" placeholder="e.g. CS123ABC" {% if form.username.value %}value="{{ form.username.value }}"{% endif %} required>
@@ -34,6 +34,7 @@
 		</div>
 	</div>
 	
+	<!-- Password -->
 	<div class="mb-3">
 		<label for="id_password" class="form-label text-dark fw-bold">Password: </label>
 		<input type="password" name="password" class="form-control bg-light border-dark border-2 {% if form.errors.password %} is-invalid{% endif %}" id="id_password" placeholder="Enter your password" required>
@@ -53,14 +54,15 @@
 
 	<div class="mb-3">
 		<button type="submit" class="btn btn-primary rounded-pill text-light mt-3">
-		<svg class="me-1 pb-1" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
-			<path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0v-2z"/>
-			<path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
-		</svg>
-		Log In
+			<svg class="me-1 pb-1" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
+				<path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0v-2z"/>
+				<path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+			</svg>
+			Log In
 		</button>
 	</div>
 
+	<!-- Don't Have An Account -->
 	<div class="mb-3">
 		Don't have an account yet? <a href="{% url 'users:register' %}" style="text-decoration: none">Register.</a>
 	</div> 
