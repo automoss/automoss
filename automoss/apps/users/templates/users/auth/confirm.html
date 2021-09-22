@@ -1,0 +1,18 @@
+{% extends "users/auth/base.html" %}
+
+{% block "login-content" %}
+
+<div class="d-flex flex-grow flex-column jusify-content-center align-items-center text-dark bg-light rounded-3 shadow-lg p-4 m-4">
+	<div class="d-flex flex-grow flex-column jusify-content-center align-items-center">
+		<h3 class="mb-3">{{ header }}</h3>
+		<p>
+			{{ message|linebreaks }}
+		</p>
+	</div>
+	<div class="d-flex justify-content-center">
+		<a class = "btn btn-primary rounded-pill text-light mt-2" href="{% url "users:login" %}">
+			{{ action }}</a>
+	</div>
+</div>
+
+{% endblock %}

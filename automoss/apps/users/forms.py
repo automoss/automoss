@@ -91,9 +91,26 @@ class UserCreationForm(forms.ModelForm):
             user.save()
         return user
 
+class UnverifiedError(ValidationError):
+    """ Represents an unverified user """
+
 class LoginForm(AuthenticationForm):
     """ User login form """
     error_messages = {
         'invalid_login': 'The course code and password entered were incorrect.',
         'inactive': 'That account is diabled.',
+        'unverified' : "Please verify your account. An email has been sent to your inbox."
     }
+
+    def confirm_login_allowed(self, user):
+        """ Determines whether a user is allowed to login """
+        if not user.is_active:
+            raise ValidationError(
+                self.error_messages['inactive'],
+                code='inactive',
+            )
+        if not user.is_verified:
+            raise UnverifiedError(
+                self.error_messages['unverified'],
+                code='unverified',
+            )
