@@ -9,10 +9,10 @@ async function getElementsByTagNameText(tagName, ref){
 	let elements = document.getElementsByTagName(tagName);
 	let elements_text = "";
 	for (let element of elements){
-		if (element.innerHTML == "" && false){ // TODO: Download external text and add that instead of the link!
+		if (element.innerHTML == "" && false){ // TODO: Can't use GET request from Google?
 			elements_text += await getExternalText(element[ref]);
 		}else{
-			elements_text += element.outerHTML.replace("/static/", "http://localhost:8000/static/"); // TODO: Change to templated.
+			elements_text += element.outerHTML.replace("/static/", "http://localhost:8000/static/"); // TODO: Can remove "replace(...)" when above is solved.
 		}
 		elements_text += "\n";
 	}
