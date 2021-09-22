@@ -86,7 +86,7 @@ class TestUsers(TestCase):
         cases = [
             ({
             'course_code': 'CSC3003S',
-            'primary_email_address': 'testing@test.com',
+            'primary_email_address': 'testing@testingautomoss.com',
             'moss_id': '2',
             'password1': 'Testing123!',
             'password2': 'Testing123!'
