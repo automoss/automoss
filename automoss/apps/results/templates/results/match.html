@@ -10,8 +10,8 @@
 
 {% block "scripts" %}
 	{{ block.super }}
-	<script src="{% static "lib/highlight.min.js" %}"></script>
-	<script src="{% static "/js/reportGeneration.js" %}"></script>
+	<script src="{% static "lib/highlight.min.js" %}" defer></script>
+	<script src="{% static "js/reportGeneration.js" %}" ignoreOnExtract defer></script>
 {% endblock %}
 
 {% block "navigation" %}
