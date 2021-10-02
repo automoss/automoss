@@ -11,8 +11,11 @@ from django.contrib.auth.models import (
 from django.contrib.auth.validators import (
     UnicodeUsernameValidator
 )
-
+import uuid
 from .tasks import send_emails
+from ...settings import (
+    UUID_LENGTH,
+)
 
 class UserManager(BaseUserManager):
     """ Manager for custom user class
@@ -100,6 +103,14 @@ class User(AbstractBaseUser):
     """
     # Allow Unicode course codes
     course_code_validator = UnicodeUsernameValidator()
+    # Unique identifier used in routing
+    user_id = models.CharField(
+        primary_key=False,
+        default=uuid.uuid4,
+        max_length=UUID_LENGTH,
+        editable=False,
+        unique=True
+    )
     # Course Code will be the username
     course_code = models.CharField(
         max_length=150,
@@ -114,6 +125,10 @@ class User(AbstractBaseUser):
     primary_email_address = models.EmailField(
         blank=False,
         null=False
+    )
+    # Account/Email verified
+    is_verified = models.BooleanField(
+        default=False
     )
     # MOSS ID for using the MOSS API
     moss_id = models.CharField(
@@ -186,6 +201,10 @@ class Email(models.Model):
     email_address = models.EmailField(
         blank=False,
         null=False
+    )
+    # Email verified
+    is_verified = models.BooleanField(
+        default=False
     )
     def __str__(self):
         """ Email to string """

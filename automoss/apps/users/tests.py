@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from .tokens import confirm_registration_token
 
 User = get_user_model()
 
@@ -18,7 +19,8 @@ class TestUsers(TestCase):
             'course_code': 'test_user',
             'primary_email_address': 'test@localhost',
             'moss_id': 1,
-            'password': 'Testing123!'}
+            'password': 'Testing123!',
+            'is_verified' : True}
         self.login_credentials = {'username': self.credentials.get('course_code'), 'password': self.credentials.get('password')}
         self.test_user = User.objects.create_user(**self.credentials)
 
@@ -27,6 +29,7 @@ class TestUsers(TestCase):
         self.assertEqual(self.test_user.course_code, self.credentials.get('course_code'))
         self.assertEqual(self.test_user.primary_email_address, self.credentials.get('primary_email_address'))
         self.assertEqual(self.test_user.moss_id, self.credentials.get('moss_id'))
+        self.assertEqual(self.test_user.is_verified, self.credentials.get('is_verified'))
         self.assertNotEqual(self.test_user.password, self.credentials.get('password'))
 
     def test_login_success(self):
@@ -79,14 +82,21 @@ class TestUsers(TestCase):
         self.assertTrue(isinstance(login_response, HttpResponseRedirect))
         self.assertEqual(login_response.get("Location"), reverse("jobs:index"))
 
-    def test_register(self):
+    def test_register_and_confirm(self):
         cases = [
             ({
             'course_code': 'CSC3003S',
-            'primary_email_address': 'testing@test.com',
+            'primary_email_address': 'testing@testingautomoss.com',
             'moss_id': '2',
             'password1': 'Testing123!',
             'password2': 'Testing123!'
+            }, True), # Normal Details
+            ({
+            'course_code': 'jdkf8923fUd0f023iflkdsdf13rar',
+            'primary_email_address': '0djf302f23df23r2@asdf2345asdfglkvaa34atvwerjt.com',
+            'moss_id': '3',
+            'password1': '1249uvnw89erhg89gh3r!@#%(465v0236 35 qw4trv239JDWIW',
+            'password2': '1249uvnw89erhg89gh3r!@#%(465v0236 35 qw4trv239JDWIW'
             }, True), # Normal Details
             ({
             'course_code': 'test_user',
@@ -136,14 +146,36 @@ class TestUsers(TestCase):
             test_client = Client()
             # Post registration details
             register_response = test_client.post(reverse("users:register"), details)
-            # Outcome success should authenticate and redirect to jobs index
+            # Outcome success should be able to confirm account and authenticate
             if outcome:
-                self.assertEqual(register_response.status_code, 302)
-                self.assertTrue(isinstance(register_response, HttpResponseRedirect))
-                self.assertEqual(register_response.get("Location"), reverse("jobs:index"))
+                # Find user in database
+                user = User.objects.get(course_code=details.get('course_code'))
+                # user should not be verified or logged in
+                self.assertFalse(user.is_verified)
+                self.assertNotIn('_auth_user_id', test_client.session)
+                # confirm using verification link
+                verify_response = test_client.get(reverse("users:confirm", 
+                    kwargs={
+                        'uid'   :  user.user_id , 
+                        'token' :  confirm_registration_token.make_token(user) 
+                    }
+                ))
+                # Login to account
+                test_client.post(reverse("users:login"), 
+                    {
+                    'username' : details.get('course_code'),
+                    'password' : details.get('password1')
+                    }
+                )
+                self.assertEqual(register_response.status_code, 200)
+                self.assertEqual(verify_response.status_code, 200)
+                self.assertTrue(isinstance(register_response, HttpResponse))
+                self.assertTrue(isinstance(verify_response, HttpResponse))
+                # Logged in
                 self.assertIn('_auth_user_id', test_client.session)
             # Outcome fail should not redirect and should not authenticate
             else:
                 self.assertEqual(register_response.status_code, 200)
                 self.assertTrue(isinstance(register_response, HttpResponse) and not isinstance(register_response, HttpResponseRedirect))
                 self.assertNotIn('_auth_user_id', test_client.session)
+                self.assertFalse(user.is_verified)

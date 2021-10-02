@@ -3,17 +3,24 @@
 
 {% block "main-content" %}
 
-<link rel="stylesheet"
-	  href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/github.min.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+{% block "links" %}
+	{{ block.super }}
+	<link href="{% static "lib/github.min.css" %}" rel="stylesheet">
+{% endblock %}
+
+{% block "scripts" %}
+	{{ block.super }}
+	<script src="{% static "lib/highlight.min.js" %}" defer></script>
+	<script src="{% static "js/reportGeneration.js" %}" ignoreOnExtract defer></script>
+{% endblock %}
 
 {% block "navigation" %}
 	<a class="link-dark ps-2" style="text-decoration: none;" href="{% url "jobs:index" %}">
-	Home 
+	Home
 	</a> 
-		<svg class="m-1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 19">
-		<path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
-		</svg> 
+	<svg class="m-1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 19">
+	<path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+	</svg> 
 	<a class="link-dark" style="text-decoration: none;" href="{% url "jobs:index" %}">
 	Jobs
 	</a> 
@@ -23,170 +30,105 @@
 	<a class="link-dark" href="{% url "jobs:results:index" job.job_id%}" style="text-decoration: none;">
 	Matches
 	</a>
-    <svg class="m-1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 19">
-    <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
-    </svg> 
-    <a href="#" style="text-decoration: none;">
-    Match
-    </a>
+	<svg class="m-1" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 19">
+	<path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+	</svg> 
+	<a href="#" style="text-decoration: none;">
+	Match
+	</a>
 {% endblock %}
 
 <div class="mb-2 mt-2 ms-1 d-flex justify-content-between"><h2 class="fw-bold">Match of "{{ submissions.first.name }}" and "{{ submissions.second.name }}"</h2> 
-<button class="btn btn-primary rounded-pill text-light" onClick="downloadAsPDF();"><svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" class="bi bi-download pb-1 me-1" viewBox="0 0 16 16">
-	<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-	<path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
-  </svg> Download</button>
-
+	<button class="btn btn-primary rounded-pill text-light" onClick="downloadReport();">
+		<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" class="bi bi-download pb-1 me-1" viewBox="0 0 16 16">
+			<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+			<path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+		</svg>
+		Download
+	</button>
 </div>
+
 <style>
-pre {
-	float: left;
-	min-width: 100%;
-	margin:0;
-}
-.match {
-	transition: all ease-out 0.1s;
-}
-.code-window{
-	position:relative;
-}
+	pre{
+		float: left;
+		min-width: 100%;
+		margin:0;
+	}
+	.match{
+		transition: all ease-out 0.1s;
+	}
+	.code-window{
+		position:relative;
+	}
 </style>
 
-<body>
-<div class="container-fluid d-flex shadow-sm bg-white rounded-3 p-1" style="background-color:white; max-height: calc(100vh - 300px)">
-    
-    {% for key, values in blocks.items %}
-    <div class="code-window m-2 p-1 border border-2 rounded-1 border-dark window-{{ forloop.counter }}" style="overflow-x:auto; width: 44%;">
-        
-        {% for x in values %}
-            <pre {% if x.id %} match="{{x.id}}" class="language-{{language}} match" {% else %} class="language-{{language}}" {% endif %}>{{x.text}}</pre>
-        {% endfor %}
-
-    </div>
-    {% endfor %}
-    <div class="bg-dark rounded-3 ms-2 d-flex flex-column pt-2 m-2" style="width:12%; overflow: auto;">
-
-    {% for key,value in match_info.items %}
-
-        <button match="{{key}}" class="btn btn-outline-light border-2 rounded-pill match-button mb-2 mt-1 mx-3">Match {{key}}</button>
-
-    {% endfor %}
-
-    </div>
+<div id="report">
+	<div class="container-fluid d-flex shadow-sm bg-white rounded-3 p-1" style="background-color:white; max-height: calc(100vh - 300px)">	
+		
+		{% for key, values in blocks.items %}
+			<div class="code-window m-2 p-1 border border-2 rounded-1 border-dark window-{{ forloop.counter }}" style="overflow-x:auto; width: 44%;">	
+				{% for x in values %}
+					<pre {% if x.id %} match="{{x.id}}" class="language-{{language}} match" {% else %} class="language-{{language}}" {% endif %}>{{x.text}}</pre>
+				{% endfor %}
+			</div>
+		{% endfor %}
+		
+		<div class="bg-dark rounded-3 ms-2 d-flex flex-column pt-2 m-2" style="width:12%; overflow: auto;">
+			{% for key,value in match_info.items %}
+				<button match="{{key}}" class="btn btn-outline-light border-2 rounded-pill match-button mb-2 mt-1 mx-3">Match {{key}}</button>
+			{% endfor %}
+		</div>
+	</div>
 </div>
 
-<script src="{% static "lib/html2canvas.min.js" %}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-
-</body>
-
-
 <script>
-hljs.configure({
-    cssSelector: 'pre'
-})
-hljs.highlightAll();
 
-let colours = {{ colours | js }};
+	hljs.configure({
+		cssSelector: 'pre'
+	})
+	hljs.highlightAll();
 
-let hoverOpacity = 0.5;
-let defaultOpacity = 0.2;
-function setMatches(matchID, opacity){
-    document.querySelectorAll(`.match[match="${matchID}"]`).forEach(x=>{
-        x.style.backgroundColor = `rgba(${colours[matchID % colours.length]}, ${opacity})`;
-    })
-}
-document.querySelectorAll(".match").forEach(m => {
-    let matchID = m.getAttribute('match');
-    console.log(matchID);
+	let colours = {{ colours | js }};
+	let hoverOpacity = 0.5;
+	let defaultOpacity = 0.2;
 
-    m.addEventListener("mouseover", e => {
-        setMatches(matchID, hoverOpacity);
-    });
-    
-    m.addEventListener("mouseout", e => {
-        setMatches(matchID, defaultOpacity);
-    });
-    m.addEventListener("click", e => {
-        console.log(matchID);
-        document.querySelectorAll(`.match[match="${matchID}"]`).forEach(x=>{
-            let parent = x.closest('.code-window');
-
-            let toScrollTo = 0;
-            if(x.offsetHeight > parent.offsetHeight){
-                toScrollTo = x.offsetTop; // - 10;
-            }else{
-                toScrollTo = x.offsetTop - (parent.offsetHeight - x.offsetHeight)/2;
-            }
-            parent.scrollTo({top: toScrollTo, left: 0, behavior: 'smooth'});
-
-        })
-
-    }); 
-
-    setMatches(matchID, defaultOpacity)
-});
-
-let firstWindow = document.querySelector("div.window-1")
-
-document.querySelectorAll("button.match-button").forEach(function(button){
-    button.addEventListener('click', function(){
-        firstWindow.querySelector(`pre[match="${this.getAttribute("match")}"]`).click()
-    })
-})
-
-async function downloadAsPDF(){
-	var jsPDF = window.jspdf.jsPDF;
-
-	const report = new jsPDF('portrait', 'pt', 'a4');
-
-	const reportWidth = report.internal.pageSize.getWidth();
-	const reportHeight = report.internal.pageSize.getHeight();
-
-	let content = document.createElement("div");
-	content.classList.add("p-3");
-	content.style.width = `${reportWidth}px`;
-	content.style.height = `${reportHeight}px`;
-
-	let matches = {}
-	document.querySelectorAll(".match").forEach(match => {
-		let matchID = match.getAttribute('match');
-		let pair = matches[matchID];
-		if (pair == null){
-			matches[matchID] = pair = [];
-		}
-		pair.push(match);
-	});
-
-	for (let matchID of Object.keys(matches)){
-		
-		let codeComparison = document.createElement("div");
-		content.append(codeComparison);
-
-		let title = document.createElement("h4");
-		title.textContent = `Match #${matchID}`;
-		codeComparison.append(title);
-		codeComparison.classList.add("pb-2");
-		codeComparison.classList.add("d-flex");
-		codeComparison.classList.add("flex-column");
-
-		let pair = matches[matchID];
-		for (let match of pair){
-			await html2canvas(match).then(function(canvas){
-				let image = document.createElement("img");
-				image.classList.add("pb-1");
-				image.setAttribute("src", canvas.toDataURL("image/png"));			
-				codeComparison.append(image);
-			});
-		}
+	function setMatches(matchID, opacity){
+		document.querySelectorAll(`.match[match="${matchID}"]`).forEach(x=>{
+			x.style.backgroundColor = `rgba(${colours[matchID % colours.length]}, ${opacity})`;
+		});
 	}
 
-	report.html(content, {
-		callback: function(r){
-			r.save("report.pdf");
-		}
-	})
-}
+	document.querySelectorAll(".match").forEach(m => {
+		let matchID = m.getAttribute('match');
+		m.addEventListener("mouseover", e => {
+			setMatches(matchID, hoverOpacity);
+		});
+		
+		m.addEventListener("mouseout", e => {
+			setMatches(matchID, defaultOpacity);
+		});
+		m.addEventListener("click", e => {
+			document.querySelectorAll(`.match[match="${matchID}"]`).forEach(x=>{
+				let parent = x.closest('.code-window');
+				let toScrollTo = 0;
+				if(x.offsetHeight > parent.offsetHeight){
+					toScrollTo = x.offsetTop;
+				}else{
+					toScrollTo = x.offsetTop - (parent.offsetHeight - x.offsetHeight)/2;
+				}
+				parent.scrollTo({top: toScrollTo, left: 0, behavior: 'smooth'});
+			});
+		}); 
+		setMatches(matchID, defaultOpacity);
+	});
+
+	let firstWindow = document.querySelector("div.window-1");
+	document.querySelectorAll("button.match-button").forEach(function(button){
+		button.addEventListener('click', function(){
+			firstWindow.querySelector(`pre[match="${this.getAttribute("match")}"]`).click();
+		});
+	});
+
 </script> 
 
 {% endblock %}
