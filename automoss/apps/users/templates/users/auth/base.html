@@ -13,7 +13,7 @@
 			height: 200px;
 			width: 200px;
 			border-radius: 50%;
-			position: absolute;
+			position: fixed;
 			z-index: -1;
 			display: inline-block;
 			background-color: red;
@@ -26,11 +26,11 @@
 		}
 	</style>
 
-	<span class="circle bg-warning animated pulse" style="top: -5vw; left: -8vw; height: 30vw; width: 30vw;"></span>
-	<span class="circle bg-danger animated pulse" style="bottom: -10vw; right: -18vw; height: 35vw; width: 35vw;"></span>
+	<span class="circle bg-warning animate__animated animate__pulse" style="top: -5vw; left: -8vw; height: 30vw; width: 30vw;"></span>
+	<span class="circle bg-danger animate__animated animate__pulse" style="bottom: -10vw; right: -18vw; height: 35vw; width: 35vw;"></span>
 
 	<div class="d-flex flex-grow-1 flex-column bg-transparent justify-content-center align-items-center" style="min-height: 100vh; position: relative;">
-		<img class="animated fadeInDown" src="{% static "/img/automoss.svg" %}" height=60>
+		<img class="animate__animated animate__fadeInDown" src="{% static "/img/automoss.svg" %}" height=60>
 		{% block "login-content" %}{% endblock %}
 	</div>
 
