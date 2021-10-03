@@ -48,6 +48,11 @@ class DropZoneFile extends HTMLElement {
         this.removeButton.append(this.removeButtonIcon);
     }
 
+	setRemovable(isRemovable){
+		this.removeButton.disabled = !isRemovable;
+		this.removeButtonIcon.style.opacity = isRemovable ? 1 : 0.25;
+	}
+
     setProgress(progress) {
         this.progressBar.style.width = `${progress*100}%`;
     }
