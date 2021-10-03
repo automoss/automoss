@@ -136,6 +136,13 @@ class DropZone extends HTMLElement {
 		}
 	}
 
+	setInteractable(isInteractable){
+		this.zoneInput.disabled = !isInteractable;
+		for (let file of this.files){
+			file.setRemovable(isInteractable);
+		}
+	}
+
 	onFileAdded(dropZoneFile){
 	}
 
