@@ -5,16 +5,23 @@ class Job extends HTMLTableRowElement{
 
         this.setAttribute('job_id', obj.job_id)
         this.setAttribute('status', obj.status)
+        this.setAttribute('data-bs-toggle', 'collapse');
+        this.setAttribute('data-bs-target', `#job-accordion-${obj.job_id}`);
+        this.style="cursor: pointer;";
 
+        // Comment
         this.tableComment = document.createElement('td')
         this.tableComment.innerHTML = this.comment;
         
+        // Language
         this.tableLanguage = document.createElement('td')
         this.tableLanguage.innerHTML = SUPPORTED_LANGUAGES[this.language][0];
 
+        // Start Data
         this.tableStartDate = document.createElement('td')
         this.tableStartDate.innerHTML = new Date(this.creation_date).toLocaleString();
         
+        // Status
         let tableStatusCell = document.createElement('td')
         this.tableStatus = document.createElement('span')
         tableStatusCell.append(this.tableStatus)

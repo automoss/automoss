@@ -1,7 +1,28 @@
 let jobTable = document.getElementById('job-table')
 function addJob(job) {
     document.getElementById('no-jobs-message').style.display = 'none'
-    jobTable.getElementsByTagName('tbody')[0].prepend(new Job(job))
+
+    let jobTableBody = jobTable.getElementsByTagName('tbody')[0];
+
+    let jobInfo = document.createElement("td");
+    jobInfo.setAttribute("colspan", "4");
+    jobInfo.classList.add("hiddenRow");
+
+    let jobAccordion = document.createElement("div");
+    jobAccordion.id = `job-accordion-${job.job_id}`;
+    jobAccordion.classList.add("collapse");
+    jobInfo.append(jobAccordion);
+
+
+    // TEST
+    let label = document.createElement("label");
+    label.style.height = "200px";
+    label.innerText = "Test";
+    jobAccordion.append(label);
+
+    
+    jobTableBody.prepend(jobInfo);
+    jobTableBody.prepend(new Job(job));
 }
 
 let jobSearch = document.getElementById('job-search')
