@@ -267,12 +267,12 @@ function displayError(message){
 		return;
 	}
 	jobErrorMessage.textContent = message;
-	createJobModalElement.classList.add("animated", "shake");
+	createJobModalElement.classList.add("animate__animated", "animate__shakeX");
 	isDisplayingError = true;
 
 	setTimeout(function(){
 		jobErrorMessage.textContent = "";
-		createJobModalElement.classList.remove("animated", "shake");
+		createJobModalElement.classList.remove("animate__animated", "animate__shakeX");
 		isDisplayingError = false;
 	}, 3000);
 }

@@ -31,7 +31,6 @@ drop-zone-file > #info > #remove-button
 }
 drop-zone-file > #info > #remove-button > img
 {
-    content: url("/static/img/x.svg");
     width: 100%;
     height: 100%;
 }

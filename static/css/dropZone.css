@@ -17,7 +17,7 @@ drop-zone > #zone > #zone-icon
     height: 85px;
     width: 85px;
     top: 15px;
-    content: url("/static/img/upload.svg");
+    /*content: url("/static/img/upload.svg");*/
 }
 drop-zone > #zone > #zone-text
 {

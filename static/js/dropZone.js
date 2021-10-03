@@ -20,6 +20,7 @@ class DropZone extends HTMLElement {
 		// Zone > Icon
 		this.zoneIcon = document.createElement("img");
 		this.zoneIcon.id = "zone-icon";
+		this.zoneIcon.src = "/static/img/upload.svg";
 		this.zone.append(this.zoneIcon);
 
 		// Zone > Text
