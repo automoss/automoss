@@ -8,6 +8,7 @@ from ..moss.moss import (
     MOSS,
     Result,
     RecoverableMossException,
+    ReportParsingError,
     EmptyResponse,
     FatalMossException,
     is_valid_moss_url
@@ -70,7 +71,6 @@ def process_job(job_id):
 
     base_dir = JOB_UPLOAD_TEMPLATE.format(job_id=job.job_id)
 
-
     paths = {}
 
     for file_type in SUBMISSION_TYPES:
@@ -89,7 +89,8 @@ def process_job(job_id):
         job.status = FAILED_STATUS
         job.save()
 
-        JobEvent.objects.create(job=job, type=FAILED_EVENT, message='No files supplied')
+        JobEvent.objects.create(
+            job=job, type=FAILED_EVENT, message='No files supplied')
         return None
 
     num_attempts = 0
@@ -102,15 +103,28 @@ def process_job(job_id):
         try:
             error = None
             if not is_valid_moss_url(url):
-                job.status = UPLOADING_STATUS
-                job.save()
                 # Keep retrying until valid url has been generated
                 # Do not restart whole job if this succeeds but parsing fails
+
+                def on_upload_start():
+                    job.status = UPLOADING_STATUS
+                    job.save()
+                    JobEvent.objects.create(
+                        job=job, type=UPLOADING_EVENT, message='Started uploading files to MOSS')
+
+                def on_upload_finish():
+                    JobEvent.objects.create(
+                        job=job, type=UPLOADING_EVENT, message='Finished uploading')
 
                 def on_processing_start():
                     job.status = PROCESSING_STATUS
                     job.save()
-                    JobEvent.objects.create(job=job, type=PROCESSING_EVENT, message='Started generating similarity report')
+                    JobEvent.objects.create(
+                        job=job, type=PROCESSING_EVENT, message='Started generating similarity report')
+
+                def on_processing_finish():
+                    JobEvent.objects.create(
+                        job=job, type=PROCESSING_EVENT, message='Finished processing')
 
                 url = MOSS.generate_url(
                     user_id=job.user.moss_id,
@@ -124,14 +138,13 @@ def process_job(job_id):
                     # on_start=None,
                     # on_connect=None,
 
-                    on_upload_start=lambda: JobEvent.objects.create(job=job, type=UPLOADING_EVENT, message='Started uploading files to MOSS'),
-                    on_upload_finish=lambda: JobEvent.objects.create(job=job, type=UPLOADING_EVENT, message='Finished uploading'),
+                    on_upload_start=on_upload_start,
+                    on_upload_finish=on_upload_finish,
 
                     on_processing_start=on_processing_start,
-                    on_processing_finish=lambda: JobEvent.objects.create(job=job, type=PROCESSING_EVENT, message='Finished processing'),
+                    on_processing_finish=on_processing_finish,
                 )
-                msg = f'Generated url: "{url}"'
-                logger.info(msg)
+                logger.info(f'Generated url: "{url}"')
 
             msg = 'Start parsing report'
             logger.info(msg)
@@ -150,9 +163,12 @@ def process_job(job_id):
 
         except (RecoverableMossException, socket.error) as e:
             error = e  # Handled below
+            if isinstance(e, ReportParsingError):
+                # Malformed MOSS report... must regenerate
+                url = None
 
         except EmptyResponse as e:
-            # Job ended after
+            # Job ended without any response (i.e., timed out)
             error = e
 
             load_status, ping, average_ping = Pinger.determine_load()
@@ -163,11 +179,11 @@ def process_job(job_id):
                 logger.debug(msg)
                 break
 
-            elif load_status == LoadStatus.UNDER_LOAD:
+            elif load_status in (LoadStatus.UNDER_LOAD, LoadStatus.UNDER_SEVERE_LOAD):
                 msg = f'Moss is under load {ping_message}, retrying job ({job_id})'
             else:
                 msg = f'Moss is down {ping_message}, retrying job ({job_id})'
-            
+
             logger.debug(msg)
 
         except FatalMossException as e:
@@ -179,7 +195,6 @@ def process_job(job_id):
             logger.error(f'Unknown error: {e}')
             break  # Will be handled below (result is None)
 
-        
         msg = f'(Attempt {attempt}) Error: {error} | Retrying in {time_to_sleep} seconds'
 
         # We can retry
@@ -245,7 +260,7 @@ def process_job(job_id):
                 'num_attempts': num_attempts
             })
 
-            log_info.update(Pinger.ping() or {})
+            log_info.update({'avg': Pinger.ping()} or {})
             logger.debug(f'Job info: {log_info}')
 
             with open('jobs.log', 'a+') as fp:

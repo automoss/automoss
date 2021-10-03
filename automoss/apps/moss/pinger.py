@@ -6,25 +6,27 @@ import platform
 import subprocess
 import time
 from ...redis import REDIS_INSTANCE
-from .moss import MOSS_URL
-
+from .moss import HTTP_MOSS_URL
+import requests
 
 class LoadStatus(IntEnum):
     NORMAL = 1
     UNDER_LOAD = 2
-    DOWN = 3
+    UNDER_SEVERE_LOAD = 3
+    DOWN = 4
 
 
 # Pinging - to determine whether MOSS is under load
-PING_EVERY = 3  # Ping every x seconds
-PING_COUNT = 3  # Get more accurate measurement
-PING_OFFSET_THRESHOLD = 30
+PING_EVERY = 30  # Ping every x seconds
+PING_OFFSET_THRESHOLD = 0.6
 AVERAGE_PING_KEY = 'AVERAGE_PING'
 LATEST_PING_KEY = 'LATEST_PING'
+LATEST_COUNT = 30
 
 # Used for exponential moving average
 UP_ALPHA = 0.0001
 DOWN_ALPHA = 0.25
+
 
 
 class Pinger:
@@ -60,11 +62,11 @@ class Pinger:
         Pinger._set_ping(LATEST_PING_KEY, ping)
 
     @staticmethod
-    def in_bound(ping):
+    def in_bound(ping, threshold):
         if Pinger.get_average_ping() is None:
             return True  # Not yet calibrated, assume in bound
 
-        return ping < Pinger.get_average_ping() + PING_OFFSET_THRESHOLD
+        return ping < Pinger.get_average_ping() + threshold
 
     @staticmethod
     def determine_load(refresh=False):
@@ -76,26 +78,39 @@ class Pinger:
         average_ping = Pinger.get_average_ping()
 
         if current_ping is None:
-            status = LoadStatus.DOWN, 
-        elif Pinger.in_bound(current_ping):
+            status = LoadStatus.DOWN
+        elif Pinger.in_bound(current_ping, PING_OFFSET_THRESHOLD):
             status = LoadStatus.NORMAL
-        else:
+        elif Pinger.in_bound(current_ping, 2 * PING_OFFSET_THRESHOLD):
             status = LoadStatus.UNDER_LOAD
+        else:
+            status = LoadStatus.UNDER_SEVERE_LOAD
 
         return status, current_ping, average_ping
 
     @staticmethod
     def ping():
         # Pings moss, and updates current known ping
-        data = ping(MOSS_URL, count=PING_COUNT)
-        if data:
-            # Valid data to update with
-
-            new_ping = data['avg']
-            Pinger.set_latest_ping(new_ping)
-
+        new_ping = None
+        try:
+            timeout=30 # TODO global
+            new_ping = requests.head(HTTP_MOSS_URL, verify=False, allow_redirects=False, timeout=timeout).elapsed.total_seconds()
+            print('new_ping', new_ping)
+            
+            
+            latest_average = Pinger.get_latest_ping()
+            print('latest_average 1', latest_average)
+            
+            if latest_average is None: # Not set yet, or was down
+                latest_average = new_ping
+            else:
+                latest_average = ((LATEST_COUNT - 1) * latest_average + new_ping)/LATEST_COUNT
+            
+            print('latest_average 2', latest_average)
+            
+            Pinger.set_latest_ping(latest_average)
+            
             current_ping = Pinger.get_average_ping()
-            data['current_time'] = time.time()
 
             if current_ping is None:
                 # Not set, or infinite ping (down)
@@ -104,39 +119,15 @@ class Pinger:
                 alpha_to_use = UP_ALPHA if new_ping > current_ping else DOWN_ALPHA
                 Pinger.set_average_ping(
                     alpha_to_use * new_ping + (1-alpha_to_use) * current_ping)
-        else:
+
+        except (requests.exceptions.RequestException, ConnectionError):
             # Set latest ping to "None" (i.e., moss is down)
             Pinger.set_latest_ping(None)
 
-        return data
-
-# TODO improve this method
-# https://stackoverflow.com/a/50848244
-
-
-def ping(server, count=1, wait_sec=1):
-    param = '-n' if platform.system().lower() == 'windows' else '-c'
-    cmd = ['ping', param, str(count), '-W', str(wait_sec), server]
-    try:
-        output = subprocess.check_output(cmd).decode().strip()
-        lines = output.splitlines()
-        line_info = lines[-2].split(',')
-        total = line_info[3].split()[1]
-        loss = line_info[2].split()[0]
-        timing = list(map(float, lines[-1].split()[3].split('/')))
-        return {
-            'type': 'rtt',
-            'min': timing[0],
-            'avg': timing[1],
-            'max': timing[2],
-            'mdev': timing[3],
-            'total': total,
-            'loss': loss
-        }
-    except Exception as e:
-        return None  # Unable to parse info. Server is most likely down
-
-
+        with open('ping.log', 'a') as fp:
+            print(time.time(), new_ping, Pinger.get_latest_ping(), Pinger.get_average_ping(), file=fp)
+        return new_ping
+        
 def monitor():
     # Monitor status of MOSS
     while True:

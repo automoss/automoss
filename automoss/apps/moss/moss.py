@@ -18,6 +18,7 @@ from ...settings import (
 from django.utils.http import url_has_allowed_host_and_scheme
 
 MOSS_URL = 'moss.stanford.edu'
+HTTP_MOSS_URL = f'http://{MOSS_URL}'
 SUPPORTED_MOSS_LANGUAGES = [SUPPORTED_LANGUAGES[l][1]
                             for l in SUPPORTED_LANGUAGES]
 HTTP_RETRY_COUNT = 5
@@ -84,9 +85,16 @@ class RecoverableMossException(MossException):
         super().__init__(*args, **kwargs)
 
 
-class ReportDownloadTimeout(RecoverableMossException):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class ReportError(RecoverableMossException):
+    pass
+
+
+class ReportDownloadTimeout(ReportError):
+    pass
+
+
+class ReportParsingError(ReportError):
+    pass
 
 
 class UnparseableMatch(RecoverableMossException):
@@ -273,7 +281,8 @@ class Result:
             try:
                 async with session.get(url, raise_for_status=True) as resp:
                     return await resp.text()
-            except (aiohttp.ClientResponseError, asyncio.TimeoutError) as e:
+
+            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
                 error = e  # Retry
 
         raise ReportDownloadTimeout(error)
@@ -333,8 +342,8 @@ class MOSS:
             if is_valid_moss_url(url):
                 # Some timeout error?
                 # TODO add built-in retry functionality to parsing report
-                raise RecoverableMossException(
-                    f'Unable to generate report: {e}')
+
+                raise ReportParsingError(f'Malformed Report: {url}')
             else:
                 raise FatalMossException(f'Unable to generate report: {e}')
 

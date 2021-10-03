@@ -88,25 +88,24 @@
 	let pingElement = document.getElementById("ping");
 	let pingInner = document.getElementById("ping-inner");
 	let pingOuter = document.getElementById("ping-outer");
+	let statusMapping = {
+		1: ["Online", "var(--bs-success)"],
+		2: ["Under Load", "var(--bs-yellow)"],
+		3: ["Under Severe Load", "var(--bs-warning)"],
+		4: ["Offline", "var(--bs-danger)"]
+	};
 
 	function setStatus(status, ping){
-		let statusMapping = {
-			1: ["Online", "var(--bs-success)"],
-			2: ["Under Load", "var(--bs-warning)"],
-			3: ["Offline", "var(--bs-danger)"]
-		};
 		pingElement.setAttribute("data-bs-original-title", statusMapping[status][0]);
 		pingInner.style.fill = pingOuter.style.fill = statusMapping[status][1];
 	}
 
 	async function updateStatus(){
-		let status = await fetch("{% url "api:moss:get_status" %}", {
-			method: "GET"
-		});
+		let status = await fetch("{% url "api:moss:get_status" %}");
 		let data = await status.json();
 		setStatus(data.status, data.average_ping);
 	}
-	setInterval(updateStatus, 5000);
+	setInterval(updateStatus, 30000);
 	updateStatus();
 
 </script>

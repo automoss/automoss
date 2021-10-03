@@ -121,7 +121,7 @@ class JobEvent(models.Model):
     )
 
     # Message attached to job event
-    message = models.CharField(max_length=128)
+    message = models.CharField(max_length=256)
 
     def __str__(self):
         return f'[{self.date}] {self.job.job_id}: {self.type}' + (f' ({self.message})' if self.message else '')
