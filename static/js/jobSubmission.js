@@ -281,10 +281,15 @@ function updateDropZoneTarget(){
 	jobDropZone.zoneText.innerHTML = `Drag and drop <b>${jobAttachBaseFiles.checked ? "base" : "student"}</b> files here!`;
 }
 
+function setEnabled(isEnabled){
+	jobDropZone.setInteractable(isEnabled);
+	createJobButton.disabled = !isEnabled;
+}
+
 createJobForm.onsubmit = async (e) => {
 
 	e.preventDefault();
-	createJobButton.disabled = true;
+	setEnabled(false);
 
 	try{
 		// Create a new form (and capture name, language, max matches until ignored and max matches displayed)
@@ -336,7 +341,7 @@ createJobForm.onsubmit = async (e) => {
 		console.err(err);
 	}
 	finally{
-		createJobButton.disabled = false;
+		setEnabled(true);
 	}
 };
 
