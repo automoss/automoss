@@ -6,7 +6,7 @@ function addJob(job) {
 
     let jobInfo = document.createElement("td");
     jobInfo.setAttribute("colspan", "4");
-    jobInfo.classList.add("hiddenRow");
+    jobInfo.style="padding: 0 !important;";
 
     let jobAccordion = document.createElement("div");
     jobAccordion.id = `job-accordion-${job.job_id}`;
