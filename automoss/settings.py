@@ -270,10 +270,10 @@ with capture_in(JOB_CONTEXT):
     JOB_UPLOAD_TEMPLATE = f'{MEDIA_ROOT}/{{job_id}}/uploads'
     SUBMISSION_UPLOAD_TEMPLATE = f'{JOB_UPLOAD_TEMPLATE}/{{file_type}}/{{file_id}}'
 
-    MIN_RETRY_TIME = 32
-    MAX_RETRY_TIME = 256
+    MIN_RETRY_TIME = 30
+    MAX_RETRY_TIME = 600
     MAX_RETRY_DURATION = 86400
-    EXPONENTIAL_BACKOFF_BASE_RANGE = [1, 2]#1.5  # 1.5  # 1<=x<=2
+    EXPONENTIAL_BACKOFF_BASE = 1.25  # 1<=x<=2
     FIRST_RETRY_INSTANT = True
 
 JOB_EVENT_CONTEXT = {}
@@ -285,19 +285,6 @@ with capture_in(JOB_EVENT_CONTEXT):
     COMPLETED_EVENT = 'COM'
     FAILED_EVENT = 'FAI'
     RETRY_EVENT = 'RET'
-    ERROR_EVENT = 'ERR'
-
-    EVENTS = {
-        INQUEUE_EVENT: 'Placed in the processing queue',
-        UPLOADING_EVENT: 'Started uploading to MOSS',
-        PROCESSING_EVENT: 'Started processing',
-        PARSING_EVENT: 'Started parsing',
-        COMPLETED_EVENT: 'Job completed',
-        FAILED_EVENT: 'Job failed',
-        RETRY_EVENT: 'Retrying job',
-        ERROR_EVENT: 'An error occurred'
-    }
-
 
 # UI Defaults
 UI_CONTEXT = {}
