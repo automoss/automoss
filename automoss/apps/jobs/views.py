@@ -129,7 +129,7 @@ class New(View):
                     fp.write(f.read())
 
 
-        JobEvent.objects.create(job=new_job, type=INQUEUE_EVENT)
+        JobEvent.objects.create(job=new_job, type=INQUEUE_EVENT, message='Placed in the processing queue')
 
         process_job.delay(job_id)
 
@@ -157,4 +157,21 @@ class JSONStatuses(View):
         results = Job.objects.user_jobs(request.user).filter(job_id__in=job_ids)
 
         data = {j.job_id: j.status for j in results}
+        return JsonResponse(data, status=200)
+
+
+@method_decorator(login_required, name='dispatch')
+class JSONJobEvents(View):
+    """ JSON view of job events """
+
+    def get(self, request):
+        """ Get statuses of requested jobs (by ID) """
+        job_ids = request.GET.get('job_ids', '').split(',')
+        results = Job.objects.user_jobs(request.user).filter(job_id__in=job_ids)
+
+        data = {
+            j.job_id: [str(x) for x in JobEvent.objects.filter(job=j)]
+            for j in results
+        }
+
         return JsonResponse(data, status=200)

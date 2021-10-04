@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 
 from ...settings import (
     STATUSES,
-    EVENTS,
+    JOB_EVENT_CONTEXT,
     SUPPORTED_LANGUAGES,
     DEFAULT_MOSS_SETTINGS,
     UUID_LENGTH,
@@ -116,12 +116,12 @@ class JobEvent(models.Model):
 
     # Job status
     type = models.CharField(
-        max_length=get_longest_key(EVENTS),
-        choices=to_choices(EVENTS)
+        max_length=max(map(len, JOB_EVENT_CONTEXT.values())),
+        choices=list((x, x) for x in JOB_EVENT_CONTEXT.values())
     )
 
     # Message attached to job event
     message = models.CharField(max_length=256)
 
     def __str__(self):
-        return f'[{self.date}] {self.job.job_id}: {self.type}' + (f' ({self.message})' if self.message else '')
+        return f'[{self.date}] {self.message}'
