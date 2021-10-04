@@ -296,8 +296,11 @@ class Result:
 
     def _parse_matches(self, url):
         base_url = f"{url.rstrip('/')}/"  # Ensure link ends with a /
-        html = requests.get(base_url, verify=False).text
+        req = requests.get(base_url, verify=False)
+        if req.status_code != 200:
+            raise ReportParsingError(f'Invalid status code ({req.status_code})')
 
+        html = req.text
         # TODO parse errors?
         num_matches = html.count('<TR>') - 1
 
@@ -338,6 +341,9 @@ class MOSS:
         try:
             return Result(url)
 
+        except ReportParsingError:
+            raise
+        
         except Exception as e:
             if is_valid_moss_url(url):
                 # Some timeout error?
