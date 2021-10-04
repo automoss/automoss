@@ -3,7 +3,10 @@ import os
 from .moss import (
     Result,
     MOSS,
-    is_valid_moss_url
+    is_valid_moss_url,
+    InvalidReportURL,
+    ReportParsingError,
+    FatalMossException
 )
 from ...settings import DEFAULT_MOSS_SETTINGS
 
@@ -38,3 +41,11 @@ class TestMossAPI(TestCase):
         )
 
         self.assertTrue(is_valid_moss_url(result.url))
+
+    def test_invalid(self):
+
+        with self.assertRaises(InvalidReportURL) as context:
+            invalid_url = MOSS.generate_report('invalid_url')
+        
+        with self.assertRaises(ReportParsingError) as context:
+            invalid_moss_report = MOSS.generate_report('http://moss.stanford.edu/results/0/1234567890')

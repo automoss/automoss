@@ -22,7 +22,7 @@ else:
 running_main_thread = is_main_thread()
 
 
-def main():
+def main():  # pragma: no cover
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'automoss.settings')
 
