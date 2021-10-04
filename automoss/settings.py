@@ -267,7 +267,8 @@ with capture_in(SUBMISSION_CONTEXT):
 
 JOB_CONTEXT = {}
 with capture_in(JOB_CONTEXT):
-    JOB_UPLOAD_TEMPLATE = f'{MEDIA_ROOT}/{{job_id}}/uploads'
+    JOB_URL_TEMPLATE = f'{MEDIA_ROOT}/{{job_id}}'
+    JOB_UPLOAD_TEMPLATE = f'{JOB_URL_TEMPLATE}/uploads'
     SUBMISSION_UPLOAD_TEMPLATE = f'{JOB_UPLOAD_TEMPLATE}/{{file_type}}/{{file_id}}'
 
     MIN_RETRY_TIME = 30
