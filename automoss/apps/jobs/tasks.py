@@ -29,7 +29,7 @@ from ...settings import (
     MIN_RETRY_TIME,
     MAX_RETRY_TIME,
     MAX_RETRY_DURATION,
-    EXPONENTIAL_BACKOFF_BASE_RANGE,
+    EXPONENTIAL_BACKOFF_BASE,
     FIRST_RETRY_INSTANT,
 
     # Events
@@ -39,8 +39,7 @@ from ...settings import (
     PARSING_EVENT,
     COMPLETED_EVENT,
     FAILED_EVENT,
-    RETRY_EVENT,
-    ERROR_EVENT
+    RETRY_EVENT
 )
 from ..utils.core import retry
 import os
@@ -97,7 +96,7 @@ def process_job(job_id):
     url = None
     result = None
 
-    for attempt, time_to_sleep in retry(MIN_RETRY_TIME, MAX_RETRY_TIME, EXPONENTIAL_BACKOFF_BASE_RANGE, MAX_RETRY_DURATION, FIRST_RETRY_INSTANT):
+    for attempt, time_to_sleep in retry(MIN_RETRY_TIME, MAX_RETRY_TIME, EXPONENTIAL_BACKOFF_BASE, MAX_RETRY_DURATION, FIRST_RETRY_INSTANT):
         num_attempts = attempt
 
         try:
@@ -120,11 +119,11 @@ def process_job(job_id):
                     job.status = PROCESSING_STATUS
                     job.save()
                     JobEvent.objects.create(
-                        job=job, type=PROCESSING_EVENT, message='Started generating similarity report')
+                        job=job, type=PROCESSING_EVENT, message='MOSS started processing files')
 
                 def on_processing_finish():
                     JobEvent.objects.create(
-                        job=job, type=PROCESSING_EVENT, message='Finished processing')
+                        job=job, type=PROCESSING_EVENT, message='MOSS finished processing')
 
                 url = MOSS.generate_url(
                     user_id=job.user.moss_id,
@@ -146,7 +145,7 @@ def process_job(job_id):
                 )
                 logger.info(f'Generated url: "{url}"')
 
-            msg = 'Start parsing report'
+            msg = 'Started parsing MOSS report'
             logger.info(msg)
 
             job.status = PARSING_STATUS
@@ -155,7 +154,7 @@ def process_job(job_id):
 
             # Parsing and extraction
             result = MOSS.generate_report(url)
-            msg = f'Result finished parsing: {len(result.matches)} matches detected.'
+            msg = f'Result finished parsing: {len(result.matches)} matches detected'
             logger.info(msg)
             JobEvent.objects.create(job=job, type=PARSING_EVENT, message=msg)
 
@@ -211,7 +210,7 @@ def process_job(job_id):
     try:
         if failed:
             job.status = FAILED_STATUS
-            JobEvent.objects.create(job=job, type=FAILED_EVENT)
+            JobEvent.objects.create(job=job, type=FAILED_EVENT, message='A fatal error occurred')
             return None
 
         # Parse result
@@ -238,7 +237,7 @@ def process_job(job_id):
                     line_matches=match.line_matches
                 )
 
-        JobEvent.objects.create(job=job, type=COMPLETED_EVENT)
+        JobEvent.objects.create(job=job, type=COMPLETED_EVENT, message='Completed')
         job.status = COMPLETED_STATUS
         return result.url
 
