@@ -18,7 +18,7 @@ class LoadStatus(IntEnum):
 
 # Pinging - to determine whether MOSS is under load
 PING_EVERY = 30  # Ping every x seconds
-PING_OFFSET_THRESHOLD = 0.6
+PING_OFFSET_THRESHOLD = 0.3
 AVERAGE_PING_KEY = 'AVERAGE_PING'
 LATEST_PING_KEY = 'LATEST_PING'
 LATEST_COUNT = 30
