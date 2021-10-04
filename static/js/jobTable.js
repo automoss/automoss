@@ -1,8 +1,12 @@
-let jobTable = document.getElementById('job-table')
+let jobsTable = document.getElementById('job-table');
+let jobsSearchBar = document.getElementById('job-search-bar');
+
+setupTableSearch(jobsTable, jobsSearchBar);
+
 function addJob(job) {
     document.getElementById('no-jobs-message').style.display = 'none'
 
-    let jobTableBody = jobTable.getElementsByTagName('tbody')[0];
+    let jobTableBody = jobsTable.getElementsByTagName('tbody')[0];
 
     let jobInfo = document.createElement("td");
     jobInfo.setAttribute("colspan", "4");
@@ -25,16 +29,6 @@ function addJob(job) {
     jobTableBody.prepend(new Job(job));
 }
 
-let jobSearch = document.getElementById('job-search')
-jobSearch.oninput = function(){
-    for (let child of jobTable.tBodies[0].children){
-        if(child.contains(jobSearch.value)){
-            child.show()
-        }else{
-            child.hide()
-        }
-    }
-}
 
 const terminalStates = [completedStatus, failedStatus];
 function isTerminalState(state){

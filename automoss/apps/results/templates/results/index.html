@@ -20,16 +20,17 @@
 	</a>
 {% endblock %}
 
-<!-- Page Title -->
+<!-- Title -->
 <h2 class="py-2 px-1 fw-bold">
 	Results of "{{ job.comment }}"
 </h2>
 
-<!-- Content -->
 <div class="container-fluid shadow-sm bg-white p-4 rounded-3">
 
-<input id="matches-search" class="form-control rounded mb-3" type="search" placeholder="Search...">
+<!-- Search Bar -->
+<input id="matches-search-bar" class="form-control rounded mb-3" type="search" placeholder="Search...">
 
+<!-- Table -->
 <table id="matches-table" class="table table-hover table-striped border rounded-3" style="background-color: white">
 
 	<!-- Column headings -->
@@ -78,33 +79,9 @@
 </div>
 
 <script>
-
-	function getText(node){
-        let text = '';
-        if (node.nodeType === document.TEXT_NODE){
-            text += node.nodeValue + ' ';
-        }else{
-            for (let child of node.childNodes){
-                text += this.getText(child);
-            }
-        }
-        return text;
-    }
-    function contains(node, text){
-        return getText(node).toLowerCase().includes(text.toLowerCase());
-    }
-
 	let matchesTable = document.getElementById("matches-table");
-	let matchesSearch = document.getElementById("matches-search");
-	matchesSearch.oninput = function(){
-		for (let child of matchesTable.tBodies[0].children){
-			if (contains(child, matchesSearch.value)){
-				child.style.display = "table-row";
-			}else{
-				child.style.display = "none";
-			}
-		}
-	}
+	let matchesSearchBar = document.getElementById("matches-search-bar");
+	setupTableSearch(matchesTable, matchesSearchBar);
 </script>
 
 {% endblock %}

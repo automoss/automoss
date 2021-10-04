@@ -17,7 +17,7 @@ class Job extends HTMLTableRowElement{
         this.tableLanguage = document.createElement('td')
         this.tableLanguage.innerHTML = SUPPORTED_LANGUAGES[this.language][0];
 
-        // Start Data
+        // Start Date
         this.tableStartDate = document.createElement('td')
         this.tableStartDate.innerHTML = new Date(this.creation_date).toLocaleString();
         
@@ -32,29 +32,6 @@ class Job extends HTMLTableRowElement{
         this.append(tableStatusCell)
 
         this.setStatus(this.status)
-    }
-    
-    getText(node) {
-        let text = '';
-        if (node.nodeType === document.TEXT_NODE){
-            text += node.nodeValue + ' ';
-        }else{
-            for (let child of node.childNodes){
-                text += this.getText(child);
-            }
-        }
-        return text;
-    }
-
-    contains(text){
-        return this.getText(this).toLowerCase().includes(text.toLowerCase());
-    }
-
-    show(){
-        this.style.display = "table-row";
-    }
-    hide(){
-        this.style.display = "none";
     }
 
     setStatus(newStatus){
