@@ -20,6 +20,7 @@ class DropZone extends HTMLElement {
 		// Zone > Icon
 		this.zoneIcon = document.createElement("img");
 		this.zoneIcon.id = "zone-icon";
+		this.zoneIcon.src = "/static/img/upload.svg";
 		this.zone.append(this.zoneIcon);
 
 		// Zone > Text
@@ -133,6 +134,13 @@ class DropZone extends HTMLElement {
 			this.zone.style.backgroundColor = "#FFF";
 			this.zone.classList.remove("progress-bar-striped");
 			this.zone.classList.remove("progress-bar-animated");
+		}
+	}
+
+	setInteractable(isInteractable){
+		this.zoneInput.disabled = !isInteractable;
+		for (let file of this.files){
+			file.setRemovable(isInteractable);
 		}
 	}
 
