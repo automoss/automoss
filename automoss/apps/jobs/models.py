@@ -50,6 +50,9 @@ class Job(models.Model):
         default=first(SUPPORTED_LANGUAGES),
     )
 
+    # Num Students
+    num_students = models.PositiveIntegerField(default=0)
+
     # Max matches of a code segment before it is ignored
     max_until_ignored = models.PositiveIntegerField(
         default=DEFAULT_MOSS_SETTINGS['max_until_ignored'])

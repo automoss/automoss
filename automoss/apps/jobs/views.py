@@ -94,10 +94,12 @@ class New(View):
 
         comment = request.POST.get('job-name')
 
+        num_students = len(request.FILES.getlist(FILES_NAME))
 
         new_job = Job.objects.create(
             user=request.user,
             language=language,
+            num_students=num_students,
             comment=comment,
             max_until_ignored=max_until_ignored,
             max_displayed_matches=max_displayed_matches

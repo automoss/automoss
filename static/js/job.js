@@ -19,8 +19,7 @@ class Job extends HTMLTableRowElement{
 
         // Students
         this.tableStudents = document.createElement('td');
-        this.tableStudents.innerHTML = 1;
-
+        this.tableStudents.innerHTML = this.num_students;
 
         // Date Created
         this.tableStartDate = document.createElement('td');
