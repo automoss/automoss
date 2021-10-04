@@ -21,6 +21,9 @@ apipatterns = [
 
     # Get statuses of jobs
     path('get_statuses', views.JSONStatuses.as_view(), name='get_statuses'),
+
+    # Get log of jobs
+    path('get_logs', views.JSONJobEvents.as_view(), name='get_logs'),
 ]
 
 urlpatterns += apipatterns
