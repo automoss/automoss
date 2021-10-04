@@ -21,13 +21,13 @@ class Job extends HTMLTableRowElement{
         this.tableStudents = document.createElement('td');
         this.tableStudents.innerHTML = this.num_students;
 
-        // Date Created
+        // Date Started
         this.tableStartDate = document.createElement('td');
         this.tableStartDate.innerHTML = new Date(this.creation_date).toLocaleString();
         
         // Duration
         this.tableDuration = document.createElement('td');
-        this.tableDuration.innerHTML = "1 minute 26 seconds";
+        this.tableDuration.innerHTML = "00:00:00";
 
         // Status
         let tableStatusCell = document.createElement('td');
@@ -42,9 +42,25 @@ class Job extends HTMLTableRowElement{
         this.append(tableStatusCell);
 
         this.setStatus(this.status);
+        this.updateDuration();
+    }
+
+    updateDuration(){
+        let completion_date = new Date();
+		if (this.status == completedStatus){
+			completion_date = new Date(this.completion_date);
+		}
+		this.tableDuration.innerHTML = new Date(completion_date - new Date(this.creation_date)).toLocaleTimeString('en-GB', {
+			timeZone:'Etc/UTC',
+			hour12: false,
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit'
+		});
     }
 
     setStatus(newStatus){
+        this.status = newStatus;
         this.tableStatus.innerHTML = statuses[newStatus];
         if(newStatus == completedStatus){
             this.tableComment.innerHTML = `<a href="/jobs/${this.job_id}/result/" style="text-decoration: none;">${this.comment}</a>`;

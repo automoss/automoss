@@ -59,3 +59,11 @@ setInterval(async function(){
 		}
 	}
 }, POLLING_TIME);
+
+setInterval(async function(){
+	for (let job of jobsTable.tBodies[0].children){
+		if (job.status != completedStatus){
+			job.updateDuration();
+		}
+	}
+}, 1000);
