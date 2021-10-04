@@ -47,10 +47,15 @@ class Job extends HTMLTableRowElement{
 
     updateDuration(){
         let completion_date = new Date();
+        let creation_date = new Date(this.creation_date);
+
 		if (this.status == completedStatus){
 			completion_date = new Date(this.completion_date);
-		}
-		this.tableDuration.innerHTML = new Date(completion_date - new Date(this.creation_date)).toLocaleTimeString('en-GB', {
+		}else if (this.status == failedStatus){
+            completion_date = creation_date;
+        }
+        
+		this.tableDuration.innerHTML = new Date(completion_date - creation_date).toLocaleTimeString('en-GB', {
 			timeZone:'Etc/UTC',
 			hour12: false,
 			hour: '2-digit',
