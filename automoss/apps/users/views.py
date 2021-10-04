@@ -11,9 +11,12 @@ from django.conf import settings
 from .forms import (
     UserCreationForm,
     LoginForm,
+    PasswordForgottenForm,
+    PasswordResetForm,
+    PasswordChangeForm,
     UnverifiedError
 )
-from .tokens import confirm_registration_token
+from .tokens import confirm_registration_token, password_reset_token
 from .models import User
 
 class Login(View):
@@ -21,7 +24,7 @@ class Login(View):
     template = "users/auth/login.html"
     email_html_template = "users/email/welcome.html"
     email_txt_template = "users/email/welcome.txt"
-    email_subject_template = "users/email/subject.txt"
+    email_subject_template = "users/email/welcome-subject.txt"
 
     def get(self, request):
         """ Get login view """
@@ -67,13 +70,27 @@ class Logout(View):
         django_logout(request)
         return render(request, self.template)
 
+@method_decorator(login_required, name='dispatch')
+class Profile(View):
+    """ Profile View """
+    template = "users/profile/profile.html"
+
+    def get(self, request):
+        """ Get profile view """
+        #form = UserCreationForm() 
+        return render(request, self.template) #{'form': form})
+
+    # def post(self, request):
+    #     """ Post new profile data """
+    #     pass
+
 class Register(View):
     """ User registration view """
     template = "users/auth/register.html"
     confirm_template = "users/auth/confirm.html"
     email_html_template = "users/email/welcome.html"
     email_txt_template = "users/email/welcome.txt"
-    email_subject_template = "users/email/subject.txt"
+    email_subject_template = "users/email/welcome-subject.txt"
     context = {}
 
     def get(self, request):
@@ -107,7 +124,105 @@ class Register(View):
                 "action" : "Go to Login"
             })
         return render(request, self.template, {**self.context, 'form': user_form})
-            
+
+class ForgotPassword(View):
+    """ View for forgotten passwords """
+    template = "users/auth/forgot-password.html"
+    email_html_template = "users/email/forgot-password.html"
+    email_txt_template = "users/email/forgot-password.txt"
+    email_subject_template = "users/email/forgot-password-subject.txt"
+
+    def get(self, request):
+        """ Get form for entering course code to reset password """
+        forgot_password_form = PasswordForgottenForm()
+        return render(request, self.template, context={"form" : forgot_password_form})
+
+
+    def post(self, request):
+        """ request change of password for course account """
+        forgot_password_form = PasswordForgottenForm(request.POST)
+        user = None
+        if forgot_password_form.is_valid():
+            user = forgot_password_form.get_user()
+            if user is not None:
+               # send account creation confirmation email
+                user.send_email( 
+                    subject_template=self.email_subject_template, 
+                    body_template=self.email_txt_template, 
+                    html_template=self.email_html_template, 
+                    context={ 
+                        "request" : request,
+                        "user" : user,
+                        "token" : password_reset_token.make_token(user)
+                        },
+                    broadcast=False
+                )
+        return render(request, self.template, context={"form" : forgot_password_form, "feedback" : True})
+
+class ResetPassword(View):
+    """ View for resetting passwords """
+    template = "users/auth/reset-password.html"
+    info_template = "users/auth/confirm.html"
+
+    def get(self, request, uid, token):
+        """ Get form for entering new password """
+        try:
+            user = User.objects.get(user_id=uid)
+        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+        if user is not None and password_reset_token.check_token(user, token):
+            # Return password reset form
+            password_reset_form = PasswordResetForm(user)
+            return render(request, self.template, 
+            {
+                "form": password_reset_form,
+                "uid" : uid,
+                "token": token,
+            })
+        else:
+            # Invalid verification link
+            return render(request, self.info_template, 
+            {
+                "message": "That reset link is either invalid or has expired.\nTo generate a new one, go to 'Forgot Password' and re-enter your course code", 
+                "header" : "Invalid Password Reset Link", 
+                "action" : "Go to Login"
+            })
+
+    def post(self, request, uid, token):
+        """ Update password """
+        try:
+            user = User.objects.get(user_id=uid)
+        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+        if user is not None and password_reset_token.check_token(user, token):
+            # Create password reset form
+            password_reset_form = PasswordResetForm(user, request.POST)
+            if password_reset_form.is_valid():
+                # Update password if valid
+                password_reset_form.save()
+                # Return confirmation
+                return render(request, self.info_template, 
+                {
+                    "message": "Your password was successfully changed!", 
+                    "header" : "Password Updated", 
+                    "action" : "Go to Login"
+                })
+            else:
+                return render(request, self.template, 
+                {
+                    "form": password_reset_form,
+                    "uid" : uid,
+                    "token": token,
+                })
+        else:
+            # Invalid verification link
+            return render(request, self.info_template, 
+            {
+                "message": "That reset link is either invalid or has expired.\nTo generate a new one, go to 'Forgot Password' and re-enter your course code.", 
+                "header" : "Invalid Password Reset Link", 
+                "action" : "Go to Login"
+            })
+ 
 class Confirm(View):
     """ View for confirming account """
 
