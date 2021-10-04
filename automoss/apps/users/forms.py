@@ -1,10 +1,18 @@
 import unicodedata
 from .models import User
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm, 
+    SetPasswordForm, 
+    PasswordChangeForm,
+)
 from django.core.exceptions import ValidationError
 from django.contrib.auth import password_validation
 from ..moss.moss import MOSS
+from .tokens import UserTokenGenerator
+from django.contrib.auth.validators import (
+    UnicodeUsernameValidator
+)
 
 class UsernameField(forms.CharField):
     """ User name field - based on Django's UsernameField """
@@ -114,3 +122,40 @@ class LoginForm(AuthenticationForm):
                 self.error_messages['unverified'],
                 code='unverified',
             )
+
+
+class PasswordForgottenForm(forms.Form):
+    """ Form for resetting forgotten password """
+
+    course_code_validator = UnicodeUsernameValidator()
+
+    # Course code
+    course_code = forms.CharField(
+        max_length=150,
+        validators=[course_code_validator]
+    )
+
+    def get_user(self):
+        """Given a course code, return matching user who should receive a reset email.
+        """
+        try:
+            user = User._default_manager.get(**{
+                'course_code': self.cleaned_data['course_code'],
+                'is_active': True,
+            })
+            return user
+        except User.DoesNotExist:
+            return None
+
+class PasswordResetForm(SetPasswordForm):
+    """ Form for setting new password """
+    error_messages = {
+        'password_mismatch': 'The passwords entered did not match.',
+    }
+
+class PasswordUpdateForm(PasswordResetForm):
+    """ Form for setting new password """
+    error_messages = {
+        **PasswordResetForm.error_messages,
+        'password_incorrect': "Your old password was entered incorrectly.",
+    }
