@@ -1,15 +1,15 @@
 
 install:
-	sudo apt-get update
-	sudo apt-get install redis mysql-server libmysqlclient-dev
+	sudo apt-get -y update
+	sudo apt-get -y install redis mysql-server libmysqlclient-dev
 	pip3 install -r requirements_dev.txt --upgrade
 	make db
 
 start-mysql:
-	@[ "$(shell ps aux | grep mysqld | grep -v grep)" ] && echo "MySQL already running" || (sudo service mysql start )
+	@[ "$(shell ps aux | grep mysqld | grep -v grep)" ] && echo "MySQL already running" || (sudo service mysql start)
 
 run: start-mysql
-	python3 manage.py runserver
+	python3 manage.py runserver 0.0.0.0:8000
 
 migrations:
 	python3 manage.py makemigrations && python3 manage.py migrate --run-syncdb
