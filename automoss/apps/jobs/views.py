@@ -124,7 +124,6 @@ class New(View):
                 # Ensure directory exists (only run once)
                 os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
-                print('Writing to', file_path)
                 with open(file_path, 'wb') as fp:
                     fp.write(f.read())
 
