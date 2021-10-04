@@ -181,13 +181,14 @@ class User(AbstractBaseUser):
         if broadcast:
             recipients += [str(email) for email in self.email_set.all()]
         # send emails asynchronously
-        send_emails.delay(
-            from_email=settings.DEFAULT_FROM_EMAIL, 
-            recipients=recipients, 
-            subject=subject, 
-            body=body, 
-            html=html
-        )
+        
+        send_emails.apply_async(kwargs={
+            'from_email':settings.DEFAULT_FROM_EMAIL, 
+            'recipients':recipients, 
+            'subject':subject, 
+            'body':body, 
+            'html':html
+        }, queue='email')
 
     def __str__(self):
         """ User to string returns course code """

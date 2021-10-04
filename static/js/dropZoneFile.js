@@ -45,6 +45,7 @@ class DropZoneFile extends HTMLElement {
 
         // Info > Remove Button > Icon
         this.removeButtonIcon = document.createElement("img");
+		this.removeButtonIcon.src = "/static/img/x.svg";
         this.removeButton.append(this.removeButtonIcon);
     }
 

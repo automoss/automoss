@@ -55,6 +55,10 @@ def main():
         if CELERY_CONCURRENCY is not None:
             celery_args.extend(['--concurrency', str(CELERY_CONCURRENCY)])
         start_service(celery_args)
+        
+        # Start email worker:
+        celery_args.extend(['-Q', 'email'])
+        start_service(celery_args)
 
     # Start MOSS load monitoring system
 
