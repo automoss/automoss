@@ -318,24 +318,44 @@ createJobForm.onsubmit = async (e) => {
 			jobDropZoneFile.setProgress(1);
 		}
 
-		// Submit a new job with the created form
-		let result = await fetch(NEW_JOB_URL, {
-			method: "POST",
-			body: jobFormData,
+		let xhr = new XMLHttpRequest();
+		xhr.responseType = 'json';
+
+		xhr.open('POST', NEW_JOB_URL);
+
+		// https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/upload
+		// Other events: error, abort, timeout
+
+		xhr.upload.addEventListener('loadstart', e=>{
+			// The upload has begun.
+		});
+		xhr.upload.addEventListener('progress', e=>{
+			let percentage = e.lengthComputable ? (e.loaded / e.total) * 100 : 0;
+			console.log(percentage);
+			// TODO do something with progress information
+		});
+		xhr.upload.addEventListener('load', e=>{
+			// The upload completed successfully.
+			// Done uploading, now server is processing upload (writing files to disk)
 		});
 
-		// Obtain job as json data and add to the jobs table
-		let json = await result.json();
-		addJob(json);
-		unfinishedJobs.push(json["job_id"]);
+		xhr.onreadystatechange = function() { // Call a function when the state changes.
+			if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+				// Obtain job as json data and add to the jobs table
+				let json = xhr.response;
+				addJob(json);
+				unfinishedJobs.push(json["job_id"]);
 
-		// Hide and reset the form and dropzone
-		createJobModal.hide();
-		setTimeout(() => {
-			createJobForm.reset();
-			jobDropZone.reset();
-			updateDropZoneTarget();
-		}, 200);
+				// Hide and reset the form and dropzone
+				createJobModal.hide();
+				setTimeout(() => {
+					createJobForm.reset();
+					jobDropZone.reset();
+					updateDropZoneTarget();
+				}, 200);
+			}
+		}
+		xhr.send(jobFormData);
 
 	}catch (err){
 		console.err(err);
