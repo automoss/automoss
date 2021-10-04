@@ -299,6 +299,7 @@ createJobForm.onsubmit = async (e) => {
 			jobFormData.append(isBaseFile ? BASE_FILES_NAME : FILES_NAME, new Blob([data]), name);
 		}
 
+		let numStudents = 0;
 		for (let jobDropZoneFile of jobDropZone.files){
 			let archive = jobDropZoneFile.file;
 			let languageId = jobLanguage.options[jobLanguage.selectedIndex].getAttribute("language-id");
@@ -308,12 +309,16 @@ createJobForm.onsubmit = async (e) => {
 
 			if (await isSingleSubmission(files, languageId) || isBaseFile){
 				appendFilesToForm(archive.name, await extractSingle(files, languageId), isBaseFile);
+				if (!isBaseFile){
+					numStudents++;
+				}
 			}else{
 				let counter = 0;
 				await extractBatch(files, languageId, (name, data) => {
 					appendFilesToForm(name, data, false);
 					jobDropZoneFile.setProgress(++counter / files.length);
 				});
+				numStudents += counter;
 			}
 			jobDropZoneFile.setProgress(1);
 		}
@@ -321,7 +326,7 @@ createJobForm.onsubmit = async (e) => {
 		// Submit a new job with the created form
 		let result = await fetch(NEW_JOB_URL, {
 			method: "POST",
-			body: jobFormData,
+			body: jobFormData
 		});
 
 		// Obtain job as json data and add to the jobs table

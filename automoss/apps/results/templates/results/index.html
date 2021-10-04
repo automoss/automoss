@@ -55,7 +55,7 @@
 			<td>{{ match.first_submission.name }}</td>
 			<td class="p-2">
 				<div class="position-relative rounded d-flex align-items-center justify-space-between me-2" style="background-color: var(--bs-gray-300); transform: translateY(5px);">
-					<div class="{% if match.first_percentage > 50 %}bg-danger{% elif match.first_percentage > 25 %}bg-warning{% else %}bg-success{% endif %} rounded" style="width:{{ match.first_percentage }}%; height: 15px"><br></div>
+					<div class="rounded" style="width:{{ match.first_percentage }}%; height: 15px; background-color: var(--bs-{% if match.first_percentage > 50 %}danger{% elif match.first_percentage > 40 %}warning{% elif match.first_percentage > 20 %}yellow{% else %}success{% endif %});"><br></div>
 					<div class="position-absolute end-0 pe-2" style="font-size: 10px">{{ match.first_percentage }}%</div>
 				</div>
 			</td>
@@ -63,7 +63,7 @@
 			<td>{{ match.second_submission.name }}</td>	
 			<td class="p-2">
 				<div class="position-relative rounded d-flex align-items-center justify-space-between me-2" style="background-color: var(--bs-gray-300); transform: translateY(5px);">
-					<div class="{% if match.second_percentage > 50 %}bg-danger{% elif match.second_percentage > 25 %}bg-warning{% else %}bg-success{% endif %} rounded" style="width:{{ match.second_percentage }}%; height: 15px"><br></div>
+					<div class="rounded" style="width:{{ match.second_percentage }}%; height: 15px; background-color: var(--bs-{% if match.second_percentage > 50 %}danger{% elif match.second_percentage > 40 %}warning{% elif match.second_percentage > 20 %}yellow{% else %}success{% endif %});"><br></div>
 					<div class="position-absolute end-0 pe-2" style="font-size: 10px">{{ match.second_percentage }}%</div>
 				</div>
 			</td>
