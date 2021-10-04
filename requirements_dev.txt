@@ -1,5 +1,6 @@
 django
 python-dotenv
+requests
 whitenoise
 celery
 redis
