@@ -23,11 +23,13 @@ function updateJobStatus(jobId, status){
 		"PRO": 3,
 		"PAR": 4,
 		"COM": 6,
-		"FAI": 3 // TODO: Keep a record of where it failed?
+		"FAI": 0 // TODO: Keep a record of where it failed?
 	};
 	jobTimeline.setCompleted(statusIndex[status]);
 	if (status == "FAI"){
-		jobTimeline.setFailed(statusIndex[status]);
+		for (let i = 0; i < jobTimeline.events.length; i++){
+			jobTimeline.setFailed(i);
+		}
 	}
 }
 
