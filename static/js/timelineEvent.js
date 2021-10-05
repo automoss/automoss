@@ -30,35 +30,17 @@ class TimelineEvent extends HTMLElement{
 		this.name.innerHTML = name;
 
 		this.setStatus("incompleted");
-		this.setTooltip("Incomplete");
 	}
 
 	setTooltip(text){
 		this.setAttribute("data-bs-original-title", text);
 	}
 
-	setEnabled(isEnabled){
-		this.style.opacity = isEnabled ? "100%" : "50%";
-	}
-
 	setStatus(status){
-		switch(status){
-			case "incompleted":
-				this.icon.className = "timeline-incompleted";
-				this.setEnabled(false);
-				break;
-			case "inprogress":
-				this.icon.className = "timeline-inprogress";
-				this.setEnabled(true);
-				break;
-			case "completed":
-				this.icon.className = "timeline-completed";
-				this.setEnabled(true);
-				break;
-			case "failed":
-				this.icon.className = "timeline-failed";
-				this.setEnabled(true);
-				break;
+		this.icon.className = `timeline-${status}`;
+		if (status == "inprogress"){
+			this.icon.classList.add("animate__animated");
+			this.icon.classList.add("animate__pulse");
 		}
 	}
 }

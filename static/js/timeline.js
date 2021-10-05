@@ -11,16 +11,17 @@ class Timeline extends HTMLElement{
 		this.classList.add("px-5");
 
 		// Line
-		this.div = document.createElement("div");
-		this.div.classList.add("position-absolute");
-		this.div.classList.add("mx-5");
-		this.div.style = "height:5px; right:0px; left:0px;";
-		this.append(this.div);
-
 		this.line = document.createElement("div");
-		this.line.classList.add("progress-bar");
-		this.line.style = "height:5px; width:0%; opacity: 50%; color: var(--bs-gray-300); background-color: var(--bs-gray-300);";
-		this.div.append(this.line);
+		this.line.classList.add("position-absolute");
+		this.line.classList.add("mx-5");
+		this.line.style = "height:5px; right:0px; left:0px; color: var(--bs-gray-300); background-color: var(--bs-gray-300);";
+		this.append(this.line);
+
+		// Line > Fill
+		this.lineFill = document.createElement("div");
+		this.lineFill.classList.add("progress-bar");
+		this.lineFill.style = "height:100%; width:0%; color: black; background-color: black;";
+		this.line.append(this.lineFill);
 	}
 
 	addEvent(name){
@@ -29,11 +30,18 @@ class Timeline extends HTMLElement{
 		this.append(event);
 	}
 	
-	setProgress(progress){
-		this.line.style.width = `${progress*100}%`;
-		let t = progress*this.events.length;
+	setProgress(index){
+		this.lineFill.style.width = `${(index / (this.events.length - 1)) * 100}%`;
 		for (let i = 0; i < this.events.length; i++){
-			this.events[i].setEnabled(i <= t);
+			let status = "";
+			if(i < index){
+				status = "completed";
+			}else if(i == index){
+				status = "inprogress";
+			}else{
+				status = "incompleted";
+			}
+			this.events[i].setStatus(status);
 		}
 	}
 }
