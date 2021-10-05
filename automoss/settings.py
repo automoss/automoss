@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+from automoss.apps.utils.core import is_testing
 from .redis import REDIS_URL
 from .apps.utils.core import capture_in
 from .apps.utils.core import first
@@ -38,7 +39,6 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'automoss.apps.jobs',
-    'automoss.apps.reports',
     'automoss.apps.api',
     'automoss.apps.users',
     'automoss.apps.results',
@@ -88,24 +88,26 @@ WSGI_APPLICATION = 'automoss.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
 # If running unit tests, create an in-memory sqlite3 database.
 # Otherwise, create a mysql database
-DATABASE_ENGINE = 'sqlite3' if 'test' in sys.argv else 'mysql'
 
-DATABASES = {
-    'default': {
-        'ENGINE': f'django.db.backends.{DATABASE_ENGINE}',
+if not is_testing():
+    default_database = {
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv("DB_NAME"),
+
         'HOST': os.getenv("DB_HOST"),
         'PORT': '3306',
-
         'USER': os.getenv("DB_USER"),
-        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'PASSWORD': os.getenv("DB_PASSWORD")
     }
-}
+else:
+    default_database = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.getenv("DB_NAME")
+    }
 
-
+DATABASES = {'default': default_database}
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
@@ -161,6 +163,9 @@ STATIC_ROOT = BASE_DIR / 'static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+TESTS_URL = '/tests/'
+TESTS_ROOT = BASE_DIR / 'tests'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

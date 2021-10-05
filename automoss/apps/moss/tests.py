@@ -8,14 +8,14 @@ from .moss import (
     ReportParsingError,
     FatalMossException
 )
-from ...settings import DEFAULT_MOSS_SETTINGS
+from ...settings import DEFAULT_MOSS_SETTINGS, TESTS_ROOT
 
 
 class TestMossAPI(TestCase):
     def test_upload_and_parse(self):
 
-        base_dir = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), 'test_files')
+        base_dir = os.path.join(TESTS_ROOT, 'test_files')
+
         paths = {
             'files': [],
             'base_files': []

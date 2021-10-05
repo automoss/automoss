@@ -33,3 +33,14 @@ while num != 0:
     num //= 10
 
 print("Reversed Number: " + str(reversed_num))
+
+
+# Add base file code (should be ignored in report)
+def file_len(fname):
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1
+
+
+print(file_len("my_file.txt"))
