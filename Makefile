@@ -46,3 +46,4 @@ coverage:
 	export IS_TESTING=1 && coverage run --source='.' manage.py test -v 2
 	coverage report
 	coverage html
+	python3 -m webbrowser htmlcov/index.html
