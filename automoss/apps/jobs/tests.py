@@ -64,7 +64,7 @@ class TestJobs(AuthenticatedUserTest):
             )
             self.assertEqual(report_response.status_code, expected_status)
 
-        return job_id
+        Job.objects.get(job_id=job_id).delete()
 
     def _run_zip_test(self, zip_file):
 
@@ -74,13 +74,12 @@ class TestJobs(AuthenticatedUserTest):
         for name in archive.namelist():
             files.append(archive.open(name))
 
-        job_id = self._run_test(files)
+        self._run_test(files)
 
         for file in files:
             file.close()
 
         archive.close()
-        return job_id
 
     @staticmethod
     def _get_test_files():
@@ -96,13 +95,11 @@ class TestJobs(AuthenticatedUserTest):
     def test_process_job(self):
 
         for test_path in self._get_test_files():
-            job_id = self._run_zip_test(test_path)
+            self._run_zip_test(test_path)
 
-            # Delete job
-            Job.objects.get(job_id=job_id).delete()
 
     def test_no_files(self):
-        job_id = self._run_test([], expected_status=400)
+        self._run_test([], expected_status=400)
 
     def test_moss_down(self):
 
@@ -127,7 +124,7 @@ class TestJobs(AuthenticatedUserTest):
 
             setattr(MOSS, 'generate_url', test_method)
 
-            job_id = self._run_zip_test(test_file)
+            self._run_zip_test(test_file)
 
 
 class TestAPI(AuthenticatedUserTest):
