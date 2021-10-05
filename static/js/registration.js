@@ -156,14 +156,6 @@
 			else if(passwordElement.value.length < 8){
 				errorList.appendChild(createErrorElement("Must be at least 8 characters long"))
 			}
-			// // Check field contains a lowercase character
-			// if(passwordElement.value.search("[a-z]") == -1){
-			// 	errorList.appendChild(createErrorElement("Must contain a lowercase character"))
-			// }
-			// // Check field contains an uppercase character
-			// if(passwordElement.value.search("[A-Z]") == -1){
-			// 	errorList.appendChild(createErrorElement("Must contain an uppercase character"))
-			// }
 			// Check field contains both uppercase and lowercase characters
 			if(passwordElement.value.search("[a-z]") == -1 || passwordElement.value.search("[A-Z]") == -1){
 				errorList.appendChild(createErrorElement("Must contain both upper and lowercase letters"))
@@ -178,7 +170,7 @@
 			}
 			// Set validity
 			if(!isEmpty(errorList)){
-				passwordElement.setCustomValidity("Invalid MOSS ID")
+				passwordElement.setCustomValidity("Invalid Password")
 				password1Invalid.innerHTML = ""
 			}
 			else{
@@ -218,7 +210,7 @@
 			}
 			// Set validity
 			if(!isEmpty(errorList)){
-				passwordElement.setCustomValidity("Invalid MOSS ID")
+				passwordElement.setCustomValidity("Invalid Password")
 				password2Invalid.innerHTML = ""
 			}
 			else{
