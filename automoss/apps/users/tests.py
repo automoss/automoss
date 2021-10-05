@@ -59,6 +59,24 @@ class TestUsers(AuthenticatedUserTest):
         self.assertNotEqual(self.user.password,
                             self.credentials.get('password'))
 
+    def test_staff_user_creation(self):
+        User.objects.create_staffuser(
+            course_code='staff',
+            primary_email_address='staff@localhost',
+            moss_id=2,
+            password='Testing123!',
+            is_verified=True
+        )
+
+    def test_super_user_creation(self):
+        User.objects.create_superuser(
+            course_code='super',
+            primary_email_address='super@localhost',
+            moss_id=3,
+            password='Testing123!',
+            is_verified=True
+        )
+
     def test_login_success(self):
         """ Test successful login attempt """
         test_client, login_response = self.create_client()
