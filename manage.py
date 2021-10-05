@@ -24,7 +24,7 @@ running_main_thread = is_main_thread()
 is_test_mode = is_testing()
 
 
-def main():  # pragma: no cover
+def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'automoss.settings')
 
@@ -32,7 +32,7 @@ def main():  # pragma: no cover
         # Only run once - do not run again on reloads
 
         def exit_handler():
-            
+
             if not is_test_mode:
                 # Shut down all celery workers attached to this process' group
                 cmd = f"kill -9 $(ps ajx | grep celery | grep ' {os.getpgid(os.getpid())} ' | grep -v grep | awk '{{print $2}}' | tr '\n' ' ')"
@@ -56,7 +56,7 @@ def main():  # pragma: no cover
             from automoss.celery import app
 
             start_worker(app)
-        
+
         else:
             # Start celery worker
             celery_args = ['celery', '-A', 'automoss', 'worker']
@@ -73,7 +73,6 @@ def main():  # pragma: no cover
             # Start email worker:
             celery_args.extend(['-Q', 'email'])
             start_service(celery_args)
-
 
     try:
         from django.core.management import execute_from_command_line

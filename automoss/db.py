@@ -5,7 +5,7 @@ import sys
 from dotenv import load_dotenv
 
 
-def main(): # pragma: no cover
+def main():
 
     # Action to perform
     fresh = 'fresh' in sys.argv[1:]
