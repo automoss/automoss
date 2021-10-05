@@ -1,15 +1,19 @@
-time-line-event img[status="Incompleted"]{
-    content: url("/static/img/incompleted.svg")
+time-line-event .timeline-event-image{
+    background-size: cover;
 }
 
-time-line-event img[status="In Progress"]{
-    content: url("/static/img/in-progress.svg")
+time-line-event .timeline-event-image[status="Incompleted"]{
+    background-image: url("/static/img/incompleted.svg")
 }
 
-time-line-event img[status="Completed"]{
-    content: url("/static/img/completed.svg")
+time-line-event .timeline-event-image[status="In Progress"]{
+    background-image: url("/static/img/in-progress.svg");
 }
 
-time-line-event img[status="Failed"]{
-    content: url("/static/img/failed.svg")
+time-line-event .timeline-event-image[status="Completed"]{
+    background-image: url("/static/img/completed.svg");
+}
+
+time-line-event .timeline-event-image[status="Failed"]{
+    background-image: url("/static/img/failed.svg")
 }

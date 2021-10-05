@@ -35,8 +35,9 @@ class TimelineEvent extends HTMLElement{
 		this.pingOuter.style = "width: 90px; height: 90px; border-radius: 50%; background-color: #06BDFC;";
 
 		// Event > Icon
-		this.icon = document.createElement("img");
+		this.icon = document.createElement("span");
 		this.iconDiv.append(this.icon);
+		this.icon.classList.add("timeline-event-image");
 		this.icon.classList.add("position-absolute");
 		this.icon.classList.add("translate-middle");
 		this.icon.classList.add("start-50");
