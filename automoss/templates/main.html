@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block "links" %}
+	{{ block.super }}
+	<link href="{% static "css/ping.css" %}" rel="stylesheet">
+{% endblock %}
+
 {% block "base-content" %}
 
 <!-- Page Area -->
@@ -13,30 +18,11 @@
 			</a>
 			
 			<div class="d-flex">
-				<!-- Ping -->
-				<style>
-					.pingPulse{
-						transform-origin: 50% 50%;
-						animation-duration: 2s;
-						animation-name: pingPulse;
-						animation-iteration-count: infinite;
-					}
-					@keyframes pingPulse{
-						from{
-							opacity: 1;
-							transform: scale(0);
-						}
-						to{
-							opacity: 0;
-							transform: scale(1);
-						}
-					}
-				</style>
 				<div id="ping" class="d-flex align-items-center me-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Status">
 					<label class="text-light">MOSS Status:</label>
 					<svg class="button" expanded="true" height="40px" width="40px">
           				<circle id="ping-inner" cx="50%" cy="50%" r="10px"></circle>
-          				<circle id="ping-outer" class="pingPulse" cx="50%" cy="50%" r="20px"></circle>
+          				<circle id="ping-outer" class="ping" cx="50%" cy="50%" r="20px"></circle>
         			</svg>
 				</div>
 				
