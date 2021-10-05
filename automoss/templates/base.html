@@ -8,17 +8,17 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com">
+		<link href="{% static "lib/open-sans.css" %}" rel="stylesheet">
+		<link href="{% static "lib/bootstrap/css/main.min.css" %}" rel="stylesheet">
+		<link href="{% static "lib/animate.min.css" %}" rel="stylesheet">
 		{% block "links" %}
-			<link rel="preconnect" href="https://fonts.googleapis.com">
-			<link rel="preconnect" href="https://fonts.gstatic.com">
-			<link href="{% static "lib/open-sans.css" %}" rel="stylesheet">
-			<link href="{% static "lib/bootstrap/css/main.min.css" %}" rel="stylesheet">
-			<link href="{% static "lib/animate.min.css" %}" rel="stylesheet">
 		{% endblock %}
-
+		
+		<script src="{% static "lib/popper.min.js" %}"></script>
+		<script src="{% static "lib/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
 		{% block "scripts" %}
-			<script src="{% static "lib/popper.min.js" %}"></script>
-			<script src="{% static "lib/bootstrap/js/bootstrap.bundle.min.js" %}"></script>
 		{% endblock %}
 	</head>
 	<body>{% block "base-content" %}{% endblock %}</body>
