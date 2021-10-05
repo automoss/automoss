@@ -1,3 +1,6 @@
+from ..users.tests import AuthenticatedUserTest
+from django.urls import reverse
+from .pinger import Pinger
 from unittest import TestCase
 import os
 from .moss import (
@@ -46,6 +49,20 @@ class TestMossAPI(TestCase):
 
         with self.assertRaises(InvalidReportURL) as context:
             invalid_url = MOSS.generate_report('invalid_url')
-        
+
         with self.assertRaises(ReportParsingError) as context:
-            invalid_moss_report = MOSS.generate_report('http://moss.stanford.edu/results/0/1234567890')
+            invalid_moss_report = MOSS.generate_report(
+                'http://moss.stanford.edu/results/0/1234567890')
+
+
+class TestJobs(AuthenticatedUserTest):
+    """ Test case to test job views """
+
+    def setUp(self):
+        super().setUp()
+
+    def test_ping_moss(self):
+        # Populate with ping data
+        Pinger.ping()
+        response = self.client.get(reverse("api:moss:get_status"))
+        self.assertEqual(response.status_code, 200)
