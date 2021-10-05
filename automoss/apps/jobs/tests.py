@@ -14,6 +14,12 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 import os
 import zipfile
+from automoss.apps.moss.moss import (
+    MOSS,
+    RecoverableMossException,
+    FatalMossException,
+    EmptyResponse
+)
 
 User = get_user_model()
 
@@ -24,44 +30,37 @@ class TestJobs(AuthenticatedUserTest):
     def setUp(self):
         super().setUp()
 
-    def test_process_job(self):
-        # Submit job
-        test_path = os.path.join(TESTS_ROOT, 'test_files', 'zips')
+    def _run_test(self, zip_file):
 
-        # Process each zip in test_files
-        # TODO improve structure of test files
-        for z in os.listdir(test_path):
-            if os.path.splitext(z)[1] != '.zip':
-                continue  # Ignore non-zip files
+        archive = zipfile.ZipFile(zip_file, 'r')
 
-            archive = zipfile.ZipFile(os.path.join(test_path, z), 'r')
+        files = []
+        for name in archive.namelist():
+            files.append(archive.open(name))
 
-            files = []
-            for name in archive.namelist():
-                files.append(archive.open(name))
+        job_params = {
+            "job-language": "Python",
+            "job-max-until-ignored": "10",
+            "job-max-displayed-matches": "250",
+            'job-name': 'Job Name',
+            "files": files
+        }
+        submit_response = self.client.post(reverse("jobs:new"), job_params)
 
-            job_params = {
-                "job-language": "Python",
-                "job-max-until-ignored": "10",
-                "job-max-displayed-matches": "250",
-                'job-name': 'Job Name',
-                "files": files
-            }
-            submit_response = self.client.post(reverse("jobs:new"), job_params)
+        response = submit_response.json()
+        job_id = response['job_id']
+        process_job(job_id)
 
-            response = submit_response.json()
-            job_id = response['job_id']
-            process_job(job_id)
+        for file in files:
+            file.close()
 
-            for file in files:
-                file.close()
+        self.assertEqual(submit_response.status_code, 200)
+        self.assertTrue(isinstance(submit_response, HttpResponse))
+        archive.close()
 
-            self.assertEqual(submit_response.status_code, 200)
-            self.assertTrue(isinstance(submit_response, HttpResponse))
-            archive.close()
+        first_match = Match.objects.all().first()
 
-            first_match = Match.objects.all().first()
-
+        if first_match:
             report_response = self.client.get(
                 reverse("jobs:results:match", kwargs={
                     "job_id": job_id,
@@ -71,8 +70,51 @@ class TestJobs(AuthenticatedUserTest):
             )
             self.assertEqual(report_response.status_code, 200)
 
+        return job_id
+
+    @staticmethod
+    def _get_test_files():
+        # Submit job
+        test_path = os.path.join(TESTS_ROOT, 'test_files', 'zips')
+
+        # Process each zip in test_files
+        # TODO improve structure of test files
+        for f_name in os.listdir(test_path):
+            if os.path.splitext(f_name)[1] == '.zip':
+                yield os.path.join(test_path, f_name)
+
+    def test_process_job(self):
+
+        for test_path in self._get_test_files():
+            job_id = self._run_test(test_path)
+
             # Delete job
             Job.objects.get(job_id=job_id).delete()
+
+    def test_moss_down(self):
+
+        original = MOSS.generate_url
+
+        test_file = next(self._get_test_files())
+
+        errors_to_throw = [
+            EmptyResponse,  # MOSS Timed out
+            RecoverableMossException,  # Can recover
+            FatalMossException,  # Cannot recover
+            Exception  # Other error
+        ]
+
+        for error_to_throw in errors_to_throw:
+
+            # Override generate_url method to simulate an error being thrown
+            def test_method(**kwargs):
+                # Set back to original method
+                setattr(MOSS, 'generate_url', original)
+                raise error_to_throw('Test')
+
+            setattr(MOSS, 'generate_url', test_method)
+
+            job_id = self._run_test(test_file)
 
 
 class TestAPI(AuthenticatedUserTest):
