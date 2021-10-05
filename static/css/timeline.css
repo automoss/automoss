@@ -1,15 +1,15 @@
-.timeline-incompleted{
+time-line-event img[status="Incompleted"]{
     content: url("/static/img/incompleted.svg")
 }
 
-.timeline-inprogress{
+time-line-event img[status="In Progress"]{
     content: url("/static/img/in-progress.svg")
 }
 
-.timeline-completed{
+time-line-event img[status="Completed"]{
     content: url("/static/img/completed.svg")
 }
 
-.timeline-failed{
+time-line-event img[status="Failed"]{
     content: url("/static/img/failed.svg")
 }
