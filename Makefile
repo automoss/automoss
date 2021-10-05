@@ -40,9 +40,9 @@ clean:
 clean-all: clean-media clean-redis clean-migrations clean
 
 test:
-	python3 manage.py test -v 2
+	export IS_TESTING=1 && python3 manage.py test -v 2
 
 coverage:
-	coverage run --source='.' manage.py test -v 2
+	export IS_TESTING=1 && coverage run --source='.' manage.py test -v 2
 	coverage report
 	coverage html

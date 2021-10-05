@@ -60,6 +60,9 @@ class capture_globals(capture_in):
 def is_main_thread():
     return os.environ.get('RUN_MAIN') != 'true' and 'runserver' in sys.argv
 
+def is_testing():
+    return bool(os.environ.get('IS_TESTING'))
+
 
 # TODO move?
 # capped exponential backoff with max retries (max time)

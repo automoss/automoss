@@ -10,7 +10,8 @@ from automoss.settings import (
     DEBUG,
     CELERY_CONCURRENCY
 )
-from automoss.apps.utils.core import is_main_thread
+from automoss.redis import REDIS_PORT
+from automoss.apps.utils.core import is_main_thread, is_testing
 from automoss.apps.moss.pinger import monitor
 
 if DEBUG:
@@ -20,20 +21,26 @@ else:
 
 
 running_main_thread = is_main_thread()
+is_test_mode = is_testing()
 
 
 def main():  # pragma: no cover
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'automoss.settings')
 
-    # Only run once - do not run again on reloads
-    if running_main_thread:
+    if running_main_thread or is_test_mode:
+        # Only run once - do not run again on reloads
 
         def exit_handler():
-            os.system('redis-cli shutdown')
-            # os.system('rm -f dump.rdb')
-            os.system(
-                "kill -9 $(ps aux | grep celery | grep -v grep | awk '{print $2}' | tr '\n' ' ')")
+            
+            if not is_test_mode:
+                # Shut down all celery workers attached to this process' group
+                cmd = f"kill -9 $(ps ajx | grep celery | grep ' {os.getpgid(os.getpid())} ' | grep -v grep | awk '{{print $2}}' | tr '\n' ' ')"
+                os.system(cmd)
+
+            # Shut down redis cli
+            os.system(f'redis-cli -p {REDIS_PORT} shutdown')
+
             print('Server closed')
 
         atexit.register(exit_handler)
@@ -42,25 +49,31 @@ def main():  # pragma: no cover
         threading.Thread(target=monitor, daemon=True).start()
 
         # Start the Redis server
-        start_service(['redis-server'])
+        start_service(['redis-server', '--port', str(REDIS_PORT)])
 
-        # Start celery worker
-        celery_args = ['celery', '-A', 'automoss', 'worker']
+        if is_test_mode:
+            from celery.contrib.testing.worker import start_worker
+            from automoss.celery import app
 
-        if DEBUG:
-            celery_args.append('--loglevel=DEBUG')
-        else:
-            celery_args.append('--loglevel=INFO')
-
-        if CELERY_CONCURRENCY is not None:
-            celery_args.extend(['--concurrency', str(CELERY_CONCURRENCY)])
-        start_service(celery_args)
+            start_worker(app)
         
-        # Start email worker:
-        celery_args.extend(['-Q', 'email'])
-        start_service(celery_args)
+        else:
+            # Start celery worker
+            celery_args = ['celery', '-A', 'automoss', 'worker']
 
-    # Start MOSS load monitoring system
+            if DEBUG:
+                celery_args.append('--loglevel=DEBUG')
+            else:
+                celery_args.append('--loglevel=INFO')
+
+            if CELERY_CONCURRENCY is not None:
+                celery_args.extend(['--concurrency', str(CELERY_CONCURRENCY)])
+            start_service(celery_args)
+
+            # Start email worker:
+            celery_args.extend(['-Q', 'email'])
+            start_service(celery_args)
+
 
     try:
         from django.core.management import execute_from_command_line
