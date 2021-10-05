@@ -116,6 +116,7 @@ class New(View):
                     job=new_job, name=f.name, file_type=file_type)
 
                 file_path = SUBMISSION_UPLOAD_TEMPLATE.format(
+                    user_id=request.user.user_id,
                     job_id=job_id,
                     file_type=file_type,
                     file_id=submission.submission_id

@@ -90,7 +90,7 @@ class Job(models.Model):
 
         super().delete(using=using, keep_parents=keep_parents)
 
-        media_path = JOB_URL_TEMPLATE.format(job_id=self.job_id)
+        media_path = JOB_URL_TEMPLATE.format(user_id=user.user_id, job_id=self.job_id)
 
         if os.path.exists(media_path):
             shutil.rmtree(media_path)

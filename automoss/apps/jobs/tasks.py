@@ -68,7 +68,7 @@ def process_job(job_id):
     job.start_date = now()
     logger.info(f'Starting job {job_id} with status {job.status}')
 
-    base_dir = JOB_UPLOAD_TEMPLATE.format(job_id=job.job_id)
+    base_dir = JOB_UPLOAD_TEMPLATE.format(user_id=job.user.user_id, job_id=job.job_id)
 
     paths = {}
 
@@ -259,7 +259,10 @@ def process_job(job_id):
                 'num_attempts': num_attempts
             })
 
-            log_info.update({'avg': Pinger.ping()} or {})
+            # Perform a ping
+            Pinger.ping()
+
+            log_info.update({'avg': Pinger.get_average_ping()} or {})
             logger.debug(f'Job info: {log_info}')
 
             with open('jobs.log', 'a+') as fp:

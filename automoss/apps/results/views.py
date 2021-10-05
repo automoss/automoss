@@ -45,6 +45,7 @@ class ResultMatch(View):
         for submission_type, submission in submissions.items():
 
             file_path = SUBMISSION_UPLOAD_TEMPLATE.format(
+                user_id=request.user.user_id,
                 job_id=job_id,
                 file_type='files',
                 file_id=submission.submission_id
