@@ -336,7 +336,6 @@ createJobForm.onsubmit = async (e) => {
 		});
 		xhr.upload.addEventListener('progress', e=>{
 			let percentage = e.lengthComputable ? (e.loaded / e.total) * 100 : 0;
-			console.log(percentage);
 			// TODO do something with progress information
 		});
 		xhr.upload.addEventListener('load', e=>{

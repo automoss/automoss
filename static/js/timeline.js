@@ -14,13 +14,13 @@ class Timeline extends HTMLElement{
 		this.line = document.createElement("div");
 		this.line.classList.add("position-absolute");
 		this.line.classList.add("mx-5");
-		this.line.style = "height:4px; right:0px; left:0px; color: var(--bs-gray-300); background-color: var(--bs-gray-300);";
+		this.line.style = "height: 3px; right: 0px; left:0px; color: var(--bs-gray-300); background-color: var(--bs-gray-300);";
 		this.append(this.line);
 
 		// Line > Fill
 		this.lineFill = document.createElement("div");
 		this.lineFill.classList.add("progress-bar");
-		this.lineFill.style = "height:100%; width:0%; color: var(--bs-success); background-color: var(--bs-success);";
+		this.lineFill.style = "height: 100%; width: 0%; color: var(--bs-success); background-color: var(--bs-success);";
 		this.line.append(this.lineFill);
 	}
 
@@ -31,12 +31,11 @@ class Timeline extends HTMLElement{
 	}
 
 	setCompleted(index){
-		let progress = ((index == -1) ? 1 : (index / (this.events.length - 1)));
+		let progress = ((index == this.events.length) ? 1 : (index / (this.events.length - 1)));
 		this.lineFill.style.width = `${progress * 100}%`;
-
 		for (let i = 0; i < this.events.length; i++){
 			let status = "";
-			if(i < index || index == -1){
+			if(i < index){
 				status = "Completed";
 			}else if(i == index){
 				status = "In Progress";

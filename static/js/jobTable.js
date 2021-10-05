@@ -3,6 +3,12 @@ let jobsSearchBar = document.getElementById('job-search-bar');
 setupTableSearch(jobsTable, jobsSearchBar);
 
 let jobsTableBody = jobsTable.getElementsByTagName('tbody')[0];
+let noJobsMessage = document.getElementById('no-jobs-message');
+
+const terminalStates = [completedStatus, failedStatus];
+function isTerminalState(state){
+	return terminalStates.includes(state);
+}
 
 function updateJobStatus(jobId, status){
 	document.querySelector(`tr[job_id="${jobId}"]`).setStatus(status);
@@ -11,15 +17,18 @@ function updateJobStatus(jobId, status){
 	}
 
 	let jobTimeline = document.getElementById(`job-timeline-${jobId}`);
-	let statusIndexMapping = {
+	let statusIndex = { 
 		"INQ": 1,
 		"UPL": 2,
 		"PRO": 3,
 		"PAR": 4,
-		"COM": -1,
-		"FAI": -1 // TODO: Keep a record of where we failed?
+		"COM": 6,
+		"FAI": 3 // TODO: Keep a record of where it failed?
 	};
-	jobTimeline.setCompleted(statusIndexMapping[status]);
+	jobTimeline.setCompleted(statusIndex[status]);
+	if (status == "FAI"){
+		jobTimeline.setFailed(statusIndex[status]);
+	}
 }
 
 function updateJobLogs(jobId, logs){
@@ -37,12 +46,12 @@ function updateJobs(jobs){
 }
 
 function addJob(job, forceOpen=false){
-	document.getElementById('no-jobs-message').style.display = 'none'
+	noJobsMessage.style.display = 'none';
 
 	// Info
 	let jobInfo = document.createElement("td");
 	jobInfo.setAttribute("colspan", "6");
-	jobInfo.style="padding: 0 !important;";
+	jobInfo.style = "padding: 0 !important;";
 
 	// Info > Collapse
 	let jobInfoCollapse = document.createElement("div");
@@ -51,31 +60,19 @@ function addJob(job, forceOpen=false){
 	jobInfoCollapse.classList.add("collapse");
 	jobInfoCollapse.classList.add("p-0");
 	jobInfoCollapse.classList.add("border");
-	if (forceOpen){
-		jobInfoCollapse.classList.add("show");
-	}
 
-	// Info > Collapse > Wrapper
 	let jobInfoWrapper = document.createElement("div");
 	jobInfoCollapse.append(jobInfoWrapper);
 	jobInfoWrapper.style.height = "200px";
 	jobInfoWrapper.classList.add("d-flex");
 
-	// Info > Collapse > Wrapper > Timeline
+	// Info > Collapse > Timeline
 	let jobTimeline = new Timeline();
 	jobInfoWrapper.append(jobTimeline);
 	jobTimeline.id = `job-timeline-${job.job_id}`;
 	jobTimeline.style.width = "60%";
-	jobTimeline.setCompleted(1);
 
-	jobTimeline.addEvent("Created");
-	jobTimeline.addEvent("In Queue");
-	jobTimeline.addEvent("Uploading");
-	jobTimeline.addEvent("Processing");
-	jobTimeline.addEvent("Parsing");
-	jobTimeline.addEvent("Completed");
-
-	// Info > Collapse > Wrapper > Logs
+	// Info > Collapse > Logs
 	let jobLogs = document.createElement("textarea");
 	jobInfoWrapper.append(jobLogs);
 	jobLogs.id = `job-logs-${job.job_id}`;
@@ -86,13 +83,20 @@ function addJob(job, forceOpen=false){
 	jobLogs.style.width = "40%";
 	jobLogs.setAttribute("readonly", true);
 
+	jobTimeline.addEvent("Created");
+	jobTimeline.addEvent("In Queue");
+	jobTimeline.addEvent("Uploading");
+	jobTimeline.addEvent("Processing");
+	jobTimeline.addEvent("Parsing");
+	jobTimeline.addEvent("Completed");
+
+	if (forceOpen){
+		jobInfoCollapse.classList.add("show");
+	}
+	jobTimeline.setCompleted(1);	
+
 	jobsTableBody.prepend(jobInfo);
 	jobsTableBody.prepend(new Job(job));
-}
-
-const terminalStates = [completedStatus, failedStatus];
-function isTerminalState(state){
-	return terminalStates.includes(state);
 }
 
 let unfinishedJobs = [];
@@ -107,7 +111,7 @@ let result = fetch(GET_JOBS_URL).then(async (response)=>{
 		}
 	});
 	if(json.length == 0){
-		document.getElementById('no-jobs-message').style.display = 'block';
+		noJobsMessage.style.display = 'block';
 	}
 });
 
@@ -120,13 +124,16 @@ async function updateJobsTable(url, jobs, f){
 }
 
 setInterval(async function(){
-	if(unfinishedJobs.length != 0){
+	if(unfinishedJobs.length != 0){		
 		updateJobs(unfinishedJobs);
 	}
-	const jobs = jobsTableBody.querySelectorAll(".job");
-	jobs.forEach(function(job) {
-		if (!isTerminalState(jobs.status)){
+}, POLLING_TIME);
+
+setInterval(async function(){
+	for (let jobId of unfinishedJobs){
+		let job = document.getElementById(`job-${jobId}`);
+		if (!isTerminalState(job.status)){
 			job.updateDuration();
 		}
-	});
-}, POLLING_TIME);
+	}
+}, 1000);
