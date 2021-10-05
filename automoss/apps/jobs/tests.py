@@ -30,14 +30,7 @@ class TestJobs(AuthenticatedUserTest):
     def setUp(self):
         super().setUp()
 
-    def _run_test(self, zip_file):
-
-        archive = zipfile.ZipFile(zip_file, 'r')
-
-        files = []
-        for name in archive.namelist():
-            files.append(archive.open(name))
-
+    def _run_test(self, files, expected_status=200):
         job_params = {
             "job-language": "Python",
             "job-max-until-ignored": "10",
@@ -48,15 +41,19 @@ class TestJobs(AuthenticatedUserTest):
         submit_response = self.client.post(reverse("jobs:new"), job_params)
 
         response = submit_response.json()
-        job_id = response['job_id']
+        self.assertEqual(submit_response.status_code, expected_status)
+
+        job_id = response.get('job_id')
+
+        if not job_id:
+            return
+
         process_job(job_id)
 
         for file in files:
             file.close()
 
-        self.assertEqual(submit_response.status_code, 200)
         self.assertTrue(isinstance(submit_response, HttpResponse))
-        archive.close()
 
         first_match = Match.objects.all().first()
 
@@ -68,8 +65,20 @@ class TestJobs(AuthenticatedUserTest):
                 }
                 )
             )
-            self.assertEqual(report_response.status_code, 200)
+            self.assertEqual(report_response.status_code, expected_status)
 
+        return job_id
+
+    def _run_zip_test(self, zip_file):
+
+        archive = zipfile.ZipFile(zip_file, 'r')
+
+        files = []
+        for name in archive.namelist():
+            files.append(archive.open(name))
+
+        job_id = self._run_test(files)
+        archive.close()
         return job_id
 
     @staticmethod
@@ -86,10 +95,13 @@ class TestJobs(AuthenticatedUserTest):
     def test_process_job(self):
 
         for test_path in self._get_test_files():
-            job_id = self._run_test(test_path)
+            job_id = self._run_zip_test(test_path)
 
             # Delete job
             Job.objects.get(job_id=job_id).delete()
+
+    def test_no_files(self):
+        job_id = self._run_test([], expected_status=400)
 
     def test_moss_down(self):
 
@@ -114,7 +126,7 @@ class TestJobs(AuthenticatedUserTest):
 
             setattr(MOSS, 'generate_url', test_method)
 
-            job_id = self._run_test(test_file)
+            job_id = self._run_zip_test(test_file)
 
 
 class TestAPI(AuthenticatedUserTest):
