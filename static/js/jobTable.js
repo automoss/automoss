@@ -96,7 +96,7 @@ function addJob(job, forceOpen=false){
 	jobTimeline.setCompleted(1);	
 
 	jobsTableBody.prepend(jobInfo);
-	jobsTableBody.prepend(new Job(job));
+	jobsTableBody.prepend(new Job(job, jobInfoCollapse));
 }
 
 let unfinishedJobs = [];

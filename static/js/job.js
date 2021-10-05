@@ -1,14 +1,19 @@
 class Job extends HTMLTableRowElement{
-    constructor(obj) {
+    constructor(job, jobCollapse) {
         super();
-        Object.assign(this, obj);
+        Object.assign(this, job);
 
-        this.id = `job-${obj.job_id}`;
-        this.setAttribute('job_id', obj.job_id);
-        this.setAttribute('status', obj.status);
-        this.setAttribute('data-bs-toggle', 'collapse');
-        this.setAttribute('data-bs-target', `#job-info-${obj.job_id}`);
-        this.style="cursor: pointer;";
+        this.id = `job-${this.job_id}`;
+        this.setAttribute('job_id', this.job_id);
+        this.setAttribute('status', this.status);
+        this.style = "cursor: pointer;";
+
+        let collapse = new bootstrap.Collapse(jobCollapse, { toggle: false });
+        this.onclick = (e) => {
+            if (!(e.target instanceof HTMLAnchorElement)){
+                collapse.toggle();
+            }
+        };
 
         // Name
         this.tableComment = document.createElement('td');
