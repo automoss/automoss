@@ -432,7 +432,7 @@ class MOSS:
             #  - ConnectionAbortedError
             #  - ConnectionRefusedError
             #  - ConnectionResetError.
-            raise MossConnectionError(e)
+            raise MossConnectionError(e.strerror)
 
         finally:  # Close session as soon as possible
             moss.close()
