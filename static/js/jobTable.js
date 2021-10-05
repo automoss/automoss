@@ -44,6 +44,8 @@ function addJob(job){
 	jobLogs.classList.add("w-25");
 	jobLogs.classList.add("my-4");
 	jobLogs.classList.add("me-4");
+	jobLogs.style = "resize: none; background-color: white; border-radius: 10px; border-color: var(--bs-gray-300)";
+	jobLogs.setAttribute("readonly", true);
 
 	jobsTableBody.prepend(jobInfo);
 	jobsTableBody.prepend(new Job(job));

@@ -19,7 +19,7 @@ class Timeline extends HTMLElement{
 
 		this.line = document.createElement("div");
 		this.line.classList.add("progress-bar");
-		this.line.style = "height:5px; width:100%; opacity: 50%; color: var(--bs-gray-300); background-color: var(--bs-gray-300);";
+		this.line.style = "height:5px; width:0%; opacity: 50%; color: var(--bs-gray-300); background-color: var(--bs-gray-300);";
 		this.div.append(this.line);
 	}
 
