@@ -5,6 +5,7 @@
 	{{ block.super }}
 	<link href="{% static "css/dropZoneFile.css" %}" rel="stylesheet">
 	<link href="{% static "css/dropZone.css" %}" rel="stylesheet">
+	<link href="{% static "css/timeline.css" %}" rel="stylesheet">
 {% endblock %}
 
 {% block "scripts" %}
@@ -18,6 +19,8 @@
 	<script src="{% static "lib/uncompress/xz.js" %}" defer></script>
 	<script src="{% static "js/job.js" %}" defer></script>
 	<script src="{% static "js/jobSubmission.js" %}" defer></script>
+	<script src="{% static "js/timeline.js" %}" defer></script>
+	<script src="{% static "js/timelineEvent.js" %}" defer></script>
 	<script src="{% static "js/jobTable.js" %}" defer></script>
 {% endblock %}
 

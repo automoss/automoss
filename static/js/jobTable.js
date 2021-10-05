@@ -4,40 +4,63 @@ setupTableSearch(jobsTable, jobsSearchBar);
 
 let jobsTableBody = jobsTable.getElementsByTagName('tbody')[0];
 
-function addJob(job) {
+function addJob(job){
 	document.getElementById('no-jobs-message').style.display = 'none'
 
-	// let jobInfo = document.createElement("td");
-	// jobInfo.setAttribute("colspan", "6");
-	// jobInfo.style="padding: 0 !important;";
-
-	// let jobInfoCollapse = document.createElement("div");
-	// jobInfoCollapse.id = `job-info-${job.job_id}`;
-	// jobInfoCollapse.classList.add("collapse");
-	// jobInfo.append(jobInfoCollapse);
-
 	// Info
-	// let jobStatusMap = document.createElement("div");
-	// jobStatusMap.classList.add("d-flex");
-	// jobStatusMap.classList.add("flex-column");
-	// jobInfoCollapse.append(jobStatusMap);
+	let jobInfo = document.createElement("td");
+	jobInfo.setAttribute("colspan", "6");
+	jobInfo.style="padding: 0 !important;";
 
-	// jobsTableBody.prepend(jobInfo);
+	// Info > Collapse
+	let jobInfoCollapse = document.createElement("div");
+	jobInfoCollapse.id = `job-info-${job.job_id}`;
+	jobInfoCollapse.classList.add("collapse");
+	jobInfoCollapse.classList.add("p-0");
+	jobInfoCollapse.classList.add("border");
+	jobInfo.append(jobInfoCollapse);
+
+	// Info > Collapse > Wrapper
+	let jobInfoWrapper = document.createElement("div");
+	jobInfoCollapse.append(jobInfoWrapper);
+	jobInfoWrapper.style.height = "200px";
+	jobInfoWrapper.classList.add("d-flex");
+
+	// Info > Collapse > Wrapper > Timeline
+	let jobTimeline = new Timeline();
+	jobInfoWrapper.append(jobTimeline);
+	jobTimeline.classList.add("w-75");
+
+	jobTimeline.addEvent("Created");
+	jobTimeline.addEvent("In Queue");
+	jobTimeline.addEvent("Uploading");
+	jobTimeline.addEvent("Processing");
+	jobTimeline.addEvent("Parsing");
+	jobTimeline.addEvent("Completed");
+
+	// Info > Collapse > Wrapper > Logs
+	let jobLogs = document.createElement("textarea");
+	jobInfoWrapper.append(jobLogs);
+	jobLogs.classList.add("w-25");
+	jobLogs.classList.add("my-4");
+	jobLogs.classList.add("me-4");
+
+	jobsTableBody.prepend(jobInfo);
 	jobsTableBody.prepend(new Job(job));
 }
 
 const terminalStates = [completedStatus, failedStatus];
 function isTerminalState(state){
-	return terminalStates.includes(state)
+	return terminalStates.includes(state);
 }
 
 let unfinishedJobs = [];
 let result = fetch(GET_JOBS_URL).then(async (response)=>{
-	let json = await response.json()
+	let json = await response.json();
 	json.forEach(item => {
 		addJob(item);
 		if (!isTerminalState(item.status)){
-			unfinishedJobs.push(item.job_id)
+			unfinishedJobs.push(item.job_id);
 		}
 	});
 	if(json.length == 0){
@@ -61,9 +84,11 @@ setInterval(async function(){
 }, POLLING_TIME);
 
 setInterval(async function(){
-	for (let job of jobsTable.tBodies[0].children){
-		if (job.status != completedStatus && job.status != failedStatus){
-			job.updateDuration();
+	for (let row of jobsTable.tBodies[0].children){
+		if (row instanceof Job){
+			if (!isTerminalState(row.status)){
+				row.updateDuration();
+			}
 		}
 	}
 }, 1000);

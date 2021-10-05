@@ -1,0 +1,15 @@
+.timeline-incompleted{
+    content: url("/static/img/incompleted.svg")
+}
+
+.timeline-inprogress{
+    content: url("/static/img/in-progress.svg")
+}
+
+.timeline-completed{
+    content: url("/static/img/completed.svg")
+}
+
+.timeline-failed{
+    content: url("/static/img/failed.svg")
+}

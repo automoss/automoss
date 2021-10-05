@@ -154,4 +154,4 @@ class DropZone extends HTMLElement {
 	}
 }
 
-customElements.define('drop-zone', DropZone);
+customElements.define("drop-zone", DropZone);

@@ -5,9 +5,9 @@ class Job extends HTMLTableRowElement{
 
         this.setAttribute('job_id', obj.job_id);
         this.setAttribute('status', obj.status);
-        // this.setAttribute('data-bs-toggle', 'collapse');
-        // this.setAttribute('data-bs-target', `#job-info-${obj.job_id}`);
-        // this.style="cursor: pointer;";
+        this.setAttribute('data-bs-toggle', 'collapse');
+        this.setAttribute('data-bs-target', `#job-info-${obj.job_id}`);
+        this.style="cursor: pointer;";
 
         // Name
         this.tableComment = document.createElement('td');
@@ -48,13 +48,9 @@ class Job extends HTMLTableRowElement{
     updateDuration(){
         let completion_date = new Date();
         let creation_date = new Date(this.creation_date);
-
-		if (this.status == completedStatus){
+		if (isTerminalState(this.status)){
 			completion_date = new Date(this.completion_date);
-		}else if (this.status == failedStatus){
-            completion_date = creation_date;
-        }
-        
+		}
 		this.tableDuration.innerHTML = new Date(completion_date - creation_date).toLocaleTimeString('en-GB', {
 			timeZone:'Etc/UTC',
 			hour12: false,
