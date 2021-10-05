@@ -78,7 +78,7 @@ function addJob(job, forceOpen=false){
 	jobLogs.id = `job-logs-${job.job_id}`;
 	jobLogs.classList.add("my-4");
 	jobLogs.classList.add("me-4");
-	jobLogs.classList.add("me-4");
+	jobLogs.classList.add("container");
 	jobLogs.style = "resize: none; background-color: white; border-radius: 10px; padding: 6px 10px; border-color: var(--bs-gray-300)";
 	jobLogs.style.width = "40%";
 	jobLogs.setAttribute("readonly", true);
