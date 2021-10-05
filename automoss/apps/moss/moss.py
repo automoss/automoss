@@ -176,7 +176,7 @@ class MossAPIWrapper:
         self._send_raw(bytes)
 
     def upload_raw_base_file(self, file_path, bytes, language, use_basename=False):
-        self.upload_raw_base(file_path, bytes, language, 0, use_basename)
+        self.upload_raw_file(file_path, bytes, language, 0, use_basename)
 
     def upload_base_file(self, file_path, language, use_basename=False):
         self.upload_file(file_path, language, 0, use_basename)
