@@ -2,13 +2,11 @@
 {% load static %}
 
 {% block "links" %}
-	{{ block.super }}
 	<link href="{% static "css/dropZoneFile.css" %}" rel="stylesheet">
 	<link href="{% static "css/dropZone.css" %}" rel="stylesheet">
 {% endblock %}
 
 {% block "scripts" %}
-	{{ block.super }}
 	<script src="{% static "js/dropZoneFile.js" %}" defer></script>
 	<script src="{% static "js/dropZone.js" %}" defer></script>
 	<script src="{% static "lib/uncompress/bz2.js" %}" defer></script>
