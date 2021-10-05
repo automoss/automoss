@@ -31,7 +31,6 @@ class Timeline extends HTMLElement{
 	}
 
 	setCompleted(index){
-
 		let progress = ((index == -1) ? 1 : (index / (this.events.length - 1)));
 		this.lineFill.style.width = `${progress * 100}%`;
 

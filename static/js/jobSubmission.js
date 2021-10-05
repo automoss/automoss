@@ -348,7 +348,7 @@ createJobForm.onsubmit = async (e) => {
 			if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
 				// Obtain job as json data and add to the jobs table
 				let json = xhr.response;
-				addJob(json);
+				addJob(json, true);
 				unfinishedJobs.push(json["job_id"]);
 
 				// Hide and reset the form and dropzone

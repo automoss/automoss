@@ -17,7 +17,7 @@ function updateJobStatus(jobId, status){
 		"PRO": 3,
 		"PAR": 4,
 		"COM": -1,
-		"FAI": -1 // TODO: Don't keep a record of which event we failed on?
+		"FAI": -1 // TODO: Keep a record of where we failed?
 	};
 	jobTimeline.setCompleted(statusIndexMapping[status]);
 }
@@ -31,7 +31,12 @@ function updateJobLogs(jobId, logs){
 	jobLogs.innerHTML = trimRight(jobLogs.innerHTML, 1);
 }
 
-function addJob(job){
+function updateJobs(jobs){
+	updateJobsTable(GET_JOB_STATUSES_URL, jobs, updateJobStatus);
+	updateJobsTable(GET_JOB_LOGS_URL, jobs, updateJobLogs);
+}
+
+function addJob(job, forceOpen=false){
 	document.getElementById('no-jobs-message').style.display = 'none'
 
 	// Info
@@ -41,11 +46,14 @@ function addJob(job){
 
 	// Info > Collapse
 	let jobInfoCollapse = document.createElement("div");
+	jobInfo.append(jobInfoCollapse);
 	jobInfoCollapse.id = `job-info-${job.job_id}`;
 	jobInfoCollapse.classList.add("collapse");
 	jobInfoCollapse.classList.add("p-0");
 	jobInfoCollapse.classList.add("border");
-	jobInfo.append(jobInfoCollapse);
+	if (forceOpen){
+		jobInfoCollapse.classList.add("show");
+	}
 
 	// Info > Collapse > Wrapper
 	let jobInfoWrapper = document.createElement("div");
@@ -55,9 +63,10 @@ function addJob(job){
 
 	// Info > Collapse > Wrapper > Timeline
 	let jobTimeline = new Timeline();
-	jobTimeline.id = `job-timeline-${job.job_id}`;
 	jobInfoWrapper.append(jobTimeline);
+	jobTimeline.id = `job-timeline-${job.job_id}`;
 	jobTimeline.style.width = "60%";
+	jobTimeline.setCompleted(1);
 
 	jobTimeline.addEvent("Created");
 	jobTimeline.addEvent("In Queue");
@@ -94,8 +103,7 @@ let result = fetch(GET_JOBS_URL).then(async (response)=>{
 		if (!isTerminalState(item.status)){
 			unfinishedJobs.push(item.job_id);
 		}else{
-			updateJobs(GET_JOB_STATUSES_URL, [item.job_id], updateJobStatus);
-			updateJobs(GET_JOB_LOGS_URL, [item.job_id], updateJobLogs);
+			updateJobs([item.job_id]);
 		}
 	});
 	if(json.length == 0){
@@ -103,7 +111,7 @@ let result = fetch(GET_JOBS_URL).then(async (response)=>{
 	}
 });
 
-async function updateJobs(url, jobs, f){
+async function updateJobsTable(url, jobs, f){
 	let result = await fetch(url + "?" + new URLSearchParams({job_ids: jobs}));
 	let json = await result.json();
 	for (let key in json){
@@ -112,19 +120,13 @@ async function updateJobs(url, jobs, f){
 }
 
 setInterval(async function(){
-	if(unfinishedJobs.length == 0){
-		return;
+	if(unfinishedJobs.length != 0){
+		updateJobs(unfinishedJobs);
 	}
-	updateJobs(GET_JOB_STATUSES_URL, unfinishedJobs, updateJobStatus);
-	updateJobs(GET_JOB_LOGS_URL, unfinishedJobs, updateJobLogs);
-}, POLLING_TIME);
-
-setInterval(async function(){
-	for (let row of jobsTable.tBodies[0].children){
-		if (row instanceof Job){
-			if (!isTerminalState(row.status)){
-				row.updateDuration();
-			}
+	const jobs = jobsTableBody.querySelectorAll(".job");
+	jobs.forEach(function(job) {
+		if (!isTerminalState(jobs.status)){
+			job.updateDuration();
 		}
-	}
-}, 1000);
+	});
+}, POLLING_TIME);
