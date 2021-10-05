@@ -50,9 +50,6 @@ class TestJobs(AuthenticatedUserTest):
 
         process_job(job_id)
 
-        for file in files:
-            file.close()
-
         self.assertTrue(isinstance(submit_response, HttpResponse))
 
         first_match = Match.objects.all().first()
@@ -78,6 +75,10 @@ class TestJobs(AuthenticatedUserTest):
             files.append(archive.open(name))
 
         job_id = self._run_test(files)
+
+        for file in files:
+            file.close()
+
         archive.close()
         return job_id
 
