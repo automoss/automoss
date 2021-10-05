@@ -153,9 +153,9 @@ class PasswordResetForm(SetPasswordForm):
         'password_mismatch': 'The passwords entered did not match.',
     }
 
-class PasswordUpdateForm(PasswordResetForm):
+class PasswordUpdateForm(PasswordChangeForm):
     """ Form for setting new password """
     error_messages = {
-        **PasswordResetForm.error_messages,
-        'password_incorrect': "Your old password was entered incorrectly.",
+        'password_incorrect': 'Your old password was entered incorrectly.',
+        'password_mismatch': 'The passwords entered did not match.',
     }
