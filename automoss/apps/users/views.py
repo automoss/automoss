@@ -1,22 +1,34 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login as django_login, logout as django_logout, authenticate
+from django.contrib.auth import (
+    login as django_login, 
+    logout as django_logout, 
+    authenticate,
+    update_session_auth_hash,
+)
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
 from django.views import View
 from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
-from django.http import Http404
+from django.http import (
+    Http404,
+    JsonResponse, 
+    HttpResponseNotFound,
+)
 from django.conf import settings
 from .forms import (
     UserCreationForm,
     LoginForm,
     PasswordForgottenForm,
     PasswordResetForm,
-    PasswordChangeForm,
+    PasswordUpdateForm,
     UnverifiedError
 )
-from .tokens import confirm_registration_token, password_reset_token
+from .tokens import (
+    confirm_registration_token, 
+    password_reset_token,
+)
 from .models import User
 
 class Login(View):
@@ -70,6 +82,7 @@ class Logout(View):
         django_logout(request)
         return render(request, self.template)
 
+
 @method_decorator(login_required, name='dispatch')
 class Profile(View):
     """ Profile View """
@@ -78,11 +91,41 @@ class Profile(View):
     def get(self, request):
         """ Get profile view """
         #form = UserCreationForm() 
-        return render(request, self.template) #{'form': form})
+        return render(request, self.template, {
+            'mailing_list_form' : request.user.email_set.all()
+        }) #{'form': form})
 
-    # def post(self, request):
-    #     """ Post new profile data """
-    #     pass
+#     def post(self, request):
+#         """ Post new profile data """
+#         form_type = request.POST.get('form')
+
+#         # Password change
+#         if form_type == 'password-change':
+#             change_password_form = PasswordUpdateForm(request.user, request.POST)
+#             if change_password_form.is_valid():
+#                 # Save and update session auth hash (logs out all other user instances except current)
+#                 change_password_form.save()
+#                 update_session_auth_hash(self.request, change_password_form.user)
+#             return render(request, self.template, {'passwordform' : change_password_form})
+
+#         # Primary Email change
+#         elif form_type == 'primary-email-change':
+#             pass
+
+#         # Mailing List change
+#         elif form_type == 'mail-list-change':
+#             pass 
+
+#         # Invalid post request
+#         return HttpResponseNotFound()   
+        
+           
+#         change_password_form = PasswordUpdateForm(request.user, request.POST)
+#         if change_password_form.is_valid():
+#             change_password_form.save()
+#             return JsonResponse({ "success" : True })
+#         else:
+#             return JsonResponse({ "success" : False })
 
 class Register(View):
     """ User registration view """
@@ -136,7 +179,6 @@ class ForgotPassword(View):
         """ Get form for entering course code to reset password """
         forgot_password_form = PasswordForgottenForm()
         return render(request, self.template, context={"form" : forgot_password_form})
-
 
     def post(self, request):
         """ request change of password for course account """
@@ -222,7 +264,7 @@ class ResetPassword(View):
                 "header" : "Invalid Password Reset Link", 
                 "action" : "Go to Login"
             })
- 
+
 class Confirm(View):
     """ View for confirming account """
 
