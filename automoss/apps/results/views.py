@@ -7,6 +7,7 @@ from django.views import View
 from .models import Match
 from ..jobs.models import Job
 from ...settings import SUPPORTED_LANGUAGES
+import os
 
 
 @method_decorator(login_required, name='dispatch')
@@ -21,6 +22,7 @@ class Index(View):
             'matches': Match.objects.user_matches(request.user).filter(moss_result__job__job_id=job_id)
         }
         return render(request, self.template, context)
+
 
 @method_decorator(login_required, name='dispatch')
 class ResultMatch(View):
@@ -50,6 +52,9 @@ class ResultMatch(View):
                 file_type='files',
                 file_id=submission.submission_id
             )
+
+            if not os.path.exists(file_path):
+                continue
 
             with open(file_path) as fp:
                 lines = fp.readlines()
@@ -93,6 +98,6 @@ class ResultMatch(View):
             'colours': colours,
             'language': job_language,
             'job': job,
-            'match' : match
+            'match': match
         }
         return render(request, self.template, context)
