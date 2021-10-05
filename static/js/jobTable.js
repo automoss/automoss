@@ -31,13 +31,19 @@ function updateJobStatus(jobId, status){
 	}
 }
 
+let prevLogs = null;
 function updateJobLogs(jobId, logs){
 	let jobLogs = document.getElementById(`job-logs-${jobId}`);
-	jobLogs.innerHTML = "";
+
+	let temp = "";
 	for (let log in logs){
-		jobLogs.innerHTML += logs[log] + "\n";
+		temp += logs[log] + "\n";
 	}
-	jobLogs.innerHTML = trimRight(jobLogs.innerHTML, 1);
+	temp = trimRight(temp, 1);
+
+	if (temp !== prevLogs){
+		prevLogs = jobLogs.innerHTML = temp;
+	}
 }
 
 function updateJobs(jobs){
