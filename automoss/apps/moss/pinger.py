@@ -25,7 +25,7 @@ LATEST_PING_KEY = 'LATEST_PING'
 # Used for exponential moving average
 UP_ALPHA = 0.0001
 DOWN_ALPHA = 0.25
-ALPHA = 0.125
+ALPHA = 0.05
 
 
 class Pinger:
