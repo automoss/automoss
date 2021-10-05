@@ -87,14 +87,16 @@ class Job(models.Model):
         return f"{self.comment} ({self.job_id})"
 
     def delete(self, using=None, keep_parents=False):
-
         super().delete(using=using, keep_parents=keep_parents)
 
-        media_path = JOB_URL_TEMPLATE.format(user_id=user.user_id, job_id=self.job_id)
-
+        media_path = JOB_URL_TEMPLATE.format(
+            user_id=self.user.user_id, job_id=self.job_id)
         if os.path.exists(media_path):
             shutil.rmtree(media_path)
 
+            parent = os.path.dirname(media_path)
+            if len(os.listdir(parent)) == 0: # Delete parent dir if empty
+                os.rmdir(parent)
 
 class Submission(models.Model):
     """ Class to model MOSS Report Entity """

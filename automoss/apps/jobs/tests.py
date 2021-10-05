@@ -1,6 +1,7 @@
 from ..users.tests import AuthenticatedUserTest
 from ...settings import (
-    COMPLETED_STATUS
+    COMPLETED_STATUS,
+    TESTS_ROOT
 )
 from .tasks import process_job
 from .models import Job
@@ -25,12 +26,14 @@ class TestJobs(AuthenticatedUserTest):
 
     def test_process_job(self):
         # Submit job
-
-        test_path = os.path.join(os.path.dirname(__file__), 'test_files')
+        test_path = os.path.join(TESTS_ROOT, 'test_files', 'zips')
 
         # Process each zip in test_files
         # TODO improve structure of test files
         for z in os.listdir(test_path):
+            if os.path.splitext(z)[1] != '.zip':
+                continue  # Ignore non-zip files
+
             archive = zipfile.ZipFile(os.path.join(test_path, z), 'r')
 
             files = []
@@ -47,7 +50,8 @@ class TestJobs(AuthenticatedUserTest):
             submit_response = self.client.post(reverse("jobs:new"), job_params)
 
             response = submit_response.json()
-            process_job(response['job_id'])
+            job_id = response['job_id']
+            process_job(job_id)
 
             for file in files:
                 file.close()
@@ -60,16 +64,15 @@ class TestJobs(AuthenticatedUserTest):
 
             report_response = self.client.get(
                 reverse("jobs:results:match", kwargs={
-                    "job_id": response['job_id'],
+                    "job_id": job_id,
                     'match_id': first_match.match_id
                 }
                 )
             )
             self.assertEqual(report_response.status_code, 200)
 
-            # TODO delete job
-            # TODO remove media files
-            # which will remove media files
+            # Delete job
+            Job.objects.get(job_id=job_id).delete()
 
 
 class TestAPI(AuthenticatedUserTest):
