@@ -1,13 +1,7 @@
 (function () {
 		'use strict'
 		// Get registration form and elements
-		let form = document.getElementById('register')
-		let courseCode = document.getElementById('id_course_code')
-		let courseInvalid = document.getElementById('course_invalid')
-		let email = document.getElementById('id_email')
-		let emailInvalid = document.getElementById('email_invalid')
-		let mossID = document.getElementById('id_moss_id')
-		let mossInvalid = document.getElementById('moss_id_invalid')
+		let form = document.getElementById('password-reset')
 		let password1 = document.getElementById('id_password1')
 		let password1Invalid = document.getElementById('password_1_invalid')
 		let password2 = document.getElementById('id_password2')
@@ -32,115 +26,6 @@
 			li.appendChild(document.createTextNode(errorMessage))
 			return li
 		}
-
-		// Performs validation on course code and generates associated errors
-		function performCourseCodeValidation(courseElement){
-			form.classList.add('was-validated')
-			// Reset Validity
-			courseElement.setCustomValidity("")
-			// Validation Checks
-			let errorList = document.createElement("ul")
-			if(!courseElement.checkValidity()){
-				errorList.appendChild(createErrorElement("Course Code Missing"))
-			}
-			// Set validity
-			if(!isEmpty(errorList)){
-				courseElement.setCustomValidity("Invalid Course Code")
-				courseInvalid.innerHTML = ""
-			}
-			else{
-				resetValidity(courseElement, courseInvalid)
-			}
-			return errorList
-		}
-		
-		// Check course code validity on focus out and display errors
-		courseCode.addEventListener('focusout', function(){
-			let errors = performCourseCodeValidation(this)
-			courseInvalid.appendChild(errors)
-		})
-
-		// Check course code validity on input
-		courseCode.addEventListener('input', function(){
-			performCourseCodeValidation(this)
-		})
-
-		// Email validation check (taken from: https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript)
-		function validateEmail(email) {
-			const emailFormat = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-			return emailFormat.test(String(email).toLowerCase());
-		}
-		
-		// Performs validation on email and generates associated errors
-		function performEmailValidation(emailElement){
-			form.classList.add('was-validated')
-			// Reset Validity
-			emailElement.setCustomValidity("")
-			// Validation Checks
-			let errorList = document.createElement("ul")
-			if(emailElement.value === ""){
-				errorList.appendChild(createErrorElement("Email Missing"))
-			}
-			else if(!emailElement.checkValidity() || !validateEmail(emailElement.value)){
-				errorList.appendChild(createErrorElement("Email is invalid (should be of the form name@domain.xyz)"))
-			}
-			// Set validity
-			if(!isEmpty(errorList)){
-				emailElement.setCustomValidity("Invalid Email")
-				emailInvalid.innerHTML = ""
-			}
-			else{
-				resetValidity(emailElement, emailInvalid)
-			}
-			return errorList
-		}
-
-		// Check email validity on focus out and display errors
-		email.addEventListener('focusout', function(){
-			let errors = performEmailValidation(this)
-			emailInvalid.appendChild(errors)
-		})
-
-		// Check email validity on input
-		email.addEventListener('input', function(){
-			performEmailValidation(this)
-		})
-
-		// Performs validation on MOSS ID and generates associated errors
-		function performMOSSIDValidation(mossElement){
-			form.classList.add('was-validated')
-			// Reset Validity
-			mossElement.setCustomValidity("")
-			// Validation Checks
-			let errorList = document.createElement("ul")
-			if(!mossElement.checkValidity()){
-				errorList.appendChild(createErrorElement("MOSS ID Missing"))
-			}
-			// Check field contains only digits
-			if(!/^\d*$/.test(mossElement.value)){
-				errorList.appendChild(createErrorElement("Must contain only digits"))
-			}
-			// Set validity
-			if(!isEmpty(errorList)){
-				mossElement.setCustomValidity("Invalid MOSS ID")
-				mossInvalid.innerHTML = ""
-			}
-			else{
-				resetValidity(mossElement, mossInvalid)
-			}
-			return errorList
-		}
-
-		// Check MOSS ID validity on input
-		mossID.addEventListener('input', function(){
-			performMOSSIDValidation(this)
-		})
-
-		// Check MOSS ID validity on out focus and display errors
-		mossID.addEventListener('focusout', function(){
-			let errors = performMOSSIDValidation(this)
-			mossInvalid.appendChild(errors)
-		})
 
 		// Performs validation on 1st password input and generates associated errors
 		function performPassword1Validation(passwordElement){
