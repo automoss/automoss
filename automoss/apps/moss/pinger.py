@@ -100,7 +100,8 @@ class Pinger:
             if latest_average is None: # Not set yet, or was down
                 latest_average = new_ping
             else:
-                latest_average = ALPHA * new_ping + (1-ALPHA) * latest_average
+                alpha_to_use = ALPHA if new_ping > latest_average else DOWN_ALPHA
+                latest_average = alpha_to_use * new_ping + (1-alpha_to_use) * latest_average
             
             Pinger.set_latest_ping(latest_average)
             
