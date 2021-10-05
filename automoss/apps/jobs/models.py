@@ -127,4 +127,4 @@ class JobEvent(models.Model):
     message = models.CharField(max_length=256)
 
     def __str__(self):
-        return f'[{self.date}] {self.message}'
+        return f'[{self.date.strftime("%Y-%m-%d %H:%M:%S")}] {self.message}'
