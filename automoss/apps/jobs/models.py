@@ -57,6 +57,9 @@ class Job(models.Model):
         default=first(SUPPORTED_LANGUAGES),
     )
 
+    # Num Students
+    num_students = models.PositiveIntegerField(default=0)
+
     # Max matches of a code segment before it is ignored
     max_until_ignored = models.PositiveIntegerField(
         default=DEFAULT_MOSS_SETTINGS['max_until_ignored'])
@@ -142,4 +145,4 @@ class JobEvent(models.Model):
     message = models.CharField(max_length=256)
 
     def __str__(self):
-        return f'[{self.date}] {self.message}'
+        return f'[{self.date.strftime("%Y-%m-%d %H:%M:%S")}] {self.message}'

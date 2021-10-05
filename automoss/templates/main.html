@@ -13,30 +13,11 @@
 			</a>
 			
 			<div class="d-flex">
-				<!-- Ping -->
-				<style>
-					.pulse{
-						transform-origin: 50% 50%;
-						animation-duration: 2s;
-						animation-name: pulse;
-						animation-iteration-count: infinite;
-					}
-					@keyframes pulse{
-						from{
-							opacity: 1;
-							transform: scale(0);
-						}
-						to{
-							opacity: 0;
-							transform: scale(1);
-						}
-					}
-				</style>
 				<div id="ping" class="d-flex align-items-center me-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Status">
 					<label class="text-light">MOSS Status:</label>
 					<svg class="button" expanded="true" height="40px" width="40px">
           				<circle id="ping-inner" cx="50%" cy="50%" r="10px"></circle>
-          				<circle id="ping-outer" class="pulse" cx="50%" cy="50%" r="20px"></circle>
+          				<circle id="ping-outer" class="ping" cx="50%" cy="50%" r="20px"></circle>
         			</svg>
 				</div>
 				
@@ -49,7 +30,7 @@
 						<span>{{ user }}</span>
 					</a>
 					<ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton2">
-					<li><a class="dropdown-item text-light" href="#">
+					<li><a class="dropdown-item text-light" href="{% url 'users:profile' %}">
 						<svg class="me-1" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill" viewBox="2 2 16 16">
 								<path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
 							</svg>  
@@ -67,7 +48,7 @@
 	</nav>
 
 	<!-- Main Content Area -->
-	<div class="container-fluid flex-grow-1 py-4 px-5 bg-light" >
+	<div id="main-content" class="container-fluid flex-grow-1 py-4 px-5 bg-light" >
 		{% block "main-content" %}{% endblock %}
 	</div>
 	

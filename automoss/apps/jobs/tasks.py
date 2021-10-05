@@ -11,6 +11,7 @@ from ..moss.moss import (
     ReportParsingError,
     EmptyResponse,
     FatalMossException,
+    MossConnectionError,
     is_valid_moss_url
 )
 from ...settings import (
@@ -64,11 +65,11 @@ def process_job(job_id):
         # of jobs, which may cause process_job to be run more than once.
         return
 
-
     job.start_date = now()
     logger.info(f'Starting job {job_id} with status {job.status}')
 
-    base_dir = JOB_UPLOAD_TEMPLATE.format(user_id=job.user.user_id, job_id=job.job_id)
+    base_dir = JOB_UPLOAD_TEMPLATE.format(
+        user_id=job.user.user_id, job_id=job.job_id)
 
     paths = {}
 
@@ -160,7 +161,10 @@ def process_job(job_id):
 
             break  # Success, do not retry
 
-        except (RecoverableMossException, socket.error) as e:
+        except socket.error as e:
+            error = MossConnectionError(e.strerror)
+
+        except RecoverableMossException as e:
             error = e  # Handled below
             if isinstance(e, ReportParsingError):
                 # Malformed MOSS report... must regenerate
@@ -210,7 +214,8 @@ def process_job(job_id):
     try:
         if failed:
             job.status = FAILED_STATUS
-            JobEvent.objects.create(job=job, type=FAILED_EVENT, message='A fatal error occurred')
+            JobEvent.objects.create(
+                job=job, type=FAILED_EVENT, message='A fatal error occurred')
             return None
 
         # Parse result
@@ -237,7 +242,8 @@ def process_job(job_id):
                     line_matches=match.line_matches
                 )
 
-        JobEvent.objects.create(job=job, type=COMPLETED_EVENT, message='Completed')
+        JobEvent.objects.create(
+            job=job, type=COMPLETED_EVENT, message='Completed')
         job.status = COMPLETED_STATUS
         return result.url
 

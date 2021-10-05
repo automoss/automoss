@@ -19,7 +19,7 @@ class Index(View):
         """ Get result """
         context = {
             'job': Job.objects.user_jobs(request.user).get(job_id=job_id),
-            'matches': Match.objects.user_matches(request.user).filter(moss_result__job__job_id=job_id)
+            'matches': Match.objects.user_matches(request.user).filter(moss_result__job__job_id=job_id).order_by('-lines_matched')
         }
         return render(request, self.template, context)
 

@@ -20,36 +20,55 @@
 	</a>
 {% endblock %}
 
-<!-- Page Title -->
+<!-- Title -->
 <h2 class="py-2 px-1 fw-bold">
 	Results of "{{ job.comment }}"
 </h2>
 
-<!-- Content -->
-<div class=" container-fluid shadow-sm bg-white p-3 rounded-3">
+<div class="container-fluid shadow-sm bg-white p-4 rounded-3">
 
-<table id="job-table" class="table table-hover table-striped border rounded-3" style="background-color: white">
+<!-- Search Bar -->
+<input id="matches-search-bar" class="form-control rounded mb-3" type="search" placeholder="Search...">
+
+<!-- Table -->
+<table id="matches-table" class="table table-hover table-striped border rounded-3" style="background-color: white">
 
 	<!-- Column headings -->
 	<thead class="table-dark">
 		<tr>
-			<th scope="col">ID (temp)</th>
-			<th scope="col">Submission 1</th>
-			<th scope="col">Submission 1 percentage</th>
-			<th scope="col">Submission 2</th>
-			<th scope="col">Submission 2 percentage</th>
-			<th scope="col">Lines Matched</th>
+			<th scope="col">Match ID</th>
+			<th scope="col">Student 1</th>
+			<th scope="col" style="width: 20%">% Matched</th>
+			<th scope="col">Student 2</th>
+			<th scope="col" style="width: 20%">% Matched</th>
+			{% comment %} <th scope="col">Code Blocks Matched</th> {% endcomment %}
+			<th scope="col" style="width: 15%">Lines Matched</th>
 		</tr>
 	</thead>
 	
+	<!-- Matches -->
 	<tbody>
 		{% for match in matches %}
-		<tr>
-			<td><a style="text-decoration: none;" href="{% url "jobs:results:match" job.job_id match.match_id %}">{{ match.match_id }}</a></td> 
+		<tr id="{{ match.match_id }}">
+			<td><a style="text-decoration: none;" href="{% url "jobs:results:match" job.job_id match.match_id %}">{{ match.match_id|slice:"0:8" }}</a></td>
+
 			<td>{{ match.first_submission.name }}</td>
-			<td>{{ match.first_percentage }}</td>
-			<td>{{ match.second_submission.name }}</td>
-			<td>{{ match.second_percentage }}</td>
+			<td class="p-2">
+				<div class="position-relative rounded d-flex align-items-center justify-space-between me-2" style="background-color: var(--bs-gray-300); transform: translateY(5px);">
+					<div class="rounded" style="width:{{ match.first_percentage }}%; height: 15px; background-color: var(--bs-{% if match.first_percentage > 50 %}danger{% elif match.first_percentage > 40 %}warning{% elif match.first_percentage > 20 %}yellow{% else %}success{% endif %});"><br></div>
+					<div class="position-absolute end-0 pe-2" style="font-size: 10px">{{ match.first_percentage }}%</div>
+				</div>
+			</td>
+			
+			<td>{{ match.second_submission.name }}</td>	
+			<td class="p-2">
+				<div class="position-relative rounded d-flex align-items-center justify-space-between me-2" style="background-color: var(--bs-gray-300); transform: translateY(5px);">
+					<div class="rounded" style="width:{{ match.second_percentage }}%; height: 15px; background-color: var(--bs-{% if match.second_percentage > 50 %}danger{% elif match.second_percentage > 40 %}warning{% elif match.second_percentage > 20 %}yellow{% else %}success{% endif %});"><br></div>
+					<div class="position-absolute end-0 pe-2" style="font-size: 10px">{{ match.second_percentage }}%</div>
+				</div>
+			</td>
+
+			{% comment %} <td>{{ match.line_matches|length }}</td> {% endcomment %}
 			<td>{{ match.lines_matched }}</td>
 		</tr>
 		{% endfor %}
@@ -58,5 +77,11 @@
 </table>
 
 </div>
+
+<script>
+	let matchesTable = document.getElementById("matches-table");
+	let matchesSearchBar = document.getElementById("matches-search-bar");
+	setupTableSearch(matchesTable, matchesSearchBar);
+</script>
 
 {% endblock %}
