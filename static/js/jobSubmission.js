@@ -261,17 +261,23 @@ let jobAttachBaseFiles = document.getElementById("job-attach-base-files");
 let jobErrorMessage = document.getElementById("job-error-message");
 let createJobButton = document.getElementById("create-job-button");
 
+
+function setMessage(message, colour){
+	jobErrorMessage.style.color = colour;
+	jobErrorMessage.textContent = message;
+}
+
 let isDisplayingError = false;
-function displayError(message) {
+function displayError(errorMessage) {
 	if (isDisplayingError) {
 		return;
 	}
-	jobErrorMessage.textContent = message;
+	setMessage(errorMessage, "var(--bs-danger)");
 	createJobModalElement.classList.add("animate__animated", "animate__shakeX");
 	isDisplayingError = true;
 
 	setTimeout(function () {
-		jobErrorMessage.textContent = "";
+		setMessage("", "white");
 		createJobModalElement.classList.remove("animate__animated", "animate__shakeX");
 		isDisplayingError = false;
 	}, 3000);
@@ -283,17 +289,18 @@ function updateDropZoneTarget() {
 
 function setEnabled(isEnabled) {
 	jobDropZone.setInteractable(isEnabled);
-	createJobButton.disabled = !isEnabled;
+	createJobButton.disabled = jobName.disabled = jobLanguage.disabled = jobMaxMatchesUntilIgnored.disabled = jobMaxMatchesDisplayed.disabled = jobAttachBaseFiles.disabled = !isEnabled;
 }
 
 createJobForm.onsubmit = async (e) => {
 
 	e.preventDefault();
-	setEnabled(false);
 
 	try {
 		// Create a new form (and capture name, language, max matches until ignored and max matches displayed)
 		let jobFormData = new FormData(createJobForm);
+		setEnabled(false);
+		setMessage("Stitching Submissions...", "white");
 
 		function appendFilesToForm(name, data, isBaseFile) {
 			jobFormData.append(isBaseFile ? BASE_FILES_NAME : FILES_NAME, new Blob([data]), name);
@@ -332,16 +339,16 @@ createJobForm.onsubmit = async (e) => {
 		// Other events: error, abort, timeout
 
 		xhr.upload.addEventListener('loadstart', e => {
-			// The upload has begun.
+			setMessage("Uploading...", "white");
 		});
 		xhr.upload.addEventListener('progress', e => {
 			let percentage = e.lengthComputable ? (e.loaded / e.total) * 100 : 0;
-			// TODO do something with progress information
 		});
 
 		xhr.upload.addEventListener('load', e => {
 			// The upload completed successfully.
 			// Done uploading, now server is processing upload (writing files to disk)
+			setMessage("Finished Uploading.", "white");
 		});
 
 		xhr.onreadystatechange = function () { // Call a function when the state changes.
@@ -360,6 +367,7 @@ createJobForm.onsubmit = async (e) => {
 					jobDropZone.reset();
 					updateDropZoneTarget();
 					setEnabled(true);
+					setMessage("", "white");
 				}, 200);
 			}
 
