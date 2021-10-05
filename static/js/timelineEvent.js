@@ -8,20 +8,44 @@ class TimelineEvent extends HTMLElement{
 		this.setAttribute("title", "");
 		new bootstrap.Tooltip(this);
 
-		// Icon
-		this.div = document.createElement("div");
-		this.div.classList.add("position-relative");
-		this.div.style.height = this.div.style.width = "50px";
-		this.append(this.div);
+		// Event
+		this.event = document.createElement("div");
+		this.append(this.event);
+		this.event.classList.add("position-relative");
+		this.event.style.height = this.event.style.width = "50px";
 
-		// Icon
+		// Event > Icon
+		this.iconDiv = document.createElement("div");
+		this.event.append(this.iconDiv);
+		this.iconDiv.classList.add("position-absolute");
+		this.iconDiv.style.height = this.iconDiv.style.width = "50px";
+
+		// Event > Ping
+		this.ping = document.createElement("div");
+		this.iconDiv.append(this.ping);
+		this.ping.classList.add("position-absolute");
+		this.ping.classList.add("translate-middle");
+		this.ping.classList.add("start-50");
+		this.ping.classList.add("top-50");
+		this.ping.hidden = false;
+
+		this.pingOuter = document.createElement("div");
+		this.ping.append(this.pingOuter);
+		this.pingOuter.classList.add("ping");
+		this.pingOuter.style = "width: 90px; height: 90px; border-radius: 50%; background-color: #06BDFC;";
+
+		// Event > Icon
 		this.icon = document.createElement("img");
-		this.div.append(this.icon);
-		this.icon.style.height = this.icon.style.width = "50px";
+		this.iconDiv.append(this.icon);
+		this.icon.classList.add("position-absolute");
+		this.icon.classList.add("translate-middle");
+		this.icon.classList.add("start-50");
+		this.icon.classList.add("top-50");
+		this.icon.style = "height: 50px; width: 50px;";
 
-		// Name
+		// Event > Name
 		this.name = document.createElement("label");
-		this.div.append(this.name);
+		this.event.append(this.name);
 		this.name.classList.add("position-absolute");
 		this.name.classList.add("text-nowrap");
 		this.name.classList.add("translate-middle-x");
@@ -32,16 +56,11 @@ class TimelineEvent extends HTMLElement{
 		this.setStatus("incompleted");
 	}
 
-	setTooltip(text){
-		this.setAttribute("data-bs-original-title", text);
-	}
-
 	setStatus(status){
-		this.icon.className = `timeline-${status}`;
-		if (status == "inprogress"){
-			this.icon.classList.add("animate__animated");
-			this.icon.classList.add("animate__pulse");
-		}
+		this.icon.setAttribute("status", `${status}`);
+		this.setAttribute("data-bs-original-title", status);
+		
+		this.ping.hidden = status != "In Progress";
 	}
 }
 customElements.define("time-line-event", TimelineEvent);
