@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+from automoss.apps.utils.core import is_testing
 from .redis import REDIS_URL
 from .apps.utils.core import capture_in
 from .apps.utils.core import first
@@ -31,14 +32,13 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 # Application definition
 
 INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'automoss.apps.jobs',
-    'automoss.apps.reports',
     'automoss.apps.api',
     'automoss.apps.users',
     'automoss.apps.results',
@@ -88,24 +88,26 @@ WSGI_APPLICATION = 'automoss.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
 # If running unit tests, create an in-memory sqlite3 database.
 # Otherwise, create a mysql database
-DATABASE_ENGINE = 'sqlite3' if 'test' in sys.argv else 'mysql'
 
-DATABASES = {
-    'default': {
-        'ENGINE': f'django.db.backends.{DATABASE_ENGINE}',
+if not is_testing():
+    default_database = {
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv("DB_NAME"),
+
         'HOST': os.getenv("DB_HOST"),
         'PORT': '3306',
-
         'USER': os.getenv("DB_USER"),
-        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'PASSWORD': os.getenv("DB_PASSWORD")
     }
-}
+else:
+    default_database = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.getenv("DB_NAME")
+    }
 
-
+DATABASES = {'default': default_database}
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
@@ -162,6 +164,9 @@ STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+TESTS_URL = '/tests/'
+TESTS_ROOT = BASE_DIR / 'tests'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
@@ -178,7 +183,6 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
-
 # Default (None) is the number of CPUs available on your system.
 # TODO min(num processors, 4)
 CELERY_CONCURRENCY = 4  # None
@@ -192,7 +196,8 @@ with capture_in(LANGUAGE_CONTEXT):
 
     SUPPORTED_LANGUAGES = {
         # CODE : (Name, moss_name, [extensions], highlight_name)
-        'PY': ('Python', 'python', ['py'], 'python'),  # pyi, pyc, pyd, pyo, pyw, pyz
+        # pyi, pyc, pyd, pyo, pyw, pyz
+        'PY': ('Python', 'python', ['py'], 'python'),
         'JA': ('Java', 'java', ['java'], 'java'),  # class, jar
         'CP': ('C++', 'cc', ['C', 'cc', 'cpp', 'cxx', 'c++', 'h', 'H', 'hh', 'hpp', 'hxx', 'h++'], 'cpp'),
         'CX': ('C', 'c', ['c', 'h'], 'c'),
@@ -267,7 +272,8 @@ with capture_in(SUBMISSION_CONTEXT):
 
 JOB_CONTEXT = {}
 with capture_in(JOB_CONTEXT):
-    JOB_UPLOAD_TEMPLATE = f'{MEDIA_ROOT}/{{job_id}}/uploads'
+    JOB_URL_TEMPLATE = f'{MEDIA_ROOT}/{{user_id}}/{{job_id}}'
+    JOB_UPLOAD_TEMPLATE = f'{JOB_URL_TEMPLATE}/uploads'
     SUBMISSION_UPLOAD_TEMPLATE = f'{JOB_UPLOAD_TEMPLATE}/{{file_type}}/{{file_id}}'
 
     MIN_RETRY_TIME = 30
@@ -289,7 +295,7 @@ with capture_in(JOB_EVENT_CONTEXT):
 # UI Defaults
 UI_CONTEXT = {}
 with capture_in(UI_CONTEXT):
-    POLLING_TIME = 1000  # in milliseconds
+    POLLING_TIME = 2000  # in milliseconds
     MOSS_POLLING_TIME = 30000  # in milliseconds
 
 # Misc Constants

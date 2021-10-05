@@ -29,12 +29,21 @@ clean-media:
 clean-redis:
 	rm -f dump.rdb
 
-clean: clean-media clean-redis
+clean-migrations:
 	find . -path '*/migrations/*.py' -delete
+	
+clean:
 	find . -type d -name __pycache__ -exec rm -r {} \+
+	rm -rf htmlcov/*
+	rm -rf .coverage
+
+clean-all: clean-media clean-redis clean-migrations clean
 
 test:
-	python3 manage.py test
+	export IS_TESTING=1 && python3 manage.py test -v 2
 
 coverage:
-	coverage run --source='.' manage.py test && coverage report
+	export IS_TESTING=1 && coverage run --source='.' manage.py test -v 2
+	coverage report
+	coverage html
+	python3 -m webbrowser htmlcov/index.html

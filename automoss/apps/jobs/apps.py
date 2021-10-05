@@ -15,7 +15,7 @@ class JobsConfig(AppConfig):
         from ...celery import app
         from ...settings import INQUEUE_STATUS
 
-        if is_main_thread():
+        if is_main_thread():  # pragma: no cover
             num_purged = app.control.purge()
             print('Purged', num_purged, 'tasks.')
             unfinished_jobs = Job.objects.exclude(

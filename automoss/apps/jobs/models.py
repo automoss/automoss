@@ -5,13 +5,16 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
+import os
+import shutil
 from ...settings import (
     STATUSES,
     JOB_EVENT_CONTEXT,
     SUPPORTED_LANGUAGES,
     DEFAULT_MOSS_SETTINGS,
     UUID_LENGTH,
-    MAX_COMMENT_LENGTH
+    MAX_COMMENT_LENGTH,
+    JOB_URL_TEMPLATE
 )
 from ...apps.utils.core import (to_choices, get_longest_key, first)
 
@@ -20,13 +23,17 @@ def get_default_comment():
     """ Returns default job comment """
     return f"My Job - {now().strftime('%d/%m/%y-%H:%M:%S')}"
 
+
 User = get_user_model()
+
 
 class JobManager(models.Manager):
     """ Custom Job manager """
+
     def user_jobs(self, user):
         """ Returns set of jobs belonging to user """
         return self.get_queryset().filter(user=user)
+
 
 class Job(models.Model):
     """ Class to model Job Entity """
@@ -82,6 +89,17 @@ class Job(models.Model):
         """ Model to string method """
         return f"{self.comment} ({self.job_id})"
 
+    def delete(self, using=None, keep_parents=False):
+        super().delete(using=using, keep_parents=keep_parents)
+
+        media_path = JOB_URL_TEMPLATE.format(
+            user_id=self.user.user_id, job_id=self.job_id)
+        if os.path.exists(media_path):
+            shutil.rmtree(media_path)
+
+            parent = os.path.dirname(media_path)
+            if len(os.listdir(parent)) == 0: # Delete parent dir if empty
+                os.rmdir(parent)
 
 class Submission(models.Model):
     """ Class to model MOSS Report Entity """

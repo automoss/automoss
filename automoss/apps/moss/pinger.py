@@ -21,12 +21,11 @@ PING_EVERY = 30  # Ping every x seconds
 PING_OFFSET_THRESHOLD = 0.3
 AVERAGE_PING_KEY = 'AVERAGE_PING'
 LATEST_PING_KEY = 'LATEST_PING'
-LATEST_COUNT = 30
 
 # Used for exponential moving average
 UP_ALPHA = 0.0001
 DOWN_ALPHA = 0.25
-ALPHA = 0.125
+ALPHA = 0.05
 
 
 class Pinger:
@@ -101,7 +100,8 @@ class Pinger:
             if latest_average is None: # Not set yet, or was down
                 latest_average = new_ping
             else:
-                latest_average = ALPHA * new_ping + (1-ALPHA) * latest_average
+                alpha_to_use = ALPHA if new_ping > latest_average else DOWN_ALPHA
+                latest_average = alpha_to_use * new_ping + (1-alpha_to_use) * latest_average
             
             Pinger.set_latest_ping(latest_average)
             
