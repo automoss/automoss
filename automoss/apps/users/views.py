@@ -154,7 +154,7 @@ class Profile(View):
             deleted_emails = request.user.email_set.all().exclude(
                 email_address__in=clean_emails)
             deleted_emails.delete()
-            return JsonResponse({"emails" : [(str(email), email.is_verified) for email in request.user.email_set.all()]})
+            return JsonResponse({"emails": [(str(email), email.is_verified) for email in request.user.email_set.all()]})
         else:
             # Invalid post request
             return HttpResponseNotFound()
