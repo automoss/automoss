@@ -1,5 +1,5 @@
 class Job extends HTMLTableRowElement{
-    constructor(job, jobCollapse) {
+    constructor(job, jobInfo) {
         super();
         Object.assign(this, job);
 
@@ -8,7 +8,7 @@ class Job extends HTMLTableRowElement{
         this.setAttribute('status', this.status);
         this.style = "cursor: pointer;";
 
-        let collapse = new bootstrap.Collapse(jobCollapse, { toggle: false });
+        let collapse = new bootstrap.Collapse(jobInfo.firstChild, { toggle: false });
         this.onclick = (e) => {
             if (!(e.target instanceof HTMLAnchorElement)){
                 collapse.toggle();

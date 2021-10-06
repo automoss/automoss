@@ -101,10 +101,10 @@ function addJob(job, forceOpen=false){
 	if (forceOpen){
 		jobInfoCollapse.classList.add("show");
 	}
-	jobTimeline.setCompleted(1);	
+	jobTimeline.setCompleted(1);
 
 	jobsTableBody.prepend(jobInfo);
-	jobsTableBody.prepend(new Job(job, jobInfoCollapse));
+	jobsTableBody.prepend(new Job(job, jobInfo));
 }
 
 let unfinishedJobs = [];
