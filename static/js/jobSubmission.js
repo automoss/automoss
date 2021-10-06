@@ -258,31 +258,53 @@ let jobLanguage = document.getElementById("job-language");
 let jobMaxMatchesUntilIgnored = document.getElementById("job-max-until-ignored");
 let jobMaxMatchesDisplayed = document.getElementById("job-max-displayed-matches");
 let jobAttachBaseFiles = document.getElementById("job-attach-base-files");
-let jobErrorMessage = document.getElementById("job-error-message");
+let jobMessage = document.getElementById("job-message");
 let createJobButton = document.getElementById("create-job-button");
 
+let timedMessage = undefined;
+let isShowingTimedMessage = false;
 
+/**
+ * Set the message at the bottom left hand corner of the job submission modal. If the current message
+ * being displayed is timed, it will stop and be replaced with the new one.
+ */
 function setMessage(message, colour){
-	if(!isDisplayingError){
-		jobErrorMessage.style.color = colour;
-		jobErrorMessage.textContent = message;
+	if (isShowingTimedMessage){
+		clearInterval(timedMessage);
 	}
+	jobMessage.textContent = message;
+	jobMessage.style.color = colour;
 }
 
-let isDisplayingError = false;
-function displayError(errorMessage) {
-	if (isDisplayingError) {
-		return;
+/**
+ * Display a message that times out after a specified duration.
+ */
+function showTimedMessage(message, colour, duration, onShow, onTimeout){
+	if (isShowingTimedMessage){
+		clearTimeout(timedMessage);
 	}
-	setMessage(errorMessage, "var(--bs-danger)");
-	createJobModalElement.classList.add("animate__animated", "animate__shakeX");
-	isDisplayingError = true;
 
-	setTimeout(function () {
+	setMessage(message, colour);
+	isShowingTimedMessage = true;
+	onShow();
+
+	timedMessage = setTimeout(function () {
 		setMessage("", "white");
+		isShowingTimedMessage = false;
+		onTimeout();
+	}, 
+	duration);
+}
+
+/**
+ * Display an error message that shakes the modal and times out after 3 seconds.
+ */
+function displayError(errorMessage) {
+	showTimedMessage(errorMessage, "var(--bs-danger)", 3000, function(){
+		createJobModalElement.classList.add("animate__animated", "animate__shakeX");
+	}, function(){
 		createJobModalElement.classList.remove("animate__animated", "animate__shakeX");
-		isDisplayingError = false;
-	}, 3000);
+	});
 }
 
 function updateDropZoneTarget() {
@@ -291,7 +313,13 @@ function updateDropZoneTarget() {
 
 function setEnabled(isEnabled) {
 	jobDropZone.setInteractable(isEnabled);
-	createJobButton.disabled = jobName.disabled = jobLanguage.disabled = jobMaxMatchesUntilIgnored.disabled = jobMaxMatchesDisplayed.disabled = jobAttachBaseFiles.disabled = !isEnabled;
+	createJobButton.disabled
+		= jobName.disabled
+		= jobLanguage.disabled
+		= jobMaxMatchesUntilIgnored.disabled
+		= jobMaxMatchesDisplayed.disabled
+		= jobAttachBaseFiles.disabled
+		= !isEnabled;
 }
 
 createJobForm.onsubmit = async (e) => {
