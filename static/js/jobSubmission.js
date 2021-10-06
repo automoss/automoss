@@ -307,7 +307,10 @@ function displayError(errorMessage) {
 	});
 }
 
-function updateDropZoneTarget() {
+/**
+ * Update the drop zone's call to action depending on the attach base files toggle.
+ */
+function updateDropZoneC2A() {
 	jobDropZone.zoneText.innerHTML = `Drag and drop <b>${jobAttachBaseFiles.checked ? "base" : "student"}</b> files here!`;
 }
 
@@ -405,7 +408,7 @@ createJobForm.onsubmit = async (e) => {
 					setTimeout(() => {
 						createJobForm.reset();
 						jobDropZone.reset();
-						updateDropZoneTarget();
+						updateDropZoneC2A();
 						setEnabled(true);
 						setMessage("", "white");
 					}, 200);
