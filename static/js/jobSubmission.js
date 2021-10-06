@@ -329,15 +329,15 @@ function setEnabled(isEnabled) {
 }
 
 createJobForm.onsubmit = async (e) => {
-
-	e.preventDefault();
-
+	e.preventDefault(); // Prevent the modal from closing immediately.
+	
 	try {
 		// Create a new form (and capture name, language, max matches until ignored and max matches displayed)
 		let jobFormData = new FormData(createJobForm);
 		setEnabled(false);
 		setMessage("Stitching...", "white");
 
+		// Capture files separately and append to form.
 		function appendFilesToForm(name, data, isBaseFile) {
 			jobFormData.append(isBaseFile ? BASE_FILES_NAME : FILES_NAME, new Blob([data]), name);
 		}
@@ -347,9 +347,7 @@ createJobForm.onsubmit = async (e) => {
 			let archive = jobDropZoneFile.file;
 			let languageId = jobLanguage.options[jobLanguage.selectedIndex].getAttribute("language-id");
 			let isBaseFile = jobDropZoneFile.isBaseFile;
-
 			let files = await extractFiles(archive, languageId);
-
 			if (await isSingleSubmission(files, languageId) || isBaseFile) {
 				appendFilesToForm(archive.name, await extractSingle(files, languageId), isBaseFile);
 				if (!isBaseFile) {
@@ -366,16 +364,17 @@ createJobForm.onsubmit = async (e) => {
 			jobDropZoneFile.setProgress(1);
 		}
 
+		// Check if there are at least 2 students.
 		if(numStudents <= 1){
 			displayError("Must include at least 2 students.");
-			setEnabled(true);
 			jobDropZone.resetProgress();
+			setEnabled(true);
 			return;
 		}
 
+		// Submit the job (must use XMLHttpRequest to receive callbacks about upload progress).
 		let xhr = new XMLHttpRequest();
 		xhr.responseType = 'json';
-
 		xhr.open('POST', NEW_JOB_URL);
 
 		// https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/upload
@@ -392,37 +391,39 @@ createJobForm.onsubmit = async (e) => {
 		xhr.upload.addEventListener('load', e => {
 			setMessage("Waiting for server...", "white");
 		});
-		xhr.onreadystatechange = function () { // Call a function when the state changes.
-			if (this.readyState === XMLHttpRequest.DONE) {
-				if (this.status === 200) {
-					// Obtain job as json data and add to the jobs table
+		xhr.onreadystatechange = function (){ // Call a function when the state changes.
+			if (this.readyState === XMLHttpRequest.DONE){
+				if (this.status === 200){
+
+					// Obtain job as json data and add to the jobs table.
 					let json = xhr.response;
 					addJob(json, true);
 					unfinishedJobs.push(json["job_id"]);
 
-					// Hide and reset the form and dropzone
+					// Hide and reset the form and dropzone.
 					createJobModal.hide();
-					setTimeout(() => {
+					setTimeout(() => { // Timeout to ensure that the modal only clears once closed.
 						createJobForm.reset();
 						jobDropZone.reset();
 						updateDropZoneC2A();
 						setEnabled(true);
 						setMessage("", "white");
 					}, 200);
-				}else if (this.status === 400){
+
+				}else if (this.status === 400){ // Server returns an error message regarding the submission.
 					displayError(xhr.response.message);
-					setEnabled(true);
 					jobDropZone.resetProgress();
+					setEnabled(true);
 				}
 			}
-
 		}
 		xhr.send(jobFormData);
 
-	} catch (err) {
+	}catch(err){ // Unknown client-side error.
 		console.err(err);
-		setEnabled(true);
+		displayError("An error occurred.");
 		jobDropZone.resetProgress();
+		setEnabled(true);
 	}
 };
 
@@ -432,10 +433,16 @@ jobDropZone.onFileAdded = async (jobDropZoneFile) => {
 	let archive = jobDropZoneFile.file;
 	let files = await extractFiles(archive);
 
+	/**
+	 * Get the extension name of a file.
+	 */
 	function getExtension(name) {
 		return name.split(".").pop();
 	}
 
+	/**
+	 * Quickly determine the most likely programming language for a collection of files.
+	 */
 	function getProgrammingLanguageId(files) {
 		let d = {};
 		for (let key in SUPPORTED_LANGUAGES) {
@@ -468,7 +475,7 @@ jobDropZone.onFileAdded = async (jobDropZoneFile) => {
 				}
 				counter++;
 			}
-			if (counter > maxArchives) break; // Only check three archives
+			if (counter > maxArchives) break; // Stops checking after max archives.
 		}
 	}
 	let languageId = getProgrammingLanguageId(langTestFiles);
