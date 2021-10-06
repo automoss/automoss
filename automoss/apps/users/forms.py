@@ -5,20 +5,19 @@ from .models import (
 )
 from django import forms
 from django.contrib.auth.forms import (
-    AuthenticationForm, 
-    SetPasswordForm, 
+    AuthenticationForm,
+    SetPasswordForm,
     PasswordChangeForm,
 )
 from django.core.exceptions import ValidationError
 from django.contrib.auth import password_validation
 from ..moss.moss import MOSS
-from .tokens import UserTokenGenerator
-from django.contrib.auth.validators import (
-    UnicodeUsernameValidator
-)
+from django.contrib.auth.validators import UnicodeUsernameValidator
+
 
 class UsernameField(forms.CharField):
     """ User name field - based on Django's UsernameField """
+
     def to_python(self, value):
         return unicodedata.normalize('NFKC', super().to_python(value))
 
@@ -28,6 +27,7 @@ class UsernameField(forms.CharField):
             'autocapitalize': 'none',
             'autocomplete': 'username',
         }
+
 
 class UserCreationForm(forms.ModelForm):
     """ User registration form - based on Django's UserCreationForm """
@@ -48,11 +48,12 @@ class UserCreationForm(forms.ModelForm):
         strip=False,
         help_text="Re-enter your password.",
     )
+
     class Meta:
         model = User
         fields = (
-            'course_code', 
-            'primary_email_address', 
+            'course_code',
+            'primary_email_address',
             'moss_id',
         )
         field_classes = {'course_code': UsernameField}
@@ -82,8 +83,9 @@ class UserCreationForm(forms.ModelForm):
         clean_moss_id = self.cleaned_data.get('moss_id')
         valid_id = False
         try:
-            valid_id = MOSS.validate_moss_id(clean_moss_id, raise_if_connection_error=True)
-        except ConnectionError as ce:
+            valid_id = MOSS.validate_moss_id(
+                clean_moss_id, raise_if_connection_error=True)
+        except ConnectionError:
             raise ValidationError(
                 self.error_messages['moss_error'],
                 code='could_not_verify',
@@ -91,8 +93,8 @@ class UserCreationForm(forms.ModelForm):
         if valid_id:
             return clean_moss_id
         raise ValidationError(
-                self.error_messages['invalid_moss_id'],
-                code='invalid_moss_id',
+            self.error_messages['invalid_moss_id'],
+            code='invalid_moss_id',
         )
 
     def save(self, commit=True):
@@ -102,15 +104,17 @@ class UserCreationForm(forms.ModelForm):
             user.save()
         return user
 
+
 class UnverifiedError(ValidationError):
     """ Represents an unverified user """
+
 
 class LoginForm(AuthenticationForm):
     """ User login form """
     error_messages = {
         'invalid_login': 'The course code and password entered were incorrect.',
         'inactive': 'That account is diabled.',
-        'unverified' : "Please verify your account. An email has been sent to your inbox."
+        'unverified': "Please verify your account. An email has been sent to your inbox."
     }
 
     def confirm_login_allowed(self, user):
@@ -150,11 +154,13 @@ class PasswordForgottenForm(forms.Form):
         except User.DoesNotExist:
             return None
 
+
 class PasswordResetForm(SetPasswordForm):
     """ Form for setting new password """
     error_messages = {
         'password_mismatch': 'The passwords entered did not match.',
     }
+
 
 class PasswordUpdateForm(PasswordChangeForm):
     """ Form for setting new password """
@@ -162,6 +168,7 @@ class PasswordUpdateForm(PasswordChangeForm):
         'password_incorrect': 'Your old password was entered incorrectly.',
         'password_mismatch': 'The passwords entered did not match.',
     }
+
 
 class EmailForm(forms.ModelForm):
     """ Form for representing an email """

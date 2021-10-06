@@ -4,18 +4,19 @@ from .pinger import Pinger
 from unittest import TestCase
 import os
 from .moss import (
-    Result,
     MOSS,
     is_valid_moss_url,
     InvalidReportURL,
-    ReportParsingError,
-    FatalMossException
+    ReportParsingError
 )
 from ...settings import DEFAULT_MOSS_SETTINGS, TESTS_ROOT
 
 
 class TestMossAPI(TestCase):
+    """Class which controls test cases for the MOSS API"""
+
     def test_upload_and_parse(self):
+        """Upload a job to MOSS and parse the result"""
 
         base_dir = os.path.join(TESTS_ROOT, 'test_files')
 
@@ -46,12 +47,13 @@ class TestMossAPI(TestCase):
         self.assertTrue(is_valid_moss_url(result.url))
 
     def test_invalid(self):
+        """Test invalid moss results"""
 
-        with self.assertRaises(InvalidReportURL) as context:
-            invalid_url = MOSS.generate_report('invalid_url')
+        with self.assertRaises(InvalidReportURL):
+            MOSS.generate_report('invalid_url')
 
-        with self.assertRaises(ReportParsingError) as context:
-            invalid_moss_report = MOSS.generate_report(
+        with self.assertRaises(ReportParsingError):
+            MOSS.generate_report(
                 'http://moss.stanford.edu/results/0/1234567890')
 
 
@@ -62,7 +64,7 @@ class TestJobs(AuthenticatedUserTest):
         super().setUp()
 
     def test_ping_moss(self):
-        # Populate with ping data
+        """Test pinging MOSS"""
         Pinger.ping()
         response = self.client.get(reverse("api:moss:get_status"))
         self.assertEqual(response.status_code, 200)

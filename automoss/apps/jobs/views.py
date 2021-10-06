@@ -1,14 +1,12 @@
 
 import os
 import json
-from json.decoder import JSONDecodeError
 
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.template.defaulttags import register
 from django.http.response import JsonResponse
-from django.utils.datastructures import MultiValueDictKeyError
 from django.core.serializers import serialize
 from django.utils.safestring import mark_safe
 from django.views import View
@@ -18,10 +16,8 @@ from .tasks import process_job
 from .models import (
     Job,
     Submission,
-    JobEvent,
-    get_default_comment
+    JobEvent
 )
-from ..results.models import Match
 from ...settings import (
     STATUS_CONTEXT,
     SUBMISSION_CONTEXT,
@@ -37,13 +33,13 @@ from ...settings import (
 
     INQUEUE_EVENT,
     CREATED_EVENT,
-    FILES_NAME,
-    FAILED_STATUS
+    FILES_NAME
 )
 
 
 @register.filter(is_safe=True)
-def js(obj):  # TODO move to utils?
+def js(obj):
+    """Helper method for safely rendering JSON to a webpage"""
     return mark_safe(json.dumps(obj))
 
 
@@ -71,8 +67,6 @@ class New(View):
 
     def post(self, request):
         """ Post new job """
-        # print(READABLE_LANGUAGE_MAPPING)
-        # print(request.POST.get('job-language'))
         # TODO validate form
         posted_language = request.POST.get('job-language')
         language = READABLE_LANGUAGE_MAPPING.get(posted_language)
@@ -109,8 +103,6 @@ class New(View):
                                 message=f'Created job for {num_students} students with language=\'{posted_language}\', {max_until_ignored=} and {max_displayed_matches=}')
 
         job_id = new_job.job_id
-
-        moss_user_id = request.user.moss_id
 
         for file_type in SUBMISSION_TYPES:
             for f in request.FILES.getlist(file_type):
@@ -177,7 +169,8 @@ class JSONJobEvents(View):
             request.user).filter(job_id__in=job_ids)
 
         data = {
-            j.job_id: [{'type': x.type, 'str': str(x)} for x in JobEvent.objects.filter(job=j)]
+            j.job_id: [{'type': x.type, 'str': str(
+                x)} for x in JobEvent.objects.filter(job=j)]
             for j in results
         }
 

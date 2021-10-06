@@ -2,11 +2,9 @@
 from ..results.models import MOSSResult, Match
 from .models import Job, Submission, JobEvent
 from django.utils.timezone import now
-from django.core.files.uploadedfile import UploadedFile
 from ..moss.pinger import Pinger, LoadStatus
 from ..moss.moss import (
     MOSS,
-    Result,
     RecoverableMossException,
     ReportParsingError,
     EmptyResponse,
@@ -35,7 +33,6 @@ from ...settings import (
     FIRST_RETRY_INSTANT,
 
     # Events
-    INQUEUE_EVENT,
     UPLOADING_EVENT,
     PROCESSING_EVENT,
     PARSING_EVENT,
@@ -75,7 +72,7 @@ def send_email_notification(job):
 
 @task(name='Upload')
 def process_job(job_id):
-    """Basic interface for generating a report from MOSS"""
+    """Process a job, given its ID"""
 
     try:
         job = Job.objects.get(job_id=job_id)
@@ -122,12 +119,13 @@ def process_job(job_id):
     num_attempts = 0
     url = None
     result = None
+    error = None
 
     for attempt, time_to_sleep in retry(MIN_RETRY_TIME, MAX_RETRY_TIME, EXPONENTIAL_BACKOFF_BASE, MAX_RETRY_DURATION, FIRST_RETRY_INSTANT):
         num_attempts = attempt
 
         try:
-            error = None
+            error = None  # Reset error
             if not is_valid_moss_url(url):
                 # Keep retrying until valid url has been generated
                 # Do not restart whole job if this succeeds but parsing fails
@@ -204,6 +202,8 @@ def process_job(job_id):
 
             if load_status == LoadStatus.NORMAL:
                 msg = f'Moss is not under load {ping_message} - job ({job_id}) will never finish'
+                error = FatalMossException(
+                    "MOSS returned no response, but isn't under load. The job will never finish.")
                 logger.debug(msg)
                 break
 
@@ -215,11 +215,13 @@ def process_job(job_id):
             logger.debug(msg)
 
         except FatalMossException as e:
+            error = e
+            logger.error(f'Fatal moss exception: {e}')
             break  # Will be handled below (result is None)
 
         except Exception as e:
-            # TODO something catastrophic happened
-            # Do some logging here
+            error = e
+            # Something catastrophic happened
             logger.error(f'Unknown error: {e}')
             break  # Will be handled below (result is None)
 
@@ -239,8 +241,13 @@ def process_job(job_id):
     try:
         if failed:
             job.status = FAILED_STATUS
+            if error is not None:
+                error_message = f'Error: {error}'
+            else:
+                error_message = 'Maximum processing time exceeded (job has been cancelled)'
+
             JobEvent.objects.create(
-                job=job, type=FAILED_EVENT, message='A fatal error occurred')
+                job=job, type=FAILED_EVENT, message=error_message)
             send_email_notification(job)
             return None
 
@@ -281,7 +288,7 @@ def process_job(job_id):
             # Calculate average file_size
             num_files = len(paths[FILES_NAME])
             avg_file_size = sum([os.path.getsize(x)
-                                for x in paths[FILES_NAME]])/num_files
+                                for x in paths[FILES_NAME]]) / num_files
 
             log_info = vars(job).copy()
             log_info.pop('_state', None)

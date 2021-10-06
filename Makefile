@@ -68,4 +68,4 @@ coverage:
 	$(PYTHON) -m webbrowser $(COVERAGE_DIR)/index.html
 
 lint:
-	flake8 . --statistics
+	flake8 . --statistics --ignore=E501,W503,F811

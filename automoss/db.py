@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 
 def main():
+    """Method to create/set database"""
 
     # Action to perform
     fresh = 'fresh' in sys.argv[1:]
@@ -20,9 +21,9 @@ def main():
     try:
         # Create a connection object
         connection = pymysql.connect(host=DB_HOST,
-                                    user=MYSQL_ADMIN_USER,
-                                    password=MYSQL_ADMIN_PASSWORD,
-                                    cursorclass=pymysql.cursors.DictCursor)
+                                     user=MYSQL_ADMIN_USER,
+                                     password=MYSQL_ADMIN_PASSWORD,
+                                     cursorclass=pymysql.cursors.DictCursor)
     except pymysql.err.OperationalError as e:
         print('Unable to connect to MYSQL as admin:', e)
         print('Please ensure that "MYSQL_ADMIN_USER" and "MYSQL_ADMIN_PASSWORD" are set correctly as environment variables.')
@@ -47,7 +48,7 @@ def main():
                 cursor.execute(
                     f"CREATE USER IF NOT EXISTS '{DB_USER}'@'%' IDENTIFIED WITH mysql_native_password BY '{DB_PASSWORD}';")
                 cursor.execute(f"GRANT ALL ON {DB_NAME}.* TO '{DB_USER}'@'%';")
-                cursor.execute(f"FLUSH PRIVILEGES;")
+                cursor.execute('FLUSH PRIVILEGES;')
 
 
 if __name__ == '__main__':

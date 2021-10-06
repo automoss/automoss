@@ -1,13 +1,12 @@
-from ...settings import SUBMISSION_TYPES
 import uuid
 from django.utils.timezone import now
 from django.db import models
-from django.conf import settings
 from django.contrib.auth import get_user_model
 
 import os
 import shutil
 from ...settings import (
+    SUBMISSION_TYPES,
     STATUSES,
     JOB_EVENT_CONTEXT,
     SUPPORTED_LANGUAGES,
@@ -37,10 +36,13 @@ class JobManager(models.Manager):
 
 class Job(models.Model):
     """ Class to model Job Entity """
+
     # Custom manager
     objects = JobManager()
+
     # MOSS user that created the job
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
     # Unique identifier used in routing
     job_id = models.CharField(
         primary_key=False,
@@ -53,7 +55,8 @@ class Job(models.Model):
     # Language choice
     language = models.CharField(
         max_length=get_longest_key(SUPPORTED_LANGUAGES),
-        choices=[(l, SUPPORTED_LANGUAGES[l][0]) for l in SUPPORTED_LANGUAGES],
+        choices=[(language, SUPPORTED_LANGUAGES[language][0])
+                 for language in SUPPORTED_LANGUAGES],
         default=first(SUPPORTED_LANGUAGES),
     )
 
@@ -63,9 +66,11 @@ class Job(models.Model):
     # Max matches of a code segment before it is ignored
     max_until_ignored = models.PositiveIntegerField(
         default=DEFAULT_MOSS_SETTINGS['max_until_ignored'])
+
     # Max displayed matches
     max_displayed_matches = models.PositiveIntegerField(
         default=DEFAULT_MOSS_SETTINGS['max_displayed_matches'])
+
     # Comment/description attached to job
     comment = models.CharField(
         max_length=MAX_COMMENT_LENGTH, default=get_default_comment)
@@ -98,8 +103,9 @@ class Job(models.Model):
             shutil.rmtree(media_path)
 
             parent = os.path.dirname(media_path)
-            if len(os.listdir(parent)) == 0: # Delete parent dir if empty
+            if len(os.listdir(parent)) == 0:  # Delete parent dir if empty
                 os.rmdir(parent)
+
 
 class Submission(models.Model):
     """ Class to model MOSS Report Entity """
@@ -129,6 +135,7 @@ class Submission(models.Model):
 
 class JobEvent(models.Model):
     """ Class to model Job events """
+
     # Job the event belongs to
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
 

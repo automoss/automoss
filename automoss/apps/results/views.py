@@ -1,4 +1,3 @@
-from django.contrib.auth import login
 from ...settings import SUBMISSION_UPLOAD_TEMPLATE
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -13,6 +12,7 @@ import os
 @method_decorator(login_required, name='dispatch')
 class Index(View):
     """ Result Index View """
+
     template = "results/index.html"
 
     def get(self, request, job_id):
@@ -78,12 +78,12 @@ class ResultMatch(View):
             for match_id, match_lines in sorted_info:
                 # TODO maybe return list of lines, not joined
                 blocks[submission_type].append({
-                    'text': ''.join(lines[current:match_lines[submission_type]['from']-1])
+                    'text': ''.join(lines[current:match_lines[submission_type]['from'] - 1])
                 })
                 current = match_lines[submission_type]['to']
                 blocks[submission_type].append({
                     'id': match_id,
-                    'text': ''.join(lines[match_lines[submission_type]['from']-1:current])
+                    'text': ''.join(lines[match_lines[submission_type]['from'] - 1:current])
                 })
 
             # Get rest of file

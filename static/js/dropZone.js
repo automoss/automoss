@@ -47,6 +47,9 @@ class DropZone extends HTMLElement {
 		//this.zone.append(this.zoneInfo);
 	}
 
+	/**
+	 * Add multiple files at once to the file list.
+	 */
 	addFiles(files) {
 		for (let file of files) {
 			this.addFile(file);
@@ -54,6 +57,9 @@ class DropZone extends HTMLElement {
 		this.zoneInput.value = '';
 	}
 
+	/**
+	 * Add a file to the file list.
+	 */
 	addFile(file) {
 		if (!this.isValidFile(file)) {
 			return;
@@ -66,6 +72,9 @@ class DropZone extends HTMLElement {
 		this.onFileAdded(dropZoneFile);
 	}
 
+	/**
+	 * Remove a file from the file list.
+	 */
 	removeFile(file) {
 		const index = this.files.indexOf(file);
 		if (index > -1) {
@@ -76,12 +85,29 @@ class DropZone extends HTMLElement {
 		this.onFileRemoved();
 	}
 	
+	/**
+	 * Remove all files and clear the call to action text.
+	 */
 	reset() {
 		while (this.files.length > 0) {
 			this.removeFile(this.files[0]);
 		}
+		this.zoneInput.value = '';
+		this.setC2A("");
 	}
 
+	/**
+	 * Set the progress of all files to zero.
+	 */
+	resetProgress(){
+		for (let file of this.files) {
+			file.setProgress(0);
+		}
+	}
+
+	/**
+	 * Determines whether or not a file name ends with an extension from a list of given extensions.
+	 */
 	hasExtension(fileName, extensions){
 		for (var extension of extensions){
 			if (fileName.endsWith("."+extension)){
@@ -91,6 +117,9 @@ class DropZone extends HTMLElement {
 		return false;
 	}
 
+	/**
+	 * Determines whether or not a file dragged in is valid.
+	 */
 	isValidFile(file) {
 		if (!this.hasExtension(file.name, this.getAttribute("filetypes").split(","))) {
 			this.onFileRejected("You must upload an archive.");
@@ -103,6 +132,9 @@ class DropZone extends HTMLElement {
 		}
 	}
 
+	/**
+	 * Formats the size of a file given its size in bytes.
+	 */
 	getFileSize(fileSize) {
 		let sizeKB = fileSize / 1024;
 		let sizeMB = sizeKB / 1024;
@@ -125,6 +157,16 @@ class DropZone extends HTMLElement {
 		return `${Math.round(size * 100) / 100} ${unit}`;
 	}
 
+	/**
+	 * Sets the call to action text message in the center of the drop zone.
+	 */
+	setC2A(message){
+		this.zoneText.innerHTML = message;
+	}
+
+	/**
+	 * Sets the highlighted state of the drop zone.
+	 */
 	setHighlighted(isHighlighted) {
 		if (isHighlighted) {
 			this.zone.style.backgroundColor = "#EEE";
@@ -137,6 +179,9 @@ class DropZone extends HTMLElement {
 		}
 	}
 
+	/**
+	 * Sets the interactable state of the drop zone and file list.
+	 */
 	setInteractable(isInteractable){
 		this.zoneInput.disabled = !isInteractable;
 		for (let file of this.files){
@@ -144,14 +189,22 @@ class DropZone extends HTMLElement {
 		}
 	}
 
+	/**
+	 * Callback invoked on file added.
+	 */
 	onFileAdded(dropZoneFile){
 	}
 
+	/**
+	 * Callback invoked on file removed.
+	 */
 	onFileRemoved(){
 	}
 
+	/**
+	 * Callback invoked on file rejected.
+	 */
 	onFileRejected(reason){
 	}
 }
-
 customElements.define("drop-zone", DropZone);

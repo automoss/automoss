@@ -1,5 +1,4 @@
 class TimelineEvent extends HTMLElement{
-
 	constructor(name){
 		super();
 
@@ -54,9 +53,12 @@ class TimelineEvent extends HTMLElement{
 		this.name.style = "margin-top: -25px"
 		this.name.innerHTML = name;
 
-		this.setStatus("incompleted");
+		this.setStatus("Incompleted"); // Default to "Incompleted" state.
 	}
 
+	/**
+	 * Sets the status (icon, tooltip and ping) of the event.
+	 */
 	setStatus(status){
 		this.icon.setAttribute("status", `${status}`);
 		this.setAttribute("data-bs-original-title", status);

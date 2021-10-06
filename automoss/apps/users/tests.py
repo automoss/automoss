@@ -113,7 +113,9 @@ class TestUsers(AuthenticatedUserTest):
 
     def test_login_page_unauth(self):
         """ Test get login page when unauthenticated """
+
         test_client = Client()
+
         # Get login page
         login_response = test_client.get(reverse("users:login"))
         self.assertEqual(login_response.status_code, 200)
@@ -187,6 +189,7 @@ class TestUsers(AuthenticatedUserTest):
                 'password2': 'Testing'
             }, False),  # Passwords not secure
         ]
+
         # For each case
         for details, outcome in cases:
             test_client = Client()
@@ -207,8 +210,8 @@ class TestUsers(AuthenticatedUserTest):
                 # confirm using verification link
                 verify_response = test_client.get(
                     reverse("users:confirm", kwargs={
-                        'uid':  user.user_id,
-                        'token':  confirm_registration_token.make_token(user)
+                        'uid': user.user_id,
+                        'token': confirm_registration_token.make_token(user)
                     }
                     )
                 )
