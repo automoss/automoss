@@ -65,8 +65,8 @@ sorttable = {
     if (sortbottomrows) {
       if (table.tFoot == null) {
         // table doesn't have a tfoot. Create one.
-        tfo = document.createElement('tfoot');
-        table.appendChild(tfo);
+        // tfo = document.createElement('tfoot');
+        // table.appendChild(tfo);
       }
       for (var i=0; i<sortbottomrows.length; i++) {
         tfo.appendChild(sortbottomrows[i]);
@@ -151,6 +151,7 @@ sorttable = {
 	        //sorttable.shaker_sort(row_array, this.sorttable_sortfunction);
 	        /* and comment out this one */
 	        row_array.sort(this.sorttable_sortfunction);
+	        row_array.reverse();
 
 	        tb = this.sorttable_tbody;
 	        for (var j=0; j<row_array.length; j++) {
