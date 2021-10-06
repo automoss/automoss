@@ -96,12 +96,13 @@ def process_job(job_id):
     num_attempts = 0
     url = None
     result = None
+    error = None
 
     for attempt, time_to_sleep in retry(MIN_RETRY_TIME, MAX_RETRY_TIME, EXPONENTIAL_BACKOFF_BASE, MAX_RETRY_DURATION, FIRST_RETRY_INSTANT):
         num_attempts = attempt
 
         try:
-            error = None
+            error = None  # Reset error
             if not is_valid_moss_url(url):
                 # Keep retrying until valid url has been generated
                 # Do not restart whole job if this succeeds but parsing fails
@@ -178,6 +179,8 @@ def process_job(job_id):
 
             if load_status == LoadStatus.NORMAL:
                 msg = f'Moss is not under load {ping_message} - job ({job_id}) will never finish'
+                error = FatalMossException(
+                    "MOSS returned no response, but isn't under load. The job will never finish.")
                 logger.debug(msg)
                 break
 
@@ -189,10 +192,12 @@ def process_job(job_id):
             logger.debug(msg)
 
         except FatalMossException as e:
+            error = e
             logger.error(f'Fatal moss exception: {e}')
             break  # Will be handled below (result is None)
 
         except Exception as e:
+            error = e
             # Something catastrophic happened
             logger.error(f'Unknown error: {e}')
             break  # Will be handled below (result is None)
@@ -213,8 +218,13 @@ def process_job(job_id):
     try:
         if failed:
             job.status = FAILED_STATUS
+            if error is not None:
+                error_message = f'Error: {error}'
+            else:
+                error_message = 'Maximum processing time exceeded (job has been cancelled)'
+
             JobEvent.objects.create(
-                job=job, type=FAILED_EVENT, message='A fatal error occurred')
+                job=job, type=FAILED_EVENT, message=error_message)
             return None
 
         # Parse result
