@@ -78,7 +78,7 @@ function addJob(job, forceOpen=false){
 	let jobTimeline = new Timeline();
 	jobInfoWrapper.append(jobTimeline);
 	jobTimeline.id = `job-timeline-${job.job_id}`;
-	jobTimeline.style.width = "60%";
+	jobTimeline.style.width = "50%";
 
 	// Info > Collapse > Logs
 	let jobLogs = document.createElement("textarea");
@@ -88,7 +88,7 @@ function addJob(job, forceOpen=false){
 	jobLogs.classList.add("me-4");
 	jobLogs.classList.add("container");
 	jobLogs.style = "resize: none; background-color: white; border-radius: 10px; padding: 6px 10px; border-color: var(--bs-gray-300)";
-	jobLogs.style.width = "40%";
+	jobLogs.style.width = "50%";
 	jobLogs.setAttribute("readonly", true);
 
 	jobTimeline.addEvent("Created");
