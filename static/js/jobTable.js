@@ -11,7 +11,7 @@ function isTerminalState(state){
 }
 
 
-let eventMapping = { 
+let eventStatusMapping = { 
 	"INQ": 1,
 	"UPL": 2,
 	"PRO": 3,
@@ -23,8 +23,8 @@ function getLastCompletedEvent(jobId){
 	let prevEvents = document.getElementById(`job-logs-${jobId}`).prevEvents;
 	if (prevEvents != undefined){
 		for (let i = prevEvents.length - 1; i >= 0; i--){
-			if (Object.hasOwn(eventMapping, prevEvents[i])){
-				return eventMapping[prevEvents[i]];
+			if (Object.hasOwn(eventStatusMapping, prevEvents[i])){
+				return eventStatusMapping[prevEvents[i]];
 			}
 		}
 	}
@@ -39,7 +39,7 @@ function updateJobStatus(jobId, status){
 
 	let jobTimeline = document.getElementById(`job-timeline-${jobId}`);
 	if (status != "FAI"){
-		jobTimeline.setCompleted(eventMapping[status]);
+		jobTimeline.setCompleted(eventStatusMapping[status]);
 	}else{
 		jobTimeline.setFailed(getLastCompletedEvent(jobId));
 	}
@@ -84,7 +84,7 @@ function addJob(job, forceOpen=false){
 	jobInfoCollapse.id = `job-info-${job.job_id}`;
 	jobInfoCollapse.classList.add("collapse");
 	jobInfoCollapse.classList.add("p-0");
-	jobInfoCollapse.classList.add("border");
+	jobInfoCollapse.classList.add("border-bottom");
 
 	let jobInfoWrapper = document.createElement("div");
 	jobInfoCollapse.append(jobInfoWrapper);
