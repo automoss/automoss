@@ -47,6 +47,7 @@ class Timeline extends HTMLElement{
 	}
 
 	setFailed(index){
+		this.setCompleted(index);
 		this.events[index].setStatus("Failed");
 	}
 }
