@@ -207,5 +207,4 @@ class DropZone extends HTMLElement {
 	onFileRejected(reason){
 	}
 }
-
 customElements.define("drop-zone", DropZone);

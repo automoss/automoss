@@ -78,5 +78,4 @@ class DropZoneFile extends HTMLElement {
 		this.tags.append(tag);
 	}
 }
-
 customElements.define('drop-zone-file', DropZoneFile);

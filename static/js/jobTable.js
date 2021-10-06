@@ -12,7 +12,7 @@ const timelineEventMapping = {
 	"UPL": 2,
 	"PRO": 3,
 	"PAR": 4,
-	"COM": 6 // Don't set to 5 as this implies the "completed" state can be "in progress".
+	"COM": 99 // Don't set to 5 as this implies the "completed" state can be "in progress".
 };
 
 /**
@@ -50,9 +50,9 @@ function updateJobStatus(jobId, status){
 	// Timeline
 	let jobTimeline = document.getElementById(`job-timeline-${jobId}`);
 	if (status != "FAI"){
-		jobTimeline.setProgress(timelineEventMapping[status], false);
+		jobTimeline.setProgress(timelineEventMapping[status], true);
 	}else{
-		jobTimeline.setProgress(getLastCompletedEvent(jobId));
+		jobTimeline.setProgress(getLastCompletedEvent(jobId), false);
 	}
 }
 
@@ -151,7 +151,7 @@ function addJob(job, forceOpen=false){
 	if (forceOpen){
 		jobInfoCollapse.classList.add("show");
 	}
-	jobTimeline.setCompleted(1);
+	jobTimeline.setProgress(1, true);
 
 	jobsTableBody.prepend(jobInfo);
 	jobsTableBody.prepend(new Job(job, jobInfo));

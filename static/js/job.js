@@ -94,5 +94,4 @@ class Job extends HTMLTableRowElement{
         this.jobStatus.classList.add(...classes);
 	}
 }
-
 customElements.define('job-row', Job, { extends: 'tr' });
