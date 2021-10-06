@@ -36,6 +36,7 @@ from ...settings import (
     SUBMISSION_UPLOAD_TEMPLATE,
 
     INQUEUE_EVENT,
+    CREATED_EVENT,
     FILES_NAME,
     FAILED_STATUS
 )
@@ -73,8 +74,8 @@ class New(View):
         # print(READABLE_LANGUAGE_MAPPING)
         # print(request.POST.get('job-language'))
         # TODO validate form
-        language = READABLE_LANGUAGE_MAPPING.get(
-            request.POST.get('job-language'))  # TODO throw error if none
+        posted_language = request.POST.get('job-language')
+        language = READABLE_LANGUAGE_MAPPING.get(posted_language)
 
         if language is None:
             data = {
@@ -104,6 +105,8 @@ class New(View):
             max_until_ignored=max_until_ignored,
             max_displayed_matches=max_displayed_matches
         )
+        JobEvent.objects.create(job=new_job, type=CREATED_EVENT,
+                                message=f'Created job for {num_students} students with language=\'{posted_language}\', {max_until_ignored=} and {max_displayed_matches=}')
 
         job_id = new_job.job_id
 
@@ -130,8 +133,8 @@ class New(View):
                 with open(file_path, 'wb') as fp:
                     fp.write(f.read())
 
-
-        JobEvent.objects.create(job=new_job, type=INQUEUE_EVENT, message='Placed in the processing queue')
+        JobEvent.objects.create(
+            job=new_job, type=INQUEUE_EVENT, message='Placed in the processing queue')
 
         process_job.delay(job_id)
 
@@ -156,7 +159,8 @@ class JSONStatuses(View):
     def get(self, request):
         """ Get statuses of requested jobs (by ID) """
         job_ids = request.GET.get('job_ids', '').split(',')
-        results = Job.objects.user_jobs(request.user).filter(job_id__in=job_ids)
+        results = Job.objects.user_jobs(
+            request.user).filter(job_id__in=job_ids)
 
         data = {j.job_id: j.status for j in results}
         return JsonResponse(data, status=200)
@@ -169,7 +173,8 @@ class JSONJobEvents(View):
     def get(self, request):
         """ Get statuses of requested jobs (by ID) """
         job_ids = request.GET.get('job_ids', '').split(',')
-        results = Job.objects.user_jobs(request.user).filter(job_id__in=job_ids)
+        results = Job.objects.user_jobs(
+            request.user).filter(job_id__in=job_ids)
 
         data = {
             j.job_id: [str(x) for x in JobEvent.objects.filter(job=j)]
