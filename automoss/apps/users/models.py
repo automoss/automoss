@@ -245,13 +245,13 @@ class Email(models.Model):
         recipients = [str(self.email_address)]
 
         # Send emails asynchronously
-        send_emails.delay(
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipients=recipients,
-            subject=subject,
-            body=body,
-            html=html
-        )
+        send_emails.apply_async(kwargs={
+            'from_email': settings.DEFAULT_FROM_EMAIL,
+            'recipients': recipients,
+            'subject': subject,
+            'body': body,
+            'html': html
+        }, queue='email')
 
     def __str__(self):
         """ Email to string """
