@@ -50,9 +50,9 @@ function updateJobStatus(jobId, status){
 	// Timeline
 	let jobTimeline = document.getElementById(`job-timeline-${jobId}`);
 	if (status != "FAI"){
-		jobTimeline.setCompleted(timelineEventMapping[status]);
+		jobTimeline.setProgress(timelineEventMapping[status], false);
 	}else{
-		jobTimeline.setFailed(getLastCompletedEvent(jobId));
+		jobTimeline.setProgress(getLastCompletedEvent(jobId));
 	}
 }
 
