@@ -3,7 +3,7 @@
 import os
 import sys
 import inspect
-import random
+
 
 def get_longest_key(dictionary):
     return max(map(len, dictionary))
@@ -44,27 +44,17 @@ class capture_in(LocalsCapture):
         self.namespace[name] = value
 
 
-class capture_on(LocalsCapture):
-    def __init__(self, object):
-        self.object = object
-
-    def capture(self, name, value):
-        self.object.__dict__[name] = value
-
-
-class capture_globals(capture_in):
-    def __init__(self):
-        caller_frame = inspect.currentframe().f_back
-        super(capture_globals, self).__init__(caller_frame.f_globals)
-
-
 def is_main_thread():
     return os.environ.get('RUN_MAIN') != 'true' and 'runserver' in sys.argv
 
 
+def is_testing():
+    return bool(os.environ.get('IS_TESTING'))
+
+
 # TODO move?
 # capped exponential backoff with max retries (max time)
-def retry(min_time, max_time, base_range, max_retry_duration, first_instant):
+def retry(min_time, max_time, base, max_retry_duration, first_instant):
     attempt_number = 0
     if first_instant:
         yield attempt_number, 0
@@ -72,9 +62,8 @@ def retry(min_time, max_time, base_range, max_retry_duration, first_instant):
 
     total_elapsed = 0
     while total_elapsed < max_retry_duration:
-        base = random.uniform(*base_range)
         time = min(max(base ** attempt_number, min_time),
-                    max_time)  # Current sleep time
+                   max_time)  # Current sleep time
 
         yield attempt_number, time
         attempt_number += 1

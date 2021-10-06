@@ -18,15 +18,14 @@ class LoadStatus(IntEnum):
 
 # Pinging - to determine whether MOSS is under load
 PING_EVERY = 30  # Ping every x seconds
-PING_OFFSET_THRESHOLD = 0.6
+PING_OFFSET_THRESHOLD = 0.3
 AVERAGE_PING_KEY = 'AVERAGE_PING'
 LATEST_PING_KEY = 'LATEST_PING'
-LATEST_COUNT = 30
 
 # Used for exponential moving average
 UP_ALPHA = 0.0001
 DOWN_ALPHA = 0.25
-
+ALPHA = 0.05
 
 
 class Pinger:
@@ -95,18 +94,14 @@ class Pinger:
         try:
             timeout=30 # TODO global
             new_ping = requests.head(HTTP_MOSS_URL, verify=False, allow_redirects=False, timeout=timeout).elapsed.total_seconds()
-            print('new_ping', new_ping)
-            
             
             latest_average = Pinger.get_latest_ping()
-            print('latest_average 1', latest_average)
             
             if latest_average is None: # Not set yet, or was down
                 latest_average = new_ping
             else:
-                latest_average = ((LATEST_COUNT - 1) * latest_average + new_ping)/LATEST_COUNT
-            
-            print('latest_average 2', latest_average)
+                alpha_to_use = ALPHA if new_ping > latest_average else DOWN_ALPHA
+                latest_average = alpha_to_use * new_ping + (1-alpha_to_use) * latest_average
             
             Pinger.set_latest_ping(latest_average)
             

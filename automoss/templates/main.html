@@ -13,30 +13,11 @@
 			</a>
 			
 			<div class="d-flex">
-				<!-- Ping -->
-				<style>
-					.pulse{
-						transform-origin: 50% 50%;
-						animation-duration: 2s;
-						animation-name: pulse;
-						animation-iteration-count: infinite;
-					}
-					@keyframes pulse{
-						from{
-							opacity: 1;
-							transform: scale(0);
-						}
-						to{
-							opacity: 0;
-							transform: scale(1);
-						}
-					}
-				</style>
 				<div id="ping" class="d-flex align-items-center me-1" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Status">
 					<label class="text-light">MOSS Status:</label>
 					<svg class="button" expanded="true" height="40px" width="40px">
           				<circle id="ping-inner" cx="50%" cy="50%" r="10px"></circle>
-          				<circle id="ping-outer" class="pulse" cx="50%" cy="50%" r="20px"></circle>
+          				<circle id="ping-outer" class="ping" cx="50%" cy="50%" r="20px"></circle>
         			</svg>
 				</div>
 				
@@ -67,7 +48,7 @@
 	</nav>
 
 	<!-- Main Content Area -->
-	<div class="container-fluid flex-grow-1 py-4 px-5 bg-light" >
+	<div id="main-content" class="container-fluid flex-grow-1 py-4 px-5 bg-light" >
 		{% block "main-content" %}{% endblock %}
 	</div>
 	
@@ -78,7 +59,7 @@
 
 </div>
 
-<script>
+<script ignoreOnExtract>
 
 	var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
 	var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl){

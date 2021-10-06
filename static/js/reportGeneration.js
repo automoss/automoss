@@ -39,12 +39,19 @@ async function onExternalScript(element){
 	return `<script>\n${await getExternalText(element["src"])}\n</script>`;
 }
 
-async function downloadReport(){
+function addStr(str, index, stringToAdd){
+	return str.substring(0, index) + stringToAdd + str.substring(index, str.length);
+}
 
+async function downloadReport(){
 	let extractions = [extract("link", onExternalLink), extract("style"), extract("script", onExternalScript)];	
 	let [links, styles, scripts] = await Promise.all(extractions);
 
-	let report = document.getElementById("report").innerHTML;
+	let title = "<div class=\"d-flex justify-content-center\">" + document.getElementById("title").outerHTML + "</div>";
+	let matches = document.getElementById("matches").innerHTML;
+	matches = addStr(matches, matches.indexOf("100vh"), "200px + "); // Extend height of matches element to fit to document.
+
+	let report = "<div class=\"p-4\">" + title + matches + "</div>";
 	let html = links + styles + report + scripts
 	generate("report.html", html);
 }

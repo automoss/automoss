@@ -1,3 +1,4 @@
+from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import socket
 import os
@@ -15,7 +16,6 @@ from ...settings import (
     DEFAULT_MOSS_SETTINGS
 )
 
-from django.utils.http import url_has_allowed_host_and_scheme
 
 MOSS_URL = 'moss.stanford.edu'
 HTTP_MOSS_URL = f'http://{MOSS_URL}'
@@ -25,19 +25,16 @@ HTTP_RETRY_COUNT = 5
 
 
 def is_valid_moss_url(url):
-    return url and url_has_allowed_host_and_scheme(url, MOSS_URL)
+    return url and urlparse(url).netloc == MOSS_URL
 
 
 class MossException(Exception):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    pass
 
 
 class FatalMossException(MossException):
     """ Cannot recover. Do not resubmit if this occurs """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    pass
 
 
 class UnsupportedLanguage(FatalMossException):
@@ -66,23 +63,17 @@ class EmptyResponse(FatalMossException):
 
 class InvalidRequest(FatalMossException):
     """Moss did not understand this request"""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    pass
 
 
 class InvalidParameter(FatalMossException):
     """User attempted to set an invalid parameter."""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    pass
 
 
 class RecoverableMossException(MossException):
     """ Able to recover. Resubmit if this occurs """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    pass
 
 
 class ReportError(RecoverableMossException):
@@ -97,16 +88,18 @@ class ReportParsingError(ReportError):
     pass
 
 
+class InvalidReportURL(ReportError):
+    pass
+
+
 class UnparseableMatch(RecoverableMossException):
     # Moss returns a completely incorrecly formatted match document
     # e.g. http://moss.stanford.edu/results/0/3222848531763
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    pass
 
 
 class MossConnectionError(RecoverableMossException):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    pass
 
 
 ERROR_PREFIX = 'Error: '
@@ -183,7 +176,7 @@ class MossAPIWrapper:
         self._send_raw(bytes)
 
     def upload_raw_base_file(self, file_path, bytes, language, use_basename=False):
-        self.upload_raw_base(file_path, bytes, language, 0, use_basename)
+        self.upload_raw_file(file_path, bytes, language, 0, use_basename)
 
     def upload_base_file(self, file_path, language, use_basename=False):
         self.upload_file(file_path, language, 0, use_basename)
@@ -296,8 +289,12 @@ class Result:
 
     def _parse_matches(self, url):
         base_url = f"{url.rstrip('/')}/"  # Ensure link ends with a /
-        html = requests.get(base_url, verify=False).text
+        req = requests.get(base_url, verify=False)
+        if req.status_code != 200:
+            raise ReportParsingError(
+                f'Invalid status code ({req.status_code})')
 
+        html = req.text
         # TODO parse errors?
         num_matches = html.count('<TR>') - 1
 
@@ -335,17 +332,17 @@ class MOSS:
 
     @classmethod
     def generate_report(cls, url):
+        if not is_valid_moss_url(url):
+            raise InvalidReportURL(f'Invalid report url: "{url}"')
+
         try:
             return Result(url)
 
-        except Exception as e:
-            if is_valid_moss_url(url):
-                # Some timeout error?
-                # TODO add built-in retry functionality to parsing report
+        except ReportParsingError:
+            raise
 
-                raise ReportParsingError(f'Malformed Report: {url}')
-            else:
-                raise FatalMossException(f'Unable to generate report: {e}')
+        except Exception as e:
+            raise ReportParsingError(f'Malformed Report: {url}. Error: {e}')
 
     @classmethod
     def callback(cls, f, *args, **kwargs):
@@ -435,7 +432,7 @@ class MOSS:
             #  - ConnectionAbortedError
             #  - ConnectionRefusedError
             #  - ConnectionResetError.
-            raise MossConnectionError(e)
+            raise MossConnectionError(e.strerror)
 
         finally:  # Close session as soon as possible
             moss.close()

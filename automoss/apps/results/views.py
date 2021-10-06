@@ -6,7 +6,8 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from .models import Match
 from ..jobs.models import Job
-from ...settings import SUPPORTED_LANGUAGES
+from ...settings import SUPPORTED_LANGUAGES, MATCH_CONTEXT
+import os
 
 
 @method_decorator(login_required, name='dispatch')
@@ -18,9 +19,10 @@ class Index(View):
         """ Get result """
         context = {
             'job': Job.objects.user_jobs(request.user).get(job_id=job_id),
-            'matches': Match.objects.user_matches(request.user).filter(moss_result__job__job_id=job_id)
+            'matches': Match.objects.user_matches(request.user).filter(moss_result__job__job_id=job_id).order_by('-lines_matched')
         }
         return render(request, self.template, context)
+
 
 @method_decorator(login_required, name='dispatch')
 class ResultMatch(View):
@@ -42,13 +44,18 @@ class ResultMatch(View):
 
         blocks = {}
 
+        match_numbers = None
         for submission_type, submission in submissions.items():
 
             file_path = SUBMISSION_UPLOAD_TEMPLATE.format(
+                user_id=request.user.user_id,
                 job_id=job_id,
                 file_type='files',
                 file_id=submission.submission_id
             )
+
+            if not os.path.exists(file_path):
+                continue
 
             with open(file_path) as fp:
                 lines = fp.readlines()
@@ -58,15 +65,18 @@ class ResultMatch(View):
 
             sorted_info = sorted(
                 match_info.items(), key=lambda item: item[-1][submission_type]['from'])
+            if match_numbers is None:
+                match_numbers = [x[0] for x in sorted_info]
+            
             for match_id, match_lines in sorted_info:
                 # TODO maybe return list of lines, not joined
                 blocks[submission_type].append({
-                    'text': ''.join(lines[current:match_lines[submission_type]['from']])
+                    'text': ''.join(lines[current:match_lines[submission_type]['from']-1])
                 })
                 current = match_lines[submission_type]['to']
                 blocks[submission_type].append({
                     'id': match_id,
-                    'text': ''.join(lines[match_lines[submission_type]['from']:current])
+                    'text': ''.join(lines[match_lines[submission_type]['from']-1:current])
                 })
 
             # Get rest of file
@@ -74,24 +84,16 @@ class ResultMatch(View):
                 'text': ''.join(lines[current:])
             })
 
-        # TODO define colours elsewhere
-        colours = [
-            '255, 0, 0',
-            '0, 255, 0',
-            '0, 0, 255',
-        ]
-
         job = Job.objects.user_jobs(request.user).get(job_id=job_id)
         # Get highlighter name
         job_language = SUPPORTED_LANGUAGES[job.language][3]
 
         context = {
             'submissions': submissions,
-            'match_info': match_info,
+            'match_numbers': match_numbers,
             'blocks': blocks,
-            'colours': colours,
             'language': job_language,
             'job': job,
-            'match' : match
+            **MATCH_CONTEXT
         }
         return render(request, self.template, context)

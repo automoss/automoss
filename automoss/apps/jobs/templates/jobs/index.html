@@ -4,6 +4,7 @@
 {% block "links" %}
 	<link href="{% static "css/dropZoneFile.css" %}" rel="stylesheet">
 	<link href="{% static "css/dropZone.css" %}" rel="stylesheet">
+	<link href="{% static "css/timeline.css" %}" rel="stylesheet">
 {% endblock %}
 
 {% block "scripts" %}
@@ -16,6 +17,8 @@
 	<script src="{% static "lib/uncompress/xz.js" %}" defer></script>
 	<script src="{% static "js/job.js" %}" defer></script>
 	<script src="{% static "js/jobSubmission.js" %}" defer></script>
+	<script src="{% static "js/timeline.js" %}" defer></script>
+	<script src="{% static "js/timelineEvent.js" %}" defer></script>
 	<script src="{% static "js/jobTable.js" %}" defer></script>
 {% endblock %}
 
@@ -40,13 +43,13 @@
 </h2>
 
 <!-- Content -->
-<div class="container-fluid shadow-sm bg-white py-3 px-4 rounded-3">
+<div class="container-fluid shadow-sm bg-white p-4 rounded-3">
 
 <!-- Search/Create -->
 <div class="row mb-3">
 	<div class="col-lg-12">
-		<div class="input-group px-1 pt-2 justify-content-between">
-			<input class="form-control me-2 rounded" id="job-search" type="search" placeholder="Search..." aria-label="Search">
+		<div class="input-group justify-content-between">
+			<input class="form-control me-2 rounded" id="job-search-bar" type="search" placeholder="Search...">
 			<span class="input-group-btn">
 				<button type="button" class="btn btn-primary text-light rounded-pill" data-bs-toggle="modal" data-bs-target="#create-job-modal">
 					<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-plus" viewBox="4 2.5 13 13">
@@ -65,9 +68,11 @@
 	<!-- Headings -->
 	<thead class="table-dark">
 		<tr>
-			<th scope="col" style="width: 30%">Name</th>
-			<th scope="col" style="width: 30%">Language</th>
-			<th scope="col" style="width: 30%">Date Created</th>
+			<th scope="col" style="width: 25%">Name</th>
+			<th scope="col" style="width: 15%">Language</th>
+			<th scope="col" style="width: 15%">Students</th>
+			<th scope="col" style="width: 20%">Date Created</th>
+			<th scope="col" style="width: 15%">Duration</th>
 			<th scope="col" style="width: 10%">Status</th>
 		</tr>
 	</thead>
@@ -120,7 +125,7 @@
 						<div class="mb-3">
 							<label for="job-max-until-ignored" class="form-label">Max matches until ignored:</label>
 							<div class="d-flex">
-								<input type="range" class="form-range" min="0" step="1" max="1000" id="job-max-until-ignored" name="job-max-until-ignored" value="{{DEFAULT_MOSS_SETTINGS.max_until_ignored}}" oninput="this.nextElementSibling.value = this.value">
+								<input type="range" class="form-range" min="1" step="1" max="1000" id="job-max-until-ignored" name="job-max-until-ignored" value="{{DEFAULT_MOSS_SETTINGS.max_until_ignored}}" oninput="this.nextElementSibling.value = this.value">
 								<output style="width: 50px; text-align: right;">{{DEFAULT_MOSS_SETTINGS.max_until_ignored}}</output>
 							</div>
 						</div>
@@ -129,7 +134,7 @@
 						<div class="mb-3">
 							<label for="job-max-displayed-matches" class="form-label">Max matches displayed:</label>
 							<div class="d-flex">
-								<input type="range" class="form-range" min="0" step="1" max="1000" id="job-max-displayed-matches" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}" oninput="this.nextElementSibling.value = this.value">
+								<input type="range" class="form-range" min="1" step="1" max="1000" id="job-max-displayed-matches" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}" oninput="this.nextElementSibling.value = this.value">
 								<output style="width: 50px; text-align: right;">{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}</output>
 							</div>
 						</div>
@@ -143,7 +148,7 @@
 
 					<!-- Footer -->
 					<div class="modal-footer d-flex justify-content-between p-2 bg-dark text-light">
-						<label class="text-danger" id="job-error-message"></label>
+						<label id="job-error-message"></label>
 						<div style="position: relative; max-height: 50px;">
 							<button id="create-job-button" type="submit" class="btn btn-outline-primary border-2 rounded-pill" disabled>
 								<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-plus" viewBox="4 2.5 13 13">
@@ -179,6 +184,7 @@
 	let NEW_JOB_URL = "{% url "jobs:new" %}";
 	let GET_JOBS_URL = "{% url "api:jobs:get_jobs" %}";
 	let GET_JOB_STATUSES_URL = "{% url "api:jobs:get_statuses" %}";
+	let GET_JOB_LOGS_URL = "{% url "api:jobs:get_logs" %}";
 
 	let POLLING_TIME = {{ POLLING_TIME | js }};
 	let DEFAULT_MOSS_SETTINGS = {{ DEFAULT_MOSS_SETTINGS | js }};

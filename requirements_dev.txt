@@ -1,9 +1,10 @@
 django
 python-dotenv
+requests
 whitenoise
 celery
 redis
-pymysql
+pymysql[rsa]
 asyncio
 aiohttp
 coverage
