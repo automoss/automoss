@@ -1,8 +1,6 @@
 from django.db import models
 from django.conf import settings
 from django.utils.timezone import now
-from django.core.mail import send_mail
-from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -17,11 +15,12 @@ from ...settings import (
     UUID_LENGTH,
 )
 
+
 class UserManager(BaseUserManager):
     """ Manager for custom user class
-    
+
         Based on Django's implementation and example found at:
-        https://www.codingforentrepreneurs.com/blog/how-to-create-a-custom-django-user-model 
+        https://www.codingforentrepreneurs.com/blog/how-to-create-a-custom-django-user-model
     """
     use_in_migrations = True
 
@@ -37,8 +36,8 @@ class UserManager(BaseUserManager):
             raise ValueError('The given MOSS ID must be set')
         normalized_email = self.normalize_email(primary_email_address)
         user = self.model(
-            course_code=course_code, 
-            primary_email_address=normalized_email, 
+            course_code=course_code,
+            primary_email_address=normalized_email,
             moss_id=moss_id,
             **extra_fields)
         user.set_password(password)
@@ -46,17 +45,17 @@ class UserManager(BaseUserManager):
         return user
 
     def create_user(self, course_code, primary_email_address, moss_id, password=None, **extra_fields):
-        """ 
+        """
         Creates and saves user with no admin level permissions by default.
         """
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
 
         return self._create_user(
-            course_code, 
-            primary_email_address, 
-            moss_id, 
-            password, 
+            course_code,
+            primary_email_address,
+            moss_id,
+            password,
             **extra_fields
         )
 
@@ -69,9 +68,9 @@ class UserManager(BaseUserManager):
             raise ValueError('Staffuser must have is_staff=True.')
 
         return self._create_user(
-            course_code, 
-            primary_email_address, 
-            moss_id, password, 
+            course_code,
+            primary_email_address,
+            moss_id, password,
             **extra_fields
         )
 
@@ -88,12 +87,13 @@ class UserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser=True.')
 
         return self._create_user(
-            course_code, 
-            primary_email_address, 
-            moss_id, 
-            password, 
+            course_code,
+            primary_email_address,
+            moss_id,
+            password,
             **extra_fields
         )
+
 
 class User(AbstractBaseUser):
     """
@@ -120,7 +120,7 @@ class User(AbstractBaseUser):
         validators=[course_code_validator],
         error_messages={
             'unique': "A user with that username already exists."
-    })
+        })
     # Email to send administritive content to
     primary_email_address = models.EmailField(
         blank=False,
@@ -132,7 +132,7 @@ class User(AbstractBaseUser):
     )
     # MOSS ID for using the MOSS API
     moss_id = models.CharField(
-        unique=True, 
+        unique=True,
         max_length=32,
         blank=False,
         null=False
@@ -162,13 +162,14 @@ class User(AbstractBaseUser):
 
     def clean(self):
         super().clean()
-        self.primary_email_address = self.__class__.objects.normalize_email(self.primary_email_address)
+        self.primary_email_address = self.__class__.objects.normalize_email(
+            self.primary_email_address)
 
     def has_perm(self, perm, obj=None):
-       return self.is_staff
+        return self.is_staff
 
     def has_module_perms(self, app_label):
-       return self.is_staff
+        return self.is_staff
 
     def send_email(self, subject_template, body_template, html_template, context, broadcast=False):
         """Send an email to this user and possibly associated emails if broadcast email """
@@ -179,20 +180,22 @@ class User(AbstractBaseUser):
         recipients = [str(self.primary_email_address)]
         # Add to recipient list if broadcast
         if broadcast:
-            recipients += [str(email) for email in self.email_set.filter(is_verified=True)]
+            recipients += [str(email)
+                           for email in self.email_set.filter(is_verified=True)]
         # send emails asynchronously
-        
+
         send_emails.apply_async(kwargs={
-            'from_email':settings.DEFAULT_FROM_EMAIL, 
-            'recipients':recipients, 
-            'subject':subject, 
-            'body':body, 
-            'html':html
+            'from_email': settings.DEFAULT_FROM_EMAIL,
+            'recipients': recipients,
+            'subject': subject,
+            'body': body,
+            'html': html
         }, queue='email')
 
     def __str__(self):
         """ User to string returns course code """
         return self.course_code
+
 
 class Email(models.Model):
     """ Secondary email address associated with a user account """
@@ -225,10 +228,10 @@ class Email(models.Model):
         recipients = [str(self.email_address)]
         # send emails asynchronously
         send_emails.delay(
-            from_email=settings.DEFAULT_FROM_EMAIL, 
-            recipients=recipients, 
-            subject=subject, 
-            body=body, 
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipients=recipients,
+            subject=subject,
+            body=body,
             html=html
         )
 

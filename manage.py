@@ -14,9 +14,11 @@ from automoss.apps.utils.core import is_main_thread, is_testing
 from automoss.apps.moss.pinger import monitor
 
 if DEBUG:
-    def start_service(args): return Popen(args)
+    def start_service(args):
+        return Popen(args)
 else:
-    def start_service(args): return Popen(args, stdout=DEVNULL, stderr=STDOUT)
+    def start_service(args):
+        return Popen(args, stdout=DEVNULL, stderr=STDOUT)
 
 
 running_main_thread = is_main_thread()

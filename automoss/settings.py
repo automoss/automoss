@@ -12,9 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from automoss.apps.utils.core import is_testing
 from .redis import REDIS_URL
 from .apps.utils.core import capture_in
-from .apps.utils.core import first
 import os
-import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -131,9 +129,9 @@ AUTH_USER_MODEL = 'users.User'
 LOGIN_REDIRECT_URL = '/jobs/'
 LOGIN_URL = "/user/login/"
 # Currently returns logged_out.html
-#LOGOUT_REDIRECT_URL = '/accounts/login'
+# LOGOUT_REDIRECT_URL = '/accounts/login'
 
-#EMAIL_USE_TLS = True
+# EMAIL_USE_TLS = True
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
@@ -233,7 +231,7 @@ MOSS_CONTEXT = {}
 with capture_in(MOSS_CONTEXT):
     # Moss defaults
     READABLE_LANGUAGE_MAPPING = {
-        SUPPORTED_LANGUAGES[l][0]: l for l in SUPPORTED_LANGUAGES}
+        SUPPORTED_LANGUAGES[language][0]: language for language in SUPPORTED_LANGUAGES}
     DEFAULT_MOSS_SETTINGS = {
         'max_until_ignored': 10,
         'max_displayed_matches': 250

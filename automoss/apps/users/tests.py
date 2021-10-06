@@ -207,8 +207,8 @@ class TestUsers(AuthenticatedUserTest):
                 # confirm using verification link
                 verify_response = test_client.get(
                     reverse("users:confirm", kwargs={
-                        'uid':  user.user_id,
-                        'token':  confirm_registration_token.make_token(user)
+                        'uid': user.user_id,
+                        'token': confirm_registration_token.make_token(user)
                     }
                     )
                 )

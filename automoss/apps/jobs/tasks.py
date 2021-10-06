@@ -2,11 +2,9 @@
 from ..results.models import MOSSResult, Match
 from .models import Job, Submission, JobEvent
 from django.utils.timezone import now
-from django.core.files.uploadedfile import UploadedFile
 from ..moss.pinger import Pinger, LoadStatus
 from ..moss.moss import (
     MOSS,
-    Result,
     RecoverableMossException,
     ReportParsingError,
     EmptyResponse,
@@ -34,7 +32,6 @@ from ...settings import (
     FIRST_RETRY_INSTANT,
 
     # Events
-    INQUEUE_EVENT,
     UPLOADING_EVENT,
     PROCESSING_EVENT,
     PARSING_EVENT,
@@ -192,6 +189,7 @@ def process_job(job_id):
             logger.debug(msg)
 
         except FatalMossException as e:
+            logger.error(f'Fatal moss exception: {e}')
             break  # Will be handled below (result is None)
 
         except Exception as e:
@@ -256,7 +254,7 @@ def process_job(job_id):
             # Calculate average file_size
             num_files = len(paths[FILES_NAME])
             avg_file_size = sum([os.path.getsize(x)
-                                for x in paths[FILES_NAME]])/num_files
+                                for x in paths[FILES_NAME]]) / num_files
 
             log_info = vars(job).copy()
             log_info.pop('_state', None)

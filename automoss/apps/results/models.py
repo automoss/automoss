@@ -1,7 +1,6 @@
 from django.utils.timezone import now
 from django.db import models
 from ...settings import UUID_LENGTH, COMPLETED_STATUS
-from ...apps.utils.core import (to_choices, get_longest_key, first)
 import uuid
 from ..jobs.models import Job, Submission
 
@@ -21,11 +20,14 @@ class MOSSResult(models.Model):
         """ Report to string method """
         return f"Report at {self.url}"
 
+
 class MatchManager(models.Manager):
     """ Custom Match manager """
+
     def user_matches(self, user):
         """ Returns set of matches belonging to user """
         return self.get_queryset().filter(moss_result__job__user=user)
+
 
 class Match(models.Model):
     """ Class to model MOSS Match """

@@ -1,13 +1,12 @@
-from ...settings import SUBMISSION_TYPES
 import uuid
 from django.utils.timezone import now
 from django.db import models
-from django.conf import settings
 from django.contrib.auth import get_user_model
 
 import os
 import shutil
 from ...settings import (
+    SUBMISSION_TYPES,
     STATUSES,
     JOB_EVENT_CONTEXT,
     SUPPORTED_LANGUAGES,
@@ -53,7 +52,8 @@ class Job(models.Model):
     # Language choice
     language = models.CharField(
         max_length=get_longest_key(SUPPORTED_LANGUAGES),
-        choices=[(l, SUPPORTED_LANGUAGES[l][0]) for l in SUPPORTED_LANGUAGES],
+        choices=[(language, SUPPORTED_LANGUAGES[language][0])
+                 for language in SUPPORTED_LANGUAGES],
         default=first(SUPPORTED_LANGUAGES),
     )
 
@@ -98,8 +98,9 @@ class Job(models.Model):
             shutil.rmtree(media_path)
 
             parent = os.path.dirname(media_path)
-            if len(os.listdir(parent)) == 0: # Delete parent dir if empty
+            if len(os.listdir(parent)) == 0:  # Delete parent dir if empty
                 os.rmdir(parent)
+
 
 class Submission(models.Model):
     """ Class to model MOSS Report Entity """

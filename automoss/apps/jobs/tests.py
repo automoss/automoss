@@ -8,8 +8,6 @@ from .models import Job
 from ..results.models import Match
 from django.utils.timezone import now
 from django.http.response import HttpResponse
-from django.test import TestCase
-from django.test import Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 import os
@@ -93,10 +91,8 @@ class TestJobs(AuthenticatedUserTest):
                 yield os.path.join(test_path, f_name)
 
     def test_process_job(self):
-
         for test_path in self._get_test_files():
             self._run_zip_test(test_path)
-
 
     def test_no_files(self):
         self._run_test([], expected_status=400)

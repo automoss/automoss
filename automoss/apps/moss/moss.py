@@ -4,9 +4,6 @@ import socket
 import os
 import re
 import requests
-import time
-
-import threading
 
 import asyncio
 import aiohttp
@@ -19,8 +16,8 @@ from ...settings import (
 
 MOSS_URL = 'moss.stanford.edu'
 HTTP_MOSS_URL = f'http://{MOSS_URL}'
-SUPPORTED_MOSS_LANGUAGES = [SUPPORTED_LANGUAGES[l][1]
-                            for l in SUPPORTED_LANGUAGES]
+SUPPORTED_MOSS_LANGUAGES = [SUPPORTED_LANGUAGES[language][1]
+                            for language in SUPPORTED_LANGUAGES]
 HTTP_RETRY_COUNT = 5
 
 
@@ -126,7 +123,7 @@ class MossAPIWrapper:
             self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
             return True
-        except ConnectionError as e:
+        except ConnectionError:
             return False  # Do not throw error if unable to close
 
     def read_raw(self, buffer):
@@ -167,7 +164,7 @@ class MossAPIWrapper:
             file_path = os.path.basename(file_path)
 
         # Replace whitespace with _
-        file_name = re.sub('\s+', '_', file_path).replace('\\', '/')
+        file_name = re.sub(r'\s+', '_', file_path).replace('\\', '/')
 
         # Send file header information
         self._send_string(f'file {file_id} {language} {size} {file_name}')

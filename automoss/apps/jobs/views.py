@@ -1,14 +1,12 @@
 
 import os
 import json
-from json.decoder import JSONDecodeError
 
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.shortcuts import render
 from django.template.defaulttags import register
 from django.http.response import JsonResponse
-from django.utils.datastructures import MultiValueDictKeyError
 from django.core.serializers import serialize
 from django.utils.safestring import mark_safe
 from django.views import View
@@ -18,10 +16,8 @@ from .tasks import process_job
 from .models import (
     Job,
     Submission,
-    JobEvent,
-    get_default_comment
+    JobEvent
 )
-from ..results.models import Match
 from ...settings import (
     STATUS_CONTEXT,
     SUBMISSION_CONTEXT,
@@ -37,8 +33,7 @@ from ...settings import (
 
     INQUEUE_EVENT,
     CREATED_EVENT,
-    FILES_NAME,
-    FAILED_STATUS
+    FILES_NAME
 )
 
 
@@ -110,8 +105,6 @@ class New(View):
 
         job_id = new_job.job_id
 
-        moss_user_id = request.user.moss_id
-
         for file_type in SUBMISSION_TYPES:
             for f in request.FILES.getlist(file_type):
 
@@ -177,7 +170,8 @@ class JSONJobEvents(View):
             request.user).filter(job_id__in=job_ids)
 
         data = {
-            j.job_id: [{'type': x.type, 'str': str(x)} for x in JobEvent.objects.filter(job=j)]
+            j.job_id: [{'type': x.type, 'str': str(
+                x)} for x in JobEvent.objects.filter(job=j)]
             for j in results
         }
 

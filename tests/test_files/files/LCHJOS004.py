@@ -26,7 +26,7 @@ for i, j in zip(list_1, list_2):
 num = 29
 
 # To take input from the user
-#num = int(input("Enter a number: "))
+# num = int(input("Enter a number: "))
 
 # define a flag variable
 flag = False

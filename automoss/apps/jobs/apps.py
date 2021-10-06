@@ -21,7 +21,8 @@ class JobsConfig(AppConfig):
             unfinished_jobs = Job.objects.exclude(
                 status__in=[COMPLETED_STATUS, FAILED_STATUS])
             for job in unfinished_jobs:
-                print(' * Restarting unfinished job', job.job_id, 'with status', job.status)
+                print(' * Restarting unfinished job',
+                      job.job_id, 'with status', job.status)
                 job.status = INQUEUE_STATUS
                 job.save()
                 process_job.delay(job.job_id)

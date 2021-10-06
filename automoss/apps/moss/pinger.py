@@ -2,12 +2,11 @@
 
 # Used for exponential moving average
 from enum import IntEnum
-import platform
-import subprocess
 import time
 from ...redis import REDIS_INSTANCE
 from .moss import HTTP_MOSS_URL
 import requests
+
 
 class LoadStatus(IntEnum):
     NORMAL = 1
@@ -34,7 +33,7 @@ class Pinger:
     def _set_ping(key, ping):
         if ping is None:
             ping = ''
-        
+
         REDIS_INSTANCE.set(key, ping)
 
     @staticmethod
@@ -73,7 +72,7 @@ class Pinger:
             current_ping = Pinger.ping()
         else:
             current_ping = Pinger.get_latest_ping()
-        
+
         average_ping = Pinger.get_average_ping()
 
         if current_ping is None:
@@ -92,19 +91,21 @@ class Pinger:
         # Pings moss, and updates current known ping
         new_ping = None
         try:
-            timeout=30 # TODO global
-            new_ping = requests.head(HTTP_MOSS_URL, verify=False, allow_redirects=False, timeout=timeout).elapsed.total_seconds()
-            
+            timeout = 30  # TODO global
+            new_ping = requests.head(
+                HTTP_MOSS_URL, verify=False, allow_redirects=False, timeout=timeout).elapsed.total_seconds()
+
             latest_average = Pinger.get_latest_ping()
-            
-            if latest_average is None: # Not set yet, or was down
+
+            if latest_average is None:  # Not set yet, or was down
                 latest_average = new_ping
             else:
                 alpha_to_use = ALPHA if new_ping > latest_average else DOWN_ALPHA
-                latest_average = alpha_to_use * new_ping + (1-alpha_to_use) * latest_average
-            
+                latest_average = alpha_to_use * new_ping + \
+                    (1 - alpha_to_use) * latest_average
+
             Pinger.set_latest_ping(latest_average)
-            
+
             current_ping = Pinger.get_average_ping()
 
             if current_ping is None:
@@ -113,16 +114,18 @@ class Pinger:
             else:
                 alpha_to_use = UP_ALPHA if new_ping > current_ping else DOWN_ALPHA
                 Pinger.set_average_ping(
-                    alpha_to_use * new_ping + (1-alpha_to_use) * current_ping)
+                    alpha_to_use * new_ping + (1 - alpha_to_use) * current_ping)
 
         except (requests.exceptions.RequestException, ConnectionError):
             # Set latest ping to "None" (i.e., moss is down)
             Pinger.set_latest_ping(None)
 
         with open('ping.log', 'a') as fp:
-            print(time.time(), new_ping, Pinger.get_latest_ping(), Pinger.get_average_ping(), file=fp)
+            print(time.time(), new_ping, Pinger.get_latest_ping(),
+                  Pinger.get_average_ping(), file=fp)
         return new_ping
-        
+
+
 def monitor():
     # Monitor status of MOSS
     while True:
