@@ -14,6 +14,7 @@
 		let email = document.getElementById('id_email_input')
 		let emailInvalid = document.getElementById('id_email_invalid')
 		let emailAddButton = document.getElementById('id_add_email')
+		let emailAddForm = document.getElementById('id_email_add_form')
 		let emailUpdateButton = document.getElementById('id_update_emails')
 		let emailForm = document.getElementById('id_email_add_form')
 		let emailList = document.getElementById('id_email_list')
@@ -80,8 +81,8 @@
 			})
 		})
 
-		// Add email to list when Add Email clicked
-		emailAddButton.addEventListener('click', function(event){
+		function addEmail(){
+			// Check email form is valid
 			if (!emailForm.checkValidity()) {
 				// Prevent adding to list
 				emailForm.classList.add('was-validated')
@@ -92,11 +93,26 @@
 				email.dispatchEvent(focusEvent)
 			}
 			else{
+				// Add to list of emails
 				createEmailComponent(email.value)
 				email.value = ""
 				emailsChanged = true
 				emailUpdateButton.disabled = false
 			}
+		}
+
+		// Trigger email add on form submit
+		emailAddForm.addEventListener('submit', function(event){
+			// Prevent submission
+			event.preventDefault();
+			event.stopPropagation();
+			// Add email
+			addEmail()
+		})
+
+		// Add email to list when Add Email clicked
+		emailAddButton.addEventListener('click', function(event){
+			addEmail()
 		})
 
 		// POST data when Update List clicked
