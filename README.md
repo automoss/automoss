@@ -1,6 +1,7 @@
 # AutoMOSS
 
 ## Running Instructions
-1. Add `.env` file with `SECRET_KEY=<YOUR SECRET KEY HERE>` in `automoss/`
-2. Run `python3 manage.py runserver` 
-3. Go to `localhost:8000/jobs`
+1. Add `.env` file with the correct information filled in. See `example.env` for the required variables.
+2. Run `make install` to install the required dependencies
+3. Run `make run` to run the server
+4. Open a web browser and go to the host (e.g., http://localhost:8000)
