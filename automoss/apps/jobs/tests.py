@@ -90,6 +90,11 @@ class TestJobs(AuthenticatedUserTest):
             if os.path.splitext(f_name)[1] == '.zip':
                 yield os.path.join(test_path, f_name)
 
+    def test_view(self):
+        job_response = self.client.get(reverse("jobs:index"))
+        self.assertEqual(job_response.status_code, 200)
+        self.assertTrue(isinstance(job_response, HttpResponse))
+
     def test_process_job(self):
         """Test that process job runs correctly"""
 
