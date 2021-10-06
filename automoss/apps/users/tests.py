@@ -1,11 +1,15 @@
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, JsonResponse
 from django.test import TestCase
 from django.test import Client
 from django.http import HttpResponseRedirect
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from .tokens import confirm_registration_token
+from .tokens import (
+    confirm_registration_token,
+    email_confirmation_token,
+    password_reset_token
+)
 
 User = get_user_model()
 
@@ -236,3 +240,132 @@ class TestUsers(AuthenticatedUserTest):
                     register_response, HttpResponseRedirect))
                 self.assertNotIn('_auth_user_id', test_client.session)
                 self.assertFalse(user.is_verified)
+
+    def test_profile_get(self):
+        """ Test profile page get """
+        test_client, login_response = self.create_client()
+        # Get profile page
+        profile_response = test_client.get(reverse("users:profile"))
+
+        self.assertEqual(profile_response.status_code, 200)
+        self.assertTrue(isinstance(profile_response, HttpResponse))
+
+    def test_profile_post_password(self):
+        """ Test posting new password """
+        test_client, login_response = self.create_client()
+
+        password_change_data = {
+            "form" : "password-change",
+            "old_password": "Testing123!",
+            "new_password1" : "Testing321!",
+            "new_password2" : "Testing321!"
+        }
+        # Post password change data
+        profile_response = test_client.post(reverse("users:profile"), 
+                                            password_change_data)
+
+        self.assertEqual(profile_response.status_code, 200)
+        self.assertTrue(isinstance(profile_response, HttpResponse))
+
+    def test_profile_post_emails(self):
+        """ Test updating email list """
+        test_client, login_response = self.create_client()
+
+        email_list = {
+            "form" : "mail-list-change",
+            "emails" : "testing1@test.com,testing2@test.com"
+        }
+        # Post new email list
+        profile_response = test_client.post(reverse("users:profile"), 
+                                                    email_list)
+
+        self.assertEqual(profile_response.status_code, 200)
+        # User should have email list containing two emails
+        self.assertEqual(len(self.user.email_set.all()), 2)
+        # Response should be JSON
+        self.assertTrue(isinstance(profile_response, JsonResponse))
+
+    def test_forgot_password_get(self):
+        """ Test forgot password page get """
+        test_client, login_response = self.create_client()
+        # Get profile page
+        response = test_client.get(reverse("users:forgot-password"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(isinstance(response, HttpResponse))
+
+    def test_forgot_password_post(self):
+        """ Test forgot password post """
+        test_client, login_response = self.create_client()
+
+        forgotten_password_data = {
+            "course_code" : "user",
+        }
+        # Post password change data
+        profile_response = test_client.post(reverse("users:forgot-password"), 
+                                                    forgotten_password_data)
+
+        self.assertEqual(profile_response.status_code, 200)
+        self.assertTrue(isinstance(profile_response, HttpResponse))
+
+    def test_reset_password_get(self):
+        """ Test reset password get """
+        test_client, login_response = self.create_client()
+        # Get password reset page using user id and token
+        response = test_client.get(
+                    reverse("users:reset-password", kwargs={
+                        'uid': self.user.user_id,
+                        'token': password_reset_token.make_token(self.user)
+                    }
+                    )
+                )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(isinstance(response, HttpResponse))
+
+    def test_reset_password_post(self):
+        """ Test reset password post """
+        test_client, login_response = self.create_client()
+
+        reset_password_data = {
+            "new_password1" : "TestingABC!",
+            "new_password2" : "TestingABC!"
+        }
+        # Post password reset data
+        response = test_client.post(
+                    reverse("users:reset-password", kwargs={
+                        'uid': self.user.user_id,
+                        'token': password_reset_token.make_token(self.user)
+                    }
+                    ),
+                    reset_password_data
+                )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(isinstance(response, HttpResponse))
+
+    def test_confirm_email(self):
+        """ Test confirm email get """
+        test_client, login_response = self.create_client()
+        email_list = {
+            "form" : "mail-list-change",
+            "emails" : "testing1@test.com"
+        }
+        # Post updated email list
+        email_response = test_client.post(reverse("users:profile"), 
+                                                    email_list)
+        # Get confirm email page using email id and token
+        response = test_client.get(
+                    reverse("users:confirm-email", kwargs={
+                        'eid': self.user.email_set.all().first().email_id,
+                        'token': email_confirmation_token.make_token(
+                            self.user.email_set.all().first()
+                            )
+                    }
+                    )
+                )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(isinstance(response, HttpResponse))
+        # Email should now be verified
+        self.assertTrue(self.user.email_set.all().first().is_verified)
