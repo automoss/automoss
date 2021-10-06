@@ -33,18 +33,18 @@ function updateJobStatus(jobId, status){
 	}
 }
 
-let prevLogs = null;
 function updateJobLogs(jobId, logs){
 	let jobLogs = document.getElementById(`job-logs-${jobId}`);
-
+	console.log(logs);
 	let temp = "";
 	for (let log in logs){
-		temp += logs[log] + "\n";
+		temp += logs[log].str + "\n";
+		jobLogs.prevStatus = logs[log].type;
 	}
 	temp = trimRight(temp, 1);
 
-	if (temp !== prevLogs){
-		prevLogs = jobLogs.innerHTML = temp;
+	if (temp !== jobLogs.prevLogs){
+		jobLogs.prevLogs = jobLogs.innerHTML = temp;
 	}
 }
 

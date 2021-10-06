@@ -177,7 +177,7 @@ class JSONJobEvents(View):
             request.user).filter(job_id__in=job_ids)
 
         data = {
-            j.job_id: [str(x) for x in JobEvent.objects.filter(job=j)]
+            j.job_id: [{'type': x.type, 'str': str(x)} for x in JobEvent.objects.filter(job=j)]
             for j in results
         }
 
