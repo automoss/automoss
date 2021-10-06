@@ -26,6 +26,7 @@ from ...settings import (
     JOB_UPLOAD_TEMPLATE,
     DEBUG,
 
+    MIN_RETRIES_COUNT,
     MIN_RETRY_TIME,
     MAX_RETRY_TIME,
     MAX_RETRY_DURATION,
@@ -55,20 +56,22 @@ subject_template = "jobs/email/job-status-subject.txt"
 body_template = "jobs/email/job-status.txt"
 html_template = "jobs/email/job-status.html"
 
+
 def send_email_notification(job):
     """ Sends job notification to all emails associated with a job """
     job.user.send_email(
-        subject_template, 
-        body_template, 
-        html_template, 
-        { 
-            "job" : job,
-            "status" : STATUSES.get(job.status),
-            "host" : HOSTNAME,
-            "log" : job.jobevent_set.all()
-        }, 
+        subject_template,
+        body_template,
+        html_template,
+        {
+            "job": job,
+            "status": STATUSES.get(job.status),
+            "host": HOSTNAME,
+            "log": job.jobevent_set.all()
+        },
         broadcast=True
     )
+
 
 @task(name='Upload')
 def process_job(job_id):
@@ -201,11 +204,15 @@ def process_job(job_id):
             ping_message = f'({ping} vs. {average_ping})'
 
             if load_status == LoadStatus.NORMAL:
-                msg = f'Moss is not under load {ping_message} - job ({job_id}) will never finish'
-                error = FatalMossException(
-                    "MOSS returned no response, but isn't under load. The job will never finish.")
-                logger.debug(msg)
-                break
+                if attempt >= MIN_RETRIES_COUNT - 1:  # Retry job a minimum number of times
+                    msg = f'Moss is not under load {ping_message} - job ({job_id}) will never finish'
+                    error = FatalMossException(
+                        f"MOSS returned no response at least {MIN_RETRIES_COUNT - 1} times, but isn't under load. The job will never finish.")
+                    logger.debug(msg)
+                    break
+
+                else:
+                    msg = f'Moss is not under load {ping_message}, retrying job ({job_id})'
 
             elif load_status in (LoadStatus.UNDER_LOAD, LoadStatus.UNDER_SEVERE_LOAD):
                 msg = f'Moss is under load {ping_message}, retrying job ({job_id})'
@@ -278,12 +285,13 @@ def process_job(job_id):
         JobEvent.objects.create(
             job=job, type=COMPLETED_EVENT, message='Completed')
         job.status = COMPLETED_STATUS
+        send_email_notification(job)
+
         return result.url
 
     finally:
         job.save()
-        send_email_notification(job)
-        
+
         if DEBUG:
             # Calculate average file_size
             num_files = len(paths[FILES_NAME])
