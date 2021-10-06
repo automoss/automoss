@@ -196,9 +196,8 @@ def process_job(job_id):
                 # Malformed MOSS report... must regenerate
                 url = None
 
-        except EmptyResponse as e:
+        except EmptyResponse:
             # Job ended without any response (i.e., timed out)
-            error = e
 
             load_status, ping, average_ping = Pinger.determine_load()
             ping_message = f'({ping} vs. {average_ping})'
@@ -213,13 +212,14 @@ def process_job(job_id):
 
                 else:
                     msg = f'MOSS returned no response but is not under load. Will retry {MIN_RETRIES_COUNT - 1 - attempt} more times'
-                    error = RecoverableMossException(msg)
 
             elif load_status in (LoadStatus.UNDER_LOAD, LoadStatus.UNDER_SEVERE_LOAD):
                 msg = f'Moss is under load {ping_message}, retrying job ({job_id})'
+
             else:
                 msg = f'Moss is down {ping_message}, retrying job ({job_id})'
 
+            error = RecoverableMossException(msg)
             logger.debug(msg)
 
         except FatalMossException as e:
