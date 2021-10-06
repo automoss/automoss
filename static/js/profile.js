@@ -21,7 +21,12 @@
 		let emailFeedback = document.getElementById('id_email_list_invalid')
 		let emailsChanged = false
 
-		function createEmailComponent(emailAddress){
+		function clearEmailList(){
+			// Removes all emails from the email list
+			emailList.innerHTML = ""
+		}
+
+		function createEmailComponent(emailAddress, verified=false){
 			// Email and icon
 			let emailImg = document.createElement('img')
 			emailImg.src = "/static/img/email-icon.svg"
@@ -35,13 +40,14 @@
 
 			// Badge and close button
 			let badge = document.createElement('span')
-			badge.classList.add("badge", "badge-pill", "bg-danger")
-			badge.innerText="Unverified"
+			badge.classList.add("badge", "badge-pill", verified ? "bg-success" : "bg-danger")
+			badge.innerText=verified ? "Verified" : "Unverified"
 			let closeButton = document.createElement('button')
 			closeButton.classList.add("btn-close", "ms-3", "remove-email")
 			closeButton.addEventListener('click', function(event){
 				closeButton.parentElement.parentElement.remove()
 				emailsChanged = true
+				emailUpdateButton.disabled = false
 			})
 
 			// Add to div
@@ -70,6 +76,7 @@
 			button.addEventListener('click', function(event){
 				button.parentElement.parentElement.remove()
 				emailsChanged = true
+				emailUpdateButton.disabled = false
 			})
 		})
 
@@ -88,6 +95,7 @@
 				createEmailComponent(email.value)
 				email.value = ""
 				emailsChanged = true
+				emailUpdateButton.disabled = false
 			}
 		})
 
@@ -100,15 +108,32 @@
 				data.append("emails", emails)
 				data.append("form", "mail-list-change")
 				data.append("csrfmiddlewaretoken", document.querySelector('input[name="csrfmiddlewaretoken"]').getAttribute('value'))
-				console.log(data)
 				// Post email data
-				let info = await fetch("", {
+				let result = await fetch("", {
 					method: 'POST',
 					credentials: 'same-origin',
 					body: data
 				})
-				// Reload
-				window.location.reload(true); 
+				// Clear email list
+				clearEmailList()
+				let jsonEmails = await result.json()
+				// Add new emails
+				for(let email of jsonEmails["emails"]){
+					createEmailComponent(...email)
+				}
+				// Reset changed to false
+				emailsChanged = false
+				emailUpdateButton.disabled = true
+				// Add status to status div
+				emailFeedback.innerText = "Email list updated!"
+				emailFeedback.classList.remove("text-danger")
+				emailFeedback.classList.add("text-success")
+				// Remove feedback after 2 seconds
+				setTimeout(function(){
+					emailFeedback.innerText = ""
+					emailFeedback.classList.add("text-danger")
+					emailFeedback.classList.remove("text-success")
+				}, 2000)
 			}
 			else{
 				emailFeedback.innerText = "The email list hasn't changed!"
