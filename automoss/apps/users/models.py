@@ -197,6 +197,14 @@ class Email(models.Model):
     """ Secondary email address associated with a user account """
     # User foreign key - an email belongs to a user
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # Unique ID for use in URLs
+    email_id = models.CharField(
+        primary_key=False,
+        default=uuid.uuid4,
+        max_length=UUID_LENGTH,
+        editable=False,
+        unique=True
+    )
     # Email address
     email_address = models.EmailField(
         blank=False,
@@ -206,6 +214,23 @@ class Email(models.Model):
     is_verified = models.BooleanField(
         default=False
     )
+
+    def send_email(self, subject_template, body_template, html_template, context):
+        """Send an email to this email """
+        # Render templates
+        subject = render_to_string(subject_template, context).strip()
+        body = render_to_string(body_template, context)
+        html = render_to_string(html_template, context)
+        recipients = [str(self.email_address)]
+        # send emails asynchronously
+        send_emails.delay(
+            from_email=settings.DEFAULT_FROM_EMAIL, 
+            recipients=recipients, 
+            subject=subject, 
+            body=body, 
+            html=html
+        )
+
     def __str__(self):
         """ Email to string """
         return self.email_address
