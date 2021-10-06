@@ -24,6 +24,7 @@ from ...settings import (
     FAILED_STATUS,
     SUBMISSION_TYPES,
     FILES_NAME,
+    STATUSES,
     JOB_UPLOAD_TEMPLATE,
     DEBUG,
 
@@ -40,7 +41,9 @@ from ...settings import (
     PARSING_EVENT,
     COMPLETED_EVENT,
     FAILED_EVENT,
-    RETRY_EVENT
+    RETRY_EVENT,
+
+    HOSTNAME
 )
 from ..utils.core import retry
 import os
@@ -51,6 +54,24 @@ from celery.decorators import task
 from celery.utils.log import get_task_logger
 logger = get_task_logger(__name__)
 
+subject_template = "jobs/email/job-status-subject.txt"
+body_template = "jobs/email/job-status.txt"
+html_template = "jobs/email/job-status.html"
+
+def send_email_notification(job):
+    """ Sends job notification to all emails associated with a job """
+    job.user.send_email(
+        subject_template, 
+        body_template, 
+        html_template, 
+        { 
+            "job" : job,
+            "status" : STATUSES.get(job.status),
+            "host" : HOSTNAME,
+            "log" : job.jobevent_set.all()
+        }, 
+        broadcast=True
+    )
 
 @task(name='Upload')
 def process_job(job_id):
@@ -94,6 +115,8 @@ def process_job(job_id):
 
         JobEvent.objects.create(
             job=job, type=FAILED_EVENT, message='No files supplied')
+
+        send_email_notification(job)
         return None
 
     num_attempts = 0
@@ -218,6 +241,7 @@ def process_job(job_id):
             job.status = FAILED_STATUS
             JobEvent.objects.create(
                 job=job, type=FAILED_EVENT, message='A fatal error occurred')
+            send_email_notification(job)
             return None
 
         # Parse result
@@ -251,7 +275,8 @@ def process_job(job_id):
 
     finally:
         job.save()
-
+        send_email_notification(job)
+        
         if DEBUG:
             # Calculate average file_size
             num_files = len(paths[FILES_NAME])
