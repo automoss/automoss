@@ -96,6 +96,35 @@ class TestJobs(AuthenticatedUserTest):
         for test_path in self._get_test_files():
             self._run_zip_test(test_path)
 
+    def test_invalid_jobs(self):
+        """Test invalid jobs"""
+
+        job_params = {
+            "job-language": "Python",
+            "job-max-until-ignored": "10",
+            "job-max-displayed-matches": "250",
+            'job-name': 'Job Name',
+            "files": ['file']
+        }
+
+        response = self.client.post(reverse("jobs:new"), {
+            **job_params,
+            'job-language': 'Invalid'
+        })
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client.post(reverse("jobs:new"), {
+            **job_params,
+            'job-max-until-ignored': -1
+        })
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client.post(reverse("jobs:new"), {
+            **job_params,
+            'job-max-displayed-matches': -1
+        })
+        self.assertEqual(response.status_code, 400)
+
     def test_no_files(self):
         """Try to submit an empty job"""
 
