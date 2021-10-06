@@ -67,7 +67,8 @@ def send_email_notification(job):
             "job": job,
             "status": STATUSES.get(job.status),
             "host": HOSTNAME,
-            "log": job.jobevent_set.all()
+            "log": job.jobevent_set.all(),
+            "has_link" : job.status == COMPLETED_STATUS
         },
         broadcast=True
     )
