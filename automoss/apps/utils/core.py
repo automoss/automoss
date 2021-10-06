@@ -5,6 +5,14 @@ import sys
 import inspect
 
 
+def in_range(value, range):
+    """Determine if value is in a range"""
+    try:
+        return range[0] <= float(value) <= range[1]
+    except ValueError:
+        return False
+
+
 def get_longest_key(dictionary):
     """Get the longest key in a dictionary"""
     return max(map(len, dictionary))

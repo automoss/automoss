@@ -33,8 +33,12 @@ from ...settings import (
 
     INQUEUE_EVENT,
     CREATED_EVENT,
-    FILES_NAME
+    FILES_NAME,
+
+    MAX_UNTIL_IGNORED_RANGE,
+    MAX_DISPLAYED_MATCHES_RANGE
 )
+from ..utils.core import in_range
 
 
 @register.filter(is_safe=True)
@@ -67,7 +71,6 @@ class New(View):
 
     def post(self, request):
         """ Post new job """
-        # TODO validate form
         posted_language = request.POST.get('job-language')
         language = READABLE_LANGUAGE_MAPPING.get(posted_language)
 
@@ -83,11 +86,22 @@ class New(View):
             }
             return JsonResponse(data, status=400)
 
-        # TODO validate options and reject if incorrect
         max_until_ignored = request.POST.get('job-max-until-ignored')
         max_displayed_matches = request.POST.get('job-max-displayed-matches')
 
-        comment = request.POST.get('job-name')
+        if not in_range(max_until_ignored, MAX_UNTIL_IGNORED_RANGE):
+            data = {
+                'message': 'Invalid parameter: Max until ignored'
+            }
+            return JsonResponse(data, status=400)
+
+        if not in_range(max_displayed_matches, MAX_DISPLAYED_MATCHES_RANGE):
+            data = {
+                'message': 'Invalid parameter: Max displayed matches'
+            }
+            return JsonResponse(data, status=400)
+
+        comment = request.POST.get('job-name', '')
 
         num_students = len(request.FILES.getlist(FILES_NAME))
 
@@ -106,8 +120,6 @@ class New(View):
 
         for file_type in SUBMISSION_TYPES:
             for f in request.FILES.getlist(file_type):
-
-                # TODO add validation (extensions, size, etc.)
 
                 submission = Submission.objects.create(
                     job=new_job, name=f.name, file_type=file_type)

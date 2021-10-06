@@ -125,7 +125,7 @@
 						<div class="mb-3">
 							<label for="job-max-until-ignored" class="form-label">Max matches until ignored:</label>
 							<div class="d-flex">
-								<input type="range" class="form-range" min="1" step="1" max="1000" id="job-max-until-ignored" name="job-max-until-ignored" value="{{DEFAULT_MOSS_SETTINGS.max_until_ignored}}" oninput="this.nextElementSibling.value = this.value">
+								<input type="range" class="form-range" min="{{MAX_UNTIL_IGNORED_RANGE.0}}" step="1" max="{{MAX_UNTIL_IGNORED_RANGE.1}}" id="job-max-until-ignored" name="job-max-until-ignored" value="{{DEFAULT_MOSS_SETTINGS.max_until_ignored}}" oninput="this.nextElementSibling.value = this.value">
 								<output style="width: 50px; text-align: right;">{{DEFAULT_MOSS_SETTINGS.max_until_ignored}}</output>
 							</div>
 						</div>
@@ -134,7 +134,7 @@
 						<div class="mb-3">
 							<label for="job-max-displayed-matches" class="form-label">Max matches displayed:</label>
 							<div class="d-flex">
-								<input type="range" class="form-range" min="1" step="1" max="1000" id="job-max-displayed-matches" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}" oninput="this.nextElementSibling.value = this.value">
+								<input type="range" class="form-range" min="{{MAX_DISPLAYED_MATCHES_RANGE.0}}" step="1" max="{{MAX_DISPLAYED_MATCHES_RANGE.1}}" id="job-max-displayed-matches" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}" oninput="this.nextElementSibling.value = this.value">
 								<output style="width: 50px; text-align: right;">{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}</output>
 							</div>
 						</div>

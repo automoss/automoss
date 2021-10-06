@@ -240,6 +240,11 @@ with capture_in(MOSS_CONTEXT):
         'max_displayed_matches': 250
     }
 
+    # Define allowed range of params
+    MAX_UNTIL_IGNORED_RANGE = [1, 1000]
+    MAX_DISPLAYED_MATCHES_RANGE = [1, 1000]
+
+
 STATUS_CONTEXT = {}
 with capture_in(STATUS_CONTEXT):
     # Statuses
