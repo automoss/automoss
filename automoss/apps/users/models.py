@@ -179,7 +179,7 @@ class User(AbstractBaseUser):
         recipients = [str(self.primary_email_address)]
         # Add to recipient list if broadcast
         if broadcast:
-            recipients += [str(email) for email in self.email_set.all()]
+            recipients += [str(email) for email in self.email_set.filter(is_verified=True)]
         # send emails asynchronously
         send_emails.delay(
             from_email=settings.DEFAULT_FROM_EMAIL, 
