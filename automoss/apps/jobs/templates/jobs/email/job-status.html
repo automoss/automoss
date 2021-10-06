@@ -6,7 +6,13 @@ Job Status Update
 {% endblock %}
 
 {% block "content" %}
-The status of Job <a href="{{host}}{% url "jobs:results:index" job.job_id %}">'{{ job.comment }}'</a> has been updated. 
+The status of Job 
+{% if has_link %}
+<a href="{{host}}{% url "jobs:results:index" job.job_id %}">'{{ job.comment }}'</a>
+{% else %}
+<a href="{{host}}{% url "jobs:index" %}">'{{ job.comment }}'</a>
+{% endif %}
+ has been updated. 
 <table style="width:100%;border-collapse:collapse;border:0;border-spacing:0;">
     <tr>
         <td style="padding:0 0 36px 0;color:#0e162b;">
