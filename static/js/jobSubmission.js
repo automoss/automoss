@@ -308,10 +308,10 @@ function displayError(errorMessage) {
 }
 
 /**
- * Update the drop zone's call to action depending on the attach base files toggle.
+ * Update the drop zone's call to action (C2A) depending on the attach base files toggle.
  */
-function updateDropZoneC2A() {
-	jobDropZone.zoneText.innerHTML = `Drag and drop <b>${jobAttachBaseFiles.checked ? "base" : "student"}</b> files here!`;
+function updateForBaseFiles() {
+	jobDropZone.setC2A(`Drag and drop <b>${jobAttachBaseFiles.checked ? "base" : "student"}</b> files here!`);
 }
 
 /**
@@ -405,7 +405,7 @@ createJobForm.onsubmit = async (e) => {
 					setTimeout(() => { // Timeout to ensure that the modal only clears once closed.
 						createJobForm.reset();
 						jobDropZone.reset();
-						updateDropZoneC2A();
+						updateForBaseFiles();
 						setEnabled(true);
 						setMessage("", "white");
 					}, 200);
