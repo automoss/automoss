@@ -1,0 +1,12 @@
+{% extends "users/email/base.html" %}
+{% load static %}
+
+{% block "title" %}
+Verify Your Email
+{% endblock %}
+
+{% block "content" %}
+Your email has been added to the mailing list of {{ user.course_code }}. 
+</br> 
+To receive notifications, verify your email using this <a href="{{request.scheme}}://{{request.META.HTTP_HOST}}{% url "users:confirm-email" email.email_id token %}">link</a>
+{% endblock %}
