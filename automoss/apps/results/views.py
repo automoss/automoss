@@ -95,6 +95,7 @@ class ResultMatch(View):
         job_language = SUPPORTED_LANGUAGES[job.language][3]
 
         context = {
+            'match': match,
             'submissions': submissions,
             'match_numbers': match_numbers,
             'blocks': blocks,
