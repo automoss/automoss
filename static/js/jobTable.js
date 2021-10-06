@@ -16,8 +16,7 @@ const timelineEventMapping = {
 };
 
 /**
- * Determine whether a status provided is a terminal status or not.
- * The terminal states are listed above (i.e., COMPLETED and FAILED).
+ * Determine whether a state provided is a terminal state (i.e., COMPLETED and FAILED) or not.
  */ 
 function isTerminalState(state){
 	return terminalStates.includes(state);
@@ -29,13 +28,13 @@ function isTerminalState(state){
 function getLastCompletedEvent(jobId){
 	let prevEvents = document.getElementById(`job-logs-${jobId}`).prevEvents;
 	if (prevEvents != undefined){
-		for (let i = prevEvents.length - 1; i >= 0; i--){ // Look for the first "valid" completed event.
+		for (let i = prevEvents.length - 1; i >= 0; i--){
 			if (Object.hasOwn(timelineEventMapping, prevEvents[i])){
 				return timelineEventMapping[prevEvents[i]];
 			}
 		}
 	}
-	return 0; // If no previous events, then the job failed to be created.
+	return 0; // No previous events, therefore job failed to be created.
 }
 
 /**
@@ -65,16 +64,14 @@ function updateJobLogs(jobId, logs){
 	let tmpLogs = "";
 	jobLogs.prevEvents = [];
 
-	// Format the logs, which were retrieved as a json object.
 	for (let log in logs){
 		tmpLogs += logs[log].str + "\n";
 		if (logs[log].type){
-			jobLogs.prevEvents.push(logs[log].type); // Record the previous events (for status update above).
+			jobLogs.prevEvents.push(logs[log].type); // Record previous events.
 		}
 	}
-	tmpLogs = trimRight(tmpLogs, 1); // Remove the last newline character.
+	tmpLogs = trimRight(tmpLogs, 1); // Remove last newline character.
 
-	// Set the logs only if they changed.
 	if (tmpLogs !== jobLogs.prevLogs){
 		jobLogs.prevLogs = jobLogs.innerHTML = tmpLogs;
 	}
@@ -94,9 +91,9 @@ async function performOperationOnJobs(url, jobIds, operation){
 /**
  * Update all the jobs in the table.
  */
-function updateJobs(jobs){
-	performOperationOnJobs(GET_JOB_STATUSES_URL, jobs, updateJobStatus);
-	performOperationOnJobs(GET_JOB_LOGS_URL, jobs, updateJobLogs);
+async function updateJobs(jobs){
+	await performOperationOnJobs(GET_JOB_LOGS_URL, jobs, updateJobLogs);
+	await performOperationOnJobs(GET_JOB_STATUSES_URL, jobs, updateJobStatus);
 }
 
 /**
@@ -165,21 +162,21 @@ let result = fetch(GET_JOBS_URL).then(async (response)=>{
 		if (!isTerminalState(item.status)){
 			unfinishedJobs.push(item.job_id);
 		}
-		updateJobs([item.job_id]); // Immediately update all job logs and statuses on load.
+		updateJobs([item.job_id]); // Update all jobs on load.
 	});
 	if(json.length == 0){
 		noJobsMessage.style.display = 'block';
 	}
 });
 
-// Update the status and logs of unfinished jobs in the table.
+// Update the status and event logs of all unfinished jobs in the table.
 setInterval(async function(){
 	if(unfinishedJobs.length != 0){		
 		updateJobs(unfinishedJobs);
 	}
 }, POLLING_TIME);
 
-// Update the duration of unfinished jobs in the table every second.
+// Update the duration of all unfinished jobs in the table every second.
 setInterval(async function(){
 	for (let jobId of unfinishedJobs){
 		let job = document.getElementById(`job-${jobId}`);
