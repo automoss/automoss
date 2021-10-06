@@ -400,6 +400,7 @@ createJobForm.onsubmit = async (e) => {
 };
 
 jobDropZone.onFileAdded = async (jobDropZoneFile) => {
+	createJobButton.disabled = true;
 
 	let archive = jobDropZoneFile.file;
 	let files = await extractFiles(archive);
@@ -457,8 +458,8 @@ jobDropZone.onFileAdded = async (jobDropZoneFile) => {
 	if (jobDropZone.files.length >= 1) {
 		jobName.value = jobName.value || trimRight(archive.name, getExtension(archive.name).length + 1);
 		jobLanguage.value = language;
-		createJobButton.disabled = false;
 	}
+	createJobButton.disabled = false;
 };
 
 jobDropZone.onFileRemoved = () => {
