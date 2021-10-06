@@ -1,5 +1,8 @@
 import unicodedata
-from .models import User
+from .models import (
+    User,
+    Email
+)
 from django import forms
 from django.contrib.auth.forms import (
     AuthenticationForm, 
@@ -159,3 +162,18 @@ class PasswordUpdateForm(PasswordChangeForm):
         'password_incorrect': 'Your old password was entered incorrectly.',
         'password_mismatch': 'The passwords entered did not match.',
     }
+
+class EmailForm(forms.ModelForm):
+    """ Form for representing an email """
+    class Meta:
+        model = Email
+        fields = '__all__'
+
+    def save(self, commit=True):
+        email = super().save(commit=False)
+        # save if new email
+        if not Email.objects.filter(user=email.user, email_address=email.email_address):
+            if commit:
+                email.save()
+                return email
+        return None
