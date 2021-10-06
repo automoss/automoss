@@ -212,7 +212,8 @@ def process_job(job_id):
                     break
 
                 else:
-                    msg = f'Moss is not under load {ping_message}, retrying job ({job_id})'
+                    msg = f'MOSS returned no response but is not under load. Will retry {MIN_RETRIES_COUNT - 1 - attempt} more times'
+                    error = RecoverableMossException(msg)
 
             elif load_status in (LoadStatus.UNDER_LOAD, LoadStatus.UNDER_SEVERE_LOAD):
                 msg = f'Moss is under load {ping_message}, retrying job ({job_id})'
@@ -232,7 +233,7 @@ def process_job(job_id):
             logger.error(f'Unknown error: {e}')
             break  # Will be handled below (result is None)
 
-        msg = f'(Attempt {attempt}) Error: {error} | Retrying in {time_to_sleep} seconds'
+        msg = f'(Attempt {attempt + 1}) Error: {error} | Retrying in {time_to_sleep} seconds'
 
         # We can retry
         logger.warning(msg)
