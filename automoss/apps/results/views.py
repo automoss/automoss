@@ -1,6 +1,6 @@
 from django.contrib.auth import login
 from ...settings import SUBMISSION_UPLOAD_TEMPLATE
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -17,8 +17,12 @@ class Index(View):
 
     def get(self, request, job_id):
         """ Get result """
+
+        job = get_object_or_404(
+            Job.objects.user_jobs(request.user), job_id=job_id)
+
         context = {
-            'job': Job.objects.user_jobs(request.user).get(job_id=job_id),
+            'job': job,
             'matches': Match.objects.user_matches(request.user).filter(moss_result__job__job_id=job_id).order_by('-lines_matched')
         }
         return render(request, self.template, context)
@@ -32,8 +36,11 @@ class ResultMatch(View):
 
     def get(self, request, job_id, match_id):
         """ Get match """
-        match = Match.objects.user_matches(request.user).get(
-            match_id=match_id)
+        match = get_object_or_404(Match.objects.user_matches(
+            request.user), match_id=match_id)
+        job = get_object_or_404(
+            Job.objects.user_jobs(request.user), job_id=job_id)
+
         submissions = {
             'first': match.first_submission,
             'second': match.second_submission
@@ -67,7 +74,7 @@ class ResultMatch(View):
                 match_info.items(), key=lambda item: item[-1][submission_type]['from'])
             if match_numbers is None:
                 match_numbers = [x[0] for x in sorted_info]
-            
+
             for match_id, match_lines in sorted_info:
                 # TODO maybe return list of lines, not joined
                 blocks[submission_type].append({
@@ -84,7 +91,6 @@ class ResultMatch(View):
                 'text': ''.join(lines[current:])
             })
 
-        job = Job.objects.user_jobs(request.user).get(job_id=job_id)
         # Get highlighter name
         job_language = SUPPORTED_LANGUAGES[job.language][3]
 
