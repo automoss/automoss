@@ -6,7 +6,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from .models import Match
 from ..jobs.models import Job
-from ...settings import SUPPORTED_LANGUAGES
+from ...settings import SUPPORTED_LANGUAGES, MATCH_CONTEXT
 import os
 
 
@@ -44,6 +44,7 @@ class ResultMatch(View):
 
         blocks = {}
 
+        match_numbers = None
         for submission_type, submission in submissions.items():
 
             file_path = SUBMISSION_UPLOAD_TEMPLATE.format(
@@ -64,15 +65,18 @@ class ResultMatch(View):
 
             sorted_info = sorted(
                 match_info.items(), key=lambda item: item[-1][submission_type]['from'])
+            if match_numbers is None:
+                match_numbers = [x[0] for x in sorted_info]
+            
             for match_id, match_lines in sorted_info:
                 # TODO maybe return list of lines, not joined
                 blocks[submission_type].append({
-                    'text': ''.join(lines[current:match_lines[submission_type]['from']])
+                    'text': ''.join(lines[current:match_lines[submission_type]['from']-1])
                 })
                 current = match_lines[submission_type]['to']
                 blocks[submission_type].append({
                     'id': match_id,
-                    'text': ''.join(lines[match_lines[submission_type]['from']:current])
+                    'text': ''.join(lines[match_lines[submission_type]['from']-1:current])
                 })
 
             # Get rest of file
@@ -80,24 +84,16 @@ class ResultMatch(View):
                 'text': ''.join(lines[current:])
             })
 
-        # TODO define colours elsewhere
-        colours = [
-            '255, 0, 0',
-            '0, 255, 0',
-            '0, 0, 255',
-        ]
-
         job = Job.objects.user_jobs(request.user).get(job_id=job_id)
         # Get highlighter name
         job_language = SUPPORTED_LANGUAGES[job.language][3]
 
         context = {
             'submissions': submissions,
-            'match_info': match_info,
+            'match_numbers': match_numbers,
             'blocks': blocks,
-            'colours': colours,
             'language': job_language,
             'job': job,
-            'match': match
+            **MATCH_CONTEXT
         }
         return render(request, self.template, context)

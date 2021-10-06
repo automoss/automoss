@@ -71,8 +71,8 @@
 		{% endfor %}
 		
 		<div class="bg-dark rounded-3 ms-2 d-flex flex-column pt-2 m-2" style="width:12%; overflow: auto;">
-			{% for key,value in match_info.items %}
-				<button match="{{key}}" class="btn btn-outline-light border-2 rounded-pill match-button mb-2 mt-1 mx-3">Match {{key}}</button>
+			{% for value in match_numbers %}
+				<button match="{{value}}" class="btn btn-outline-light border-2 rounded-pill match-button mb-2 mt-1 mx-3">Match {{forloop.counter}}</button>
 			{% endfor %}
 		</div>
 	</div>
@@ -86,9 +86,9 @@
 		hljs.highlightAll();
 	})();
 
-	let colours = {{ colours | js }};
-	let hoverOpacity = 0.5;
-	let defaultOpacity = 0.2;
+	let colours = {{ COLOURS | js }};
+	let hoverOpacity = 0.4;
+	let defaultOpacity = 0.25;
 
 	function setMatches(matchID, opacity){
 		document.querySelectorAll(`.match[match="${matchID}"]`).forEach(x=>{

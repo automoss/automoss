@@ -282,6 +282,25 @@ with capture_in(JOB_CONTEXT):
     EXPONENTIAL_BACKOFF_BASE = 1.25  # 1<=x<=2
     FIRST_RETRY_INSTANT = True
 
+
+MATCH_CONTEXT = {}
+with capture_in(MATCH_CONTEXT):
+    COLOURS = [
+        '255,20,147',
+        '210,105,30',
+        '60,179,113',
+        '218,112,214',
+        '30,144,255',
+        '255,0,0',
+        '0,255,0',
+        '255,255,0',
+        '0,255,255',
+        '255,0,255',
+        '128,128,128',
+        '128,128,0'
+    ]
+
+
 JOB_EVENT_CONTEXT = {}
 with capture_in(JOB_EVENT_CONTEXT):
     INQUEUE_EVENT = 'INQ'
