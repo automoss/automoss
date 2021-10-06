@@ -82,6 +82,12 @@ class DropZone extends HTMLElement {
 		}
 	}
 
+	resetProgress(){
+		for (let file of this.files) {
+			file.setProgress(0);
+		}
+	}
+
 	hasExtension(fileName, extensions){
 		for (var extension of extensions){
 			if (fileName.endsWith("."+extension)){

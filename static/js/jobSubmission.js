@@ -314,6 +314,9 @@ function updateDropZoneC2A() {
 	jobDropZone.zoneText.innerHTML = `Drag and drop <b>${jobAttachBaseFiles.checked ? "base" : "student"}</b> files here!`;
 }
 
+/**
+ * Toggle job submission (i.e., whether you can submit jobs or not).
+ */
 function setEnabled(isEnabled) {
 	jobDropZone.setInteractable(isEnabled);
 	createJobButton.disabled
@@ -365,10 +368,8 @@ createJobForm.onsubmit = async (e) => {
 
 		if(numStudents <= 1){
 			displayError("Must include at least 2 students.");
-			for (let jobDropZoneFile of jobDropZone.files) {
-				jobDropZoneFile.setProgress(0);
-			}
 			setEnabled(true);
+			jobDropZone.resetProgress();
 			return;
 		}
 
@@ -386,15 +387,11 @@ createJobForm.onsubmit = async (e) => {
 		xhr.upload.addEventListener('progress', e => {
 			let percentage = e.lengthComputable ? (e.loaded / e.total) * 100 : 0;
 			setMessage(`Uploading (${percentage.toFixed(0)}%)`, "white");
-		
 		});
-
+		// Done uploading, now server is processing upload (writing files to disk).
 		xhr.upload.addEventListener('load', e => {
-			// The upload completed successfully.
-			// Done uploading, now server is processing upload (writing files to disk)
 			setMessage("Waiting for server...", "white");
 		});
-
 		xhr.onreadystatechange = function () { // Call a function when the state changes.
 			if (this.readyState === XMLHttpRequest.DONE) {
 				if (this.status === 200) {
@@ -415,9 +412,7 @@ createJobForm.onsubmit = async (e) => {
 				}else if (this.status === 400){
 					displayError(xhr.response.message);
 					setEnabled(true);
-					for (let jobDropZoneFile of jobDropZone.files) {
-						jobDropZoneFile.setProgress(0);
-					}
+					jobDropZone.resetProgress();
 				}
 			}
 
@@ -427,6 +422,7 @@ createJobForm.onsubmit = async (e) => {
 	} catch (err) {
 		console.err(err);
 		setEnabled(true);
+		jobDropZone.resetProgress();
 	}
 };
 
