@@ -36,10 +36,13 @@ class JobManager(models.Manager):
 
 class Job(models.Model):
     """ Class to model Job Entity """
+
     # Custom manager
     objects = JobManager()
+
     # MOSS user that created the job
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
     # Unique identifier used in routing
     job_id = models.CharField(
         primary_key=False,
@@ -63,9 +66,11 @@ class Job(models.Model):
     # Max matches of a code segment before it is ignored
     max_until_ignored = models.PositiveIntegerField(
         default=DEFAULT_MOSS_SETTINGS['max_until_ignored'])
+
     # Max displayed matches
     max_displayed_matches = models.PositiveIntegerField(
         default=DEFAULT_MOSS_SETTINGS['max_displayed_matches'])
+
     # Comment/description attached to job
     comment = models.CharField(
         max_length=MAX_COMMENT_LENGTH, default=get_default_comment)
@@ -130,6 +135,7 @@ class Submission(models.Model):
 
 class JobEvent(models.Model):
     """ Class to model Job events """
+
     # Job the event belongs to
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
 

@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 
 def main():
+    """Method to create/set database"""
 
     # Action to perform
     fresh = 'fresh' in sys.argv[1:]

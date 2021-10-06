@@ -12,6 +12,7 @@ import os
 @method_decorator(login_required, name='dispatch')
 class Index(View):
     """ Result Index View """
+
     template = "results/index.html"
 
     def get(self, request, job_id):

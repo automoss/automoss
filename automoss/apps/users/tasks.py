@@ -7,6 +7,7 @@ logger = get_task_logger(__name__)
 @task(name='Email')
 def send_emails(from_email, recipients, subject, body, html):
     """ Send list of emails """
+
     # Create emails for each recipient
     for recipient in recipients:
         email = EmailMultiAlternatives(

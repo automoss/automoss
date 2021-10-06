@@ -51,7 +51,7 @@ logger = get_task_logger(__name__)
 
 @task(name='Upload')
 def process_job(job_id):
-    """Basic interface for generating a report from MOSS"""
+    """Process a job, given its ID"""
 
     try:
         job = Job.objects.get(job_id=job_id)
@@ -193,8 +193,7 @@ def process_job(job_id):
             break  # Will be handled below (result is None)
 
         except Exception as e:
-            # TODO something catastrophic happened
-            # Do some logging here
+            # Something catastrophic happened
             logger.error(f'Unknown error: {e}')
             break  # Will be handled below (result is None)
 

@@ -35,6 +35,7 @@ from .models import (
 
 class Login(View):
     """ Login view """
+
     template = "users/auth/login.html"
     email_html_template = "users/email/welcome.html"
     email_txt_template = "users/email/welcome.txt"
@@ -49,6 +50,7 @@ class Login(View):
     def post(self, request):
         """ Post login """
         login_form = LoginForm(request=request, data=request.POST)
+
         # Clean and authenticate login data
         if login_form.is_valid():
             django_login(request, login_form.get_user())
@@ -58,6 +60,7 @@ class Login(View):
             if is_safe_url(redirect_url, settings.ALLOWED_HOSTS, require_https=request.is_secure()):
                 return redirect(redirect_url)
             return redirect(settings.LOGIN_REDIRECT_URL)
+
         else:
             # if user login failed because not yet verified
             if isinstance(login_form.errors.as_data().get('__all__')[0], UnverifiedError):
@@ -79,6 +82,7 @@ class Login(View):
 @method_decorator(login_required, name='dispatch')
 class Logout(View):
     """ Logout View """
+
     template = "users/auth/logged_out.html"
 
     def get(self, request):
@@ -90,6 +94,7 @@ class Logout(View):
 @method_decorator(login_required, name='dispatch')
 class Profile(View):
     """ Profile View """
+
     template = "users/profile/profile.html"
     email_html_template = "users/email/confirm-email.html"
     email_txt_template = "users/email/confirm-email.txt"
@@ -150,6 +155,7 @@ class Profile(View):
                 email_address__in=clean_emails)
             deleted_emails.delete()
             return JsonResponse({"success": True})
+
         else:
             # Invalid post request
             return HttpResponseNotFound()
@@ -157,6 +163,7 @@ class Profile(View):
 
 class Register(View):
     """ User registration view """
+
     template = "users/auth/register.html"
     confirm_template = "users/auth/confirm.html"
     email_html_template = "users/email/welcome.html"
@@ -199,6 +206,7 @@ class Register(View):
 
 class ForgotPassword(View):
     """ View for forgotten passwords """
+
     template = "users/auth/forgot-password.html"
     email_html_template = "users/email/forgot-password.html"
     email_txt_template = "users/email/forgot-password.txt"
@@ -210,7 +218,7 @@ class ForgotPassword(View):
         return render(request, self.template, context={"form": forgot_password_form})
 
     def post(self, request):
-        """ request change of password for course account """
+        """ Request change of password for course account """
         forgot_password_form = PasswordForgottenForm(request.POST)
         user = None
         if forgot_password_form.is_valid():

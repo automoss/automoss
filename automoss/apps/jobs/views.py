@@ -38,7 +38,8 @@ from ...settings import (
 
 
 @register.filter(is_safe=True)
-def js(obj):  # TODO move to utils?
+def js(obj):
+    """Helper method for safely rendering JSON to a webpage"""
     return mark_safe(json.dumps(obj))
 
 
@@ -66,8 +67,6 @@ class New(View):
 
     def post(self, request):
         """ Post new job """
-        # print(READABLE_LANGUAGE_MAPPING)
-        # print(request.POST.get('job-language'))
         # TODO validate form
         posted_language = request.POST.get('job-language')
         language = READABLE_LANGUAGE_MAPPING.get(posted_language)

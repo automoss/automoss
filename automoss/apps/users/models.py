@@ -101,8 +101,10 @@ class User(AbstractBaseUser):
 
     Based on Django's implementation
     """
+
     # Allow Unicode course codes
     course_code_validator = UnicodeUsernameValidator()
+
     # Unique identifier used in routing
     user_id = models.CharField(
         primary_key=False,
@@ -111,6 +113,7 @@ class User(AbstractBaseUser):
         editable=False,
         unique=True
     )
+
     # Course Code will be the username
     course_code = models.CharField(
         max_length=150,
@@ -121,15 +124,18 @@ class User(AbstractBaseUser):
         error_messages={
             'unique': "A user with that username already exists."
         })
+
     # Email to send administritive content to
     primary_email_address = models.EmailField(
         blank=False,
         null=False
     )
+
     # Account/Email verified
     is_verified = models.BooleanField(
         default=False
     )
+
     # MOSS ID for using the MOSS API
     moss_id = models.CharField(
         unique=True,
@@ -137,18 +143,22 @@ class User(AbstractBaseUser):
         blank=False,
         null=False
     )
+
     # User with admin permissions
     is_staff = models.BooleanField(
         default=False
     )
+
     # Superuser with all permissions
     is_superuser = models.BooleanField(
         default=False
     )
+
     # Is active account
     is_active = models.BooleanField(
         default=True,
     )
+
     # Date user account created
     date_joined = models.DateTimeField(
         default=now
@@ -173,17 +183,19 @@ class User(AbstractBaseUser):
 
     def send_email(self, subject_template, body_template, html_template, context, broadcast=False):
         """Send an email to this user and possibly associated emails if broadcast email """
+
         # Render templates
         subject = render_to_string(subject_template, context).strip()
         body = render_to_string(body_template, context)
         html = render_to_string(html_template, context)
         recipients = [str(self.primary_email_address)]
+
         # Add to recipient list if broadcast
         if broadcast:
             recipients += [str(email)
                            for email in self.email_set.filter(is_verified=True)]
-        # send emails asynchronously
 
+        # Send emails asynchronously
         send_emails.apply_async(kwargs={
             'from_email': settings.DEFAULT_FROM_EMAIL,
             'recipients': recipients,
@@ -199,8 +211,10 @@ class User(AbstractBaseUser):
 
 class Email(models.Model):
     """ Secondary email address associated with a user account """
+
     # User foreign key - an email belongs to a user
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
     # Unique ID for use in URLs
     email_id = models.CharField(
         primary_key=False,
@@ -209,11 +223,13 @@ class Email(models.Model):
         editable=False,
         unique=True
     )
+
     # Email address
     email_address = models.EmailField(
         blank=False,
         null=False
     )
+
     # Email verified
     is_verified = models.BooleanField(
         default=False
@@ -221,12 +237,14 @@ class Email(models.Model):
 
     def send_email(self, subject_template, body_template, html_template, context):
         """Send an email to this email """
+
         # Render templates
         subject = render_to_string(subject_template, context).strip()
         body = render_to_string(body_template, context)
         html = render_to_string(html_template, context)
         recipients = [str(self.email_address)]
-        # send emails asynchronously
+
+        # Send emails asynchronously
         send_emails.delay(
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipients=recipients,

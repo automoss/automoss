@@ -4,7 +4,6 @@ import socket
 import os
 import re
 import requests
-
 import asyncio
 import aiohttp
 
@@ -20,26 +19,33 @@ SUPPORTED_MOSS_LANGUAGES = [SUPPORTED_LANGUAGES[language][1]
                             for language in SUPPORTED_LANGUAGES]
 HTTP_RETRY_COUNT = 5
 
+ERROR_PREFIX = 'Error: '
+
 
 def is_valid_moss_url(url):
+    """Determine if the url given is a valid url for a MOSS report (correct host)"""
     return url and urlparse(url).netloc == MOSS_URL
 
 
 class MossException(Exception):
+    """Base class for all MOSS Exceptions"""
     pass
 
 
 class FatalMossException(MossException):
-    """ Cannot recover. Do not resubmit if this occurs """
+    """A MOSS exception occurred, and we cannot recover. Do not resubmit if this occurs"""
     pass
 
 
 class UnsupportedLanguage(FatalMossException):
+    """Language is not supported by MOSS"""
+
     def __init__(self, language, **kwargs):
         super().__init__(f'Unsupported language: {language}', **kwargs)
 
 
 class NoFiles(FatalMossException):
+    """MOSS received a request that contained no files"""
     message = 'No files uploaded to compare.'
 
     def __init__(self, *args, **kwargs):
@@ -47,10 +53,14 @@ class NoFiles(FatalMossException):
 
 
 class EmptyResponse(FatalMossException):
-    """Moss returned nothing after requesting for URL.
+    """Moss returned nothing after processing a job.
 
-    This means a timeout has occurred and MOSS is unable to run this
-    job successfully without altering the options.
+    This means a timeout has occurred and MOSS is potentially
+    unable to run this job successfully without altering the options.
+
+    This also occurs if MOSS is under load and is unable to process the
+    job, so extra checks are needed to determine whether the job can
+    be resubmitted.
     """
     message = 'Empty response.'
 
@@ -69,55 +79,66 @@ class InvalidParameter(FatalMossException):
 
 
 class RecoverableMossException(MossException):
-    """ Able to recover. Resubmit if this occurs """
+    """A MOSS exception occurred, but we are able to recover. Resubmit if this occurs"""
     pass
 
 
 class ReportError(RecoverableMossException):
+    """Base class for report errors"""
     pass
 
 
 class ReportDownloadTimeout(ReportError):
+    """A timeout occurred while downloading the report"""
     pass
 
 
 class ReportParsingError(ReportError):
+    """An error occurred while parsing the report"""
     pass
 
 
 class InvalidReportURL(ReportError):
+    """Attempted to parse an invalid MOSS report URL"""
     pass
 
 
 class UnparseableMatch(RecoverableMossException):
-    # Moss returns a completely incorrecly formatted match document
-    # e.g. http://moss.stanford.edu/results/0/3222848531763
+    """Moss returns a completely incorrectly formatted match document.
+
+    In such a case, the job must be resubmitted.
+    """
     pass
 
 
 class MossConnectionError(RecoverableMossException):
+    """A connection error occurred with MOSS. Retry after some time."""
     pass
 
 
-ERROR_PREFIX = 'Error: '
-
-
 class MossAPIWrapper:
+    """Wrapper class for the MOSS API."""
 
     _ERRORS = {
         NoFiles.message: NoFiles
     }
 
     def __init__(self, user_id):
+        """Create an API wrapper object.
+
+        :param user_id: The user's MOSS ID
+        :type user_id: int
+        """
         self.user_id = user_id
         self.socket = socket.socket()
 
     def connect(self):
-        # TODO add retries
+        """Connect to the MOSS server"""
         self.socket.connect((MOSS_URL, 7690))
         self._send_string(f'moss {self.user_id}')  # authenticate user
 
     def close(self):
+        """Close the MOSS connection"""
         try:
             self._send_string('end')
             self.socket.shutdown(socket.SHUT_RDWR)
@@ -127,36 +148,67 @@ class MossAPIWrapper:
             return False  # Do not throw error if unable to close
 
     def read_raw(self, buffer):
+        """Read the raw information in the socket's buffer"""
         return self.socket.recv(buffer)
 
     def read(self, buffer=1024):
+        """Read the information in the socket's buffer as a string"""
         return self.read_raw(buffer).decode().rstrip('\n')
 
     def set_directory(self, is_directory=True):
+        """Set the upload to be directory mode
+
+        :param is_directory: Whether the upload is in directory mode, defaults to True
+        :type is_directory: bool, optional
+        """
         self._send_string(f'directory {is_directory:d}')
 
     def set_experimental(self, experimental=True):
+        """Set the upload to use the experimental server
+
+        :param experimental: Whether the upload should be experimental, defaults to True
+        :type experimental: bool, optional
+        """
         self._send_string(f'X {experimental:d}')
 
     def set_max_matches(self, max_matches):
+        """Set the max number of matches until ignored
+
+        :param max_matches: Max number of matches until ignored
+        :type max_matches: int
+        :raises InvalidParameter: If max_matches < 1
+        """
         if max_matches < 1:
             raise InvalidParameter(
                 f'Max matches must be positive ({max_matches} is invalid).')
         self._send_string(f'maxmatches {max_matches}')
 
     def set_max_displayed_matches(self, max_displayed_matches):
+        """Set the max number of displayed matches
+
+        :param max_displayed_matches: max number of displayed matches
+        :type max_displayed_matches: int
+        :raises InvalidParameter: If max_displayed_matches < 1
+        """
         if max_displayed_matches < 1:
             raise InvalidParameter(
                 f'Max displayed matches must be positive ({max_displayed_matches} is invalid).')
         self._send_string(f'show {max_displayed_matches}')
 
     def set_language(self, language):
+        """Set the language of the job
+
+        :param language: Language of the job.
+        :type language: str
+        :raises UnsupportedLanguage: If language is unsupported (not in SUPPORTED_MOSS_LANGUAGES)
+        """
         if language not in SUPPORTED_MOSS_LANGUAGES:
             raise UnsupportedLanguage(language)
 
         self._send_string(f'language {language}')
 
     def upload_raw_file(self, file_path, bytes, language, file_id, use_basename=False):
+        """Upload raw file to MOSS"""
 
         size = len(bytes)
 
@@ -173,17 +225,30 @@ class MossAPIWrapper:
         self._send_raw(bytes)
 
     def upload_raw_base_file(self, file_path, bytes, language, use_basename=False):
+        """Upload raw base file to MOSS"""
+
         self.upload_raw_file(file_path, bytes, language, 0, use_basename)
 
     def upload_base_file(self, file_path, language, use_basename=False):
+        """Upload base file to MOSS"""
+
         self.upload_file(file_path, language, 0, use_basename)
 
     def upload_file(self, file_path, language, file_id, use_basename=False):
+        """Upload file to MOSS"""
+
         with open(file_path, 'rb') as f:
             self.upload_raw_file(file_path, f.read(),
                                  language, file_id, use_basename)
 
     def process(self, comment=''):
+        """Process the Job and return the generated report URL.
+
+        :param comment: Name of the job, defaults to ''
+        :type comment: str, optional
+        :return: Generated report URL
+        :rtype: str
+        """
         # Send final query
         self._send_string(f'query 0 {comment}')
 
@@ -199,7 +264,6 @@ class MossAPIWrapper:
             if error:  # Found corresponding error
                 raise error
 
-            # TODO find errors like this
             raise FatalMossException(f'Unknown error: {error_message}')
 
         elif data:
@@ -216,6 +280,8 @@ class MossAPIWrapper:
 
 class MossMatch:
     def __init__(self, html):
+        """Create a MossMatch object, given the HTML"""
+
         try:
             soup = BeautifulSoup(html, 'lxml')
             table = soup.find('table')
@@ -227,7 +293,7 @@ class MossMatch:
             self.name_1, self.percentage_1 = self._parse_name_percentage(a)
             self.name_2, self.percentage_2 = self._parse_name_percentage(b)
 
-            # TODO reconstruct (more accurate) percentages from line matches?
+            # Possible to reconstruct (more accurate) percentages from line matches
             self.line_matches = []
             self.lines_matched = 0
             for tr in rows:
@@ -260,12 +326,16 @@ class MossMatch:
 class Result:
 
     def __init__(self, url):
-        # Parse a moss result from a URL
+        """Create a Result object from a MOSS URL
+
+        :param url: The MOSS URL
+        :type url: str
+        """
         self.url = url
         self.matches = list(self._parse_matches(url))
 
     # https://stackoverflow.com/a/54878794
-    async def fetch(self, session, url):
+    async def _fetch(self, session, url):
         error = None
         for _ in range(HTTP_RETRY_COUNT):
             try:
@@ -277,10 +347,10 @@ class Result:
 
         raise ReportDownloadTimeout(error)
 
-    async def fetch_concurrent(self, urls):
+    async def _fetch_concurrent(self, urls):
         loop = asyncio.get_event_loop()
         async with aiohttp.ClientSession() as session:
-            tasks = [loop.create_task(self.fetch(session, u))
+            tasks = [loop.create_task(self._fetch(session, u))
                      for u in urls]
             return [await result for result in asyncio.as_completed(tasks)]
 
@@ -291,12 +361,13 @@ class Result:
             raise ReportParsingError(
                 f'Invalid status code ({req.status_code})')
 
+        # Possible to parse errors here
         html = req.text
-        # TODO parse errors?
+
         num_matches = html.count('<TR>') - 1
 
         urls = [f'{base_url}match{i}-top.html' for i in range(num_matches)]
-        responses = asyncio.run(self.fetch_concurrent(urls))
+        responses = asyncio.run(self._fetch_concurrent(urls))
 
         for response in responses:
             try:
@@ -309,6 +380,8 @@ class MOSS:
 
     @classmethod
     def validate_moss_id(cls, user_id, raise_if_connection_error=False):
+        """Validate the MOSS ID of a user"""
+
         moss = MossAPIWrapper(user_id)
         try:
             moss.connect()
@@ -324,11 +397,15 @@ class MOSS:
 
     @classmethod
     def generate(cls, **kwargs):
+        """All-in-one method for generating a MOSS report"""
+
         url = cls.generate_url(**kwargs)
         return cls.generate_report(url)
 
     @classmethod
     def generate_report(cls, url):
+        """Generate a MOSS report, given a valid URL"""
+
         if not is_valid_moss_url(url):
             raise InvalidReportURL(f'Invalid report url: "{url}"')
 
@@ -343,6 +420,8 @@ class MOSS:
 
     @classmethod
     def callback(cls, f, *args, **kwargs):
+        """Run callback function"""
+
         if f and callable(f):
             f(*args, **kwargs)
 
@@ -368,7 +447,6 @@ class MOSS:
                      ):
         """Basic interface for generating a report from MOSS"""
 
-        # TODO auto detect language
         cls.callback(on_start)
 
         # Returns report
@@ -384,7 +462,7 @@ class MOSS:
                 base_files = []
 
             moss = MossAPIWrapper(user_id)
-            moss.connect()  # TODO retries
+            moss.connect()
 
             cls.callback(on_connect)
 
@@ -398,7 +476,6 @@ class MOSS:
             data = moss.read()
             # Double check on server-side that language is accepted
             if data == 'no':
-                # TODO detect incorrect options?
                 raise UnsupportedLanguage(language)  # Unsupported language
             elif data != 'yes':
                 raise InvalidRequest(

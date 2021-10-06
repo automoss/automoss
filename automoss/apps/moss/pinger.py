@@ -1,6 +1,5 @@
 
 
-# Used for exponential moving average
 from enum import IntEnum
 import time
 from ...redis import REDIS_INSTANCE
@@ -28,6 +27,7 @@ ALPHA = 0.05
 
 
 class Pinger:
+    """Class used to ping MOSS and determine current load"""
 
     @staticmethod
     def _set_ping(key, ping):
@@ -45,22 +45,27 @@ class Pinger:
 
     @staticmethod
     def get_average_ping():
+        """Get the average ping"""
         return Pinger._get_ping(AVERAGE_PING_KEY)
 
     @staticmethod
     def set_average_ping(ping):
+        """Set the average ping"""
         Pinger._set_ping(AVERAGE_PING_KEY, ping)
 
     @staticmethod
     def get_latest_ping():
+        """Get the latest ping"""
         return Pinger._get_ping(LATEST_PING_KEY)
 
     @staticmethod
     def set_latest_ping(ping):
+        """Set the latest ping"""
         Pinger._set_ping(LATEST_PING_KEY, ping)
 
     @staticmethod
     def in_bound(ping, threshold):
+        """Determine whether ping is within a threshold"""
         if Pinger.get_average_ping() is None:
             return True  # Not yet calibrated, assume in bound
 
@@ -68,6 +73,7 @@ class Pinger:
 
     @staticmethod
     def determine_load(refresh=False):
+        """Determine current load of MOSS"""
         if refresh:
             current_ping = Pinger.ping()
         else:
@@ -88,7 +94,7 @@ class Pinger:
 
     @staticmethod
     def ping():
-        # Pings moss, and updates current known ping
+        """Pings moss, and updates current known ping"""
         new_ping = None
         try:
             timeout = 30  # TODO global
@@ -127,7 +133,7 @@ class Pinger:
 
 
 def monitor():
-    # Monitor status of MOSS
+    """Monitor the status of MOSS"""
     while True:
         Pinger.ping()
         time.sleep(PING_EVERY)

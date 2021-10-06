@@ -91,13 +91,18 @@ class TestJobs(AuthenticatedUserTest):
                 yield os.path.join(test_path, f_name)
 
     def test_process_job(self):
+        """Test that process job runs correctly"""
+
         for test_path in self._get_test_files():
             self._run_zip_test(test_path)
 
     def test_no_files(self):
+        """Try to submit an empty job"""
+
         self._run_test([], expected_status=400)
 
     def test_moss_down(self):
+        """Simulate MOSS going down (for various reasons) and resubmit"""
 
         original = MOSS.generate_url
 
@@ -132,11 +137,15 @@ class TestAPI(AuthenticatedUserTest):
                                            start_date=now(), completion_date=now())
 
     def test_get_jobs(self):
+        """Test API for retrieving a user's jobs"""
+
         response = self.client.get(reverse("api:jobs:get_jobs"))
         self.assertEqual(response.status_code, 200)
         self.assertTrue(isinstance(response, HttpResponse))
 
     def test_get_statuses(self):
+        """Test API for getting statuses of a user's jobs"""
+
         response = self.client.get(reverse("api:jobs:get_statuses"), {
             'job_ids': self.test_job.job_id
         })
@@ -144,6 +153,8 @@ class TestAPI(AuthenticatedUserTest):
         self.assertTrue(isinstance(response, HttpResponse))
 
     def test_get_logs(self):
+        """Test API for getting logs of a user's jobs"""
+
         response = self.client.get(reverse("api:jobs:get_logs"), {
             'job_ids': self.test_job.job_id
         })
@@ -160,7 +171,7 @@ class TestResults(AuthenticatedUserTest):
                                            start_date=now(), completion_date=now())
 
     def test_get_result(self):
-        """ Test successful login attempt """
+        """Test retrieval of result"""
 
         report_response = self.client.get(
             reverse("jobs:results:index", kwargs={"job_id": self.test_job.job_id}))

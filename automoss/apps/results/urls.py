@@ -5,9 +5,9 @@ from . import views
 app_name = "results"
 
 urlpatterns = [
-    # TODO Generated Report - View Report
+    # View match of a result
     path('match/<uuid:match_id>/', views.ResultMatch.as_view(), name='match'),
 
-    # Report Index - View MOSS Report
+    # Result Index - View MOSS Result
     path('', views.Index.as_view(), name="index")
 ]

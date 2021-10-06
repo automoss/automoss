@@ -7,6 +7,7 @@ from ..jobs.models import Job, Submission
 
 class MOSSResult(models.Model):
     """ Class to model MOSS Result Entity """
+
     # Job result belongs to
     job = models.OneToOneField(Job, on_delete=models.CASCADE, limit_choices_to={
                                'status': COMPLETED_STATUS})
@@ -31,9 +32,11 @@ class MatchManager(models.Manager):
 
 class Match(models.Model):
     """ Class to model MOSS Match """
+
     # Custom manager
     objects = MatchManager()
 
+    # ID of the match
     match_id = models.CharField(
         primary_key=False,
         default=uuid.uuid4,
@@ -42,6 +45,7 @@ class Match(models.Model):
         unique=True
     )
 
+    # MOSS result of the job
     moss_result = models.ForeignKey(MOSSResult, on_delete=models.CASCADE)
 
     # Submissions the match compares
@@ -50,11 +54,14 @@ class Match(models.Model):
     second_submission = models.ForeignKey(
         Submission, related_name='second_submission', on_delete=models.CASCADE)
 
+    # Match percentages
     first_percentage = models.IntegerField()
     second_percentage = models.IntegerField()
 
+    # Line match information
     lines_matched = models.IntegerField()
     line_matches = models.JSONField()
 
     def __str__(self):
+        """ Match to string method """
         return f'{self.first_submission} - {self.second_submission}'
