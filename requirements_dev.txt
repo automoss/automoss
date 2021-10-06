@@ -10,3 +10,4 @@ aiohttp
 coverage
 lxml
 bs4
+flake8

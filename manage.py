@@ -3,7 +3,6 @@
 import os
 import sys
 import atexit
-import time
 import threading
 from subprocess import Popen, DEVNULL, STDOUT
 from automoss.settings import (

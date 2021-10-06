@@ -10,11 +10,15 @@ RUN service mysql start && mysql mysql -e "ALTER USER 'root'@'localhost' IDENTIF
 # Install remaining dependencies
 RUN make install
 
+# Make start script executable
 RUN chmod +x start.sh
 
-CMD "./start.sh"
+CMD ["/bin/bash", "/app/start.sh"]
 
 # Usage:
 # docker build . -t automoss
 # docker run -p 8000:8000 --rm -it automoss
 # docker run -p 8000:8000 --rm -it automoss /bin/bash
+# 
+# docker build . -t automoss && docker run -p 8000:8000 --rm -it automoss
+# docker build . -t automoss && docker run --rm -it automoss
