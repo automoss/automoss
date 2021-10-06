@@ -80,28 +80,27 @@ class New(View):
             }
             return JsonResponse(data, status=400)
 
-        if not request.FILES.getlist(FILES_NAME):
-            data = {
-                'message': 'No files submitted'
-            }
-            return JsonResponse(data, status=400)
-
         max_until_ignored = request.POST.get('job-max-until-ignored')
-        max_displayed_matches = request.POST.get('job-max-displayed-matches')
-
         if not in_range(max_until_ignored, MAX_UNTIL_IGNORED_RANGE):
             data = {
                 'message': 'Invalid parameter: Max until ignored'
             }
             return JsonResponse(data, status=400)
 
+        max_displayed_matches = request.POST.get('job-max-displayed-matches')
         if not in_range(max_displayed_matches, MAX_DISPLAYED_MATCHES_RANGE):
             data = {
                 'message': 'Invalid parameter: Max displayed matches'
             }
             return JsonResponse(data, status=400)
 
-        comment = request.POST.get('job-name', '')
+        if not request.FILES.getlist(FILES_NAME):
+            data = {
+                'message': 'No files submitted'
+            }
+            return JsonResponse(data, status=400)
+
+        comment = request.POST.get('job-name')
 
         num_students = len(request.FILES.getlist(FILES_NAME))
 
