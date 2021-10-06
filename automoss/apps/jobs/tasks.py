@@ -144,9 +144,8 @@ def process_job(job_id):
                     on_processing_start=on_processing_start,
                     on_processing_finish=on_processing_finish,
                 )
-                logger.info(f'Generated url: "{url}"')
 
-            msg = 'Started parsing MOSS report'
+            msg = f'Started parsing MOSS report: {url}'
             logger.info(msg)
 
             job.status = PARSING_STATUS
