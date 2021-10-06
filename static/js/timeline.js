@@ -24,31 +24,33 @@ class Timeline extends HTMLElement{
 		this.line.append(this.lineFill);
 	}
 
+	/**
+	 * Add an event to the timeline.
+	 */
 	addEvent(name){
 		let event = new TimelineEvent(name);
 		this.events.push(event);
 		this.append(event);
 	}
 
-	setCompleted(index){
-		let progress = ((index == this.events.length) ? 1 : (index / (this.events.length - 1)));
+	/**
+	 * Sets the progress (i.e., "In Progress" or "Failed") of an event on the timeline. All events prior to the current event
+	 * are assumed to be completed, while those posterior are assumed to be incompleted.
+	 */
+	setProgress(index, isInProgress=true){
+		let progress = ((index >= this.events.length) ? 1 : (index / (this.events.length - 1)));
 		this.lineFill.style.width = `${progress * 100}%`;
 		for (let i = 0; i < this.events.length; i++){
 			let status = "";
 			if(i < index){
 				status = "Completed";
 			}else if(i == index){
-				status = "In Progress";
+				status = isInProgress ? "In Progress" : "Failed";
 			}else{
 				status = "Incompleted";
 			}
 			this.events[i].setStatus(status);
 		}
-	}
-
-	setFailed(index){
-		this.setCompleted(index);
-		this.events[index].setStatus("Failed");
 	}
 }
 customElements.define("time-line", Timeline);

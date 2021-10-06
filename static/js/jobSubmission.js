@@ -258,52 +258,86 @@ let jobLanguage = document.getElementById("job-language");
 let jobMaxMatchesUntilIgnored = document.getElementById("job-max-until-ignored");
 let jobMaxMatchesDisplayed = document.getElementById("job-max-displayed-matches");
 let jobAttachBaseFiles = document.getElementById("job-attach-base-files");
-let jobErrorMessage = document.getElementById("job-error-message");
+let jobMessage = document.getElementById("job-message");
 let createJobButton = document.getElementById("create-job-button");
 
+let timedMessage = undefined;
+let isShowingTimedMessage = false;
 
+/**
+ * Set the message at the bottom left hand corner of the job submission modal. If the current message
+ * being displayed is timed, it will stop and be replaced with the new one.
+ */
 function setMessage(message, colour){
-	if(!isDisplayingError){
-		jobErrorMessage.style.color = colour;
-		jobErrorMessage.textContent = message;
+	if (isShowingTimedMessage){
+		clearInterval(timedMessage);
 	}
+	jobMessage.textContent = message;
+	jobMessage.style.color = colour;
 }
 
-let isDisplayingError = false;
-function displayError(errorMessage) {
-	if (isDisplayingError) {
-		return;
+/**
+ * Display a message that times out after a specified duration.
+ */
+function showTimedMessage(message, colour, duration, onShow, onTimeout){
+	if (isShowingTimedMessage){
+		clearTimeout(timedMessage);
 	}
-	setMessage(errorMessage, "var(--bs-danger)");
-	createJobModalElement.classList.add("animate__animated", "animate__shakeX");
-	isDisplayingError = true;
 
-	setTimeout(function () {
+	setMessage(message, colour);
+	isShowingTimedMessage = true;
+	onShow();
+
+	timedMessage = setTimeout(function () {
 		setMessage("", "white");
+		isShowingTimedMessage = false;
+		onTimeout();
+	}, 
+	duration);
+}
+
+/**
+ * Display an error message that shakes the modal and times out after 3 seconds.
+ */
+function displayError(errorMessage) {
+	showTimedMessage(errorMessage, "var(--bs-danger)", 3000, function(){
+		createJobModalElement.classList.add("animate__animated", "animate__shakeX");
+	}, function(){
 		createJobModalElement.classList.remove("animate__animated", "animate__shakeX");
-		isDisplayingError = false;
-	}, 3000);
+	});
 }
 
-function updateDropZoneTarget() {
-	jobDropZone.zoneText.innerHTML = `Drag and drop <b>${jobAttachBaseFiles.checked ? "base" : "student"}</b> files here!`;
+/**
+ * Update the drop zone's call to action (C2A) depending on the attach base files toggle.
+ */
+function updateForBaseFiles() {
+	jobDropZone.setC2A(`Drag and drop <b>${jobAttachBaseFiles.checked ? "base" : "student"}</b> files here!`);
 }
 
+/**
+ * Toggle job submission (i.e., whether you can submit jobs or not).
+ */
 function setEnabled(isEnabled) {
 	jobDropZone.setInteractable(isEnabled);
-	createJobButton.disabled = jobName.disabled = jobLanguage.disabled = jobMaxMatchesUntilIgnored.disabled = jobMaxMatchesDisplayed.disabled = jobAttachBaseFiles.disabled = !isEnabled;
+	createJobButton.disabled
+		= jobName.disabled
+		= jobLanguage.disabled
+		= jobMaxMatchesUntilIgnored.disabled
+		= jobMaxMatchesDisplayed.disabled
+		= jobAttachBaseFiles.disabled
+		= !isEnabled;
 }
 
 createJobForm.onsubmit = async (e) => {
-
-	e.preventDefault();
-
+	e.preventDefault(); // Prevent the modal from closing immediately.
+	
 	try {
 		// Create a new form (and capture name, language, max matches until ignored and max matches displayed)
 		let jobFormData = new FormData(createJobForm);
 		setEnabled(false);
 		setMessage("Stitching...", "white");
 
+		// Capture files separately and append to form.
 		function appendFilesToForm(name, data, isBaseFile) {
 			jobFormData.append(isBaseFile ? BASE_FILES_NAME : FILES_NAME, new Blob([data]), name);
 		}
@@ -313,9 +347,7 @@ createJobForm.onsubmit = async (e) => {
 			let archive = jobDropZoneFile.file;
 			let languageId = jobLanguage.options[jobLanguage.selectedIndex].getAttribute("language-id");
 			let isBaseFile = jobDropZoneFile.isBaseFile;
-
 			let files = await extractFiles(archive, languageId);
-
 			if (await isSingleSubmission(files, languageId) || isBaseFile) {
 				appendFilesToForm(archive.name, await extractSingle(files, languageId), isBaseFile);
 				if (!isBaseFile) {
@@ -332,18 +364,17 @@ createJobForm.onsubmit = async (e) => {
 			jobDropZoneFile.setProgress(1);
 		}
 
+		// Check if there are at least 2 students.
 		if(numStudents <= 1){
 			displayError("Must include at least 2 students.");
-			for (let jobDropZoneFile of jobDropZone.files) {
-				jobDropZoneFile.setProgress(0);
-			}
+			jobDropZone.resetProgress();
 			setEnabled(true);
 			return;
 		}
 
+		// Submit the job (must use XMLHttpRequest to receive callbacks about upload progress).
 		let xhr = new XMLHttpRequest();
 		xhr.responseType = 'json';
-
 		xhr.open('POST', NEW_JOB_URL);
 
 		// https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/upload
@@ -355,46 +386,43 @@ createJobForm.onsubmit = async (e) => {
 		xhr.upload.addEventListener('progress', e => {
 			let percentage = e.lengthComputable ? (e.loaded / e.total) * 100 : 0;
 			setMessage(`Uploading (${percentage.toFixed(0)}%)`, "white");
-		
 		});
-
+		// Done uploading, now server is processing upload (writing files to disk).
 		xhr.upload.addEventListener('load', e => {
-			// The upload completed successfully.
-			// Done uploading, now server is processing upload (writing files to disk)
 			setMessage("Waiting for server...", "white");
 		});
+		xhr.onreadystatechange = function (){ // Call a function when the state changes.
+			if (this.readyState === XMLHttpRequest.DONE){
+				if (this.status === 200){
 
-		xhr.onreadystatechange = function () { // Call a function when the state changes.
-			if (this.readyState === XMLHttpRequest.DONE) {
-				if (this.status === 200) {
-					// Obtain job as json data and add to the jobs table
+					// Obtain job as json data and add to the jobs table.
 					let json = xhr.response;
 					addJob(json, true);
 					unfinishedJobs.push(json["job_id"]);
 
-					// Hide and reset the form and dropzone
+					// Hide and reset the form and dropzone.
 					createJobModal.hide();
-					setTimeout(() => {
+					setTimeout(() => { // Timeout to ensure that the modal only clears once closed.
 						createJobForm.reset();
 						jobDropZone.reset();
-						updateDropZoneTarget();
+						updateForBaseFiles();
 						setEnabled(true);
 						setMessage("", "white");
 					}, 200);
-				}else if (this.status === 400){
+
+				}else if (this.status === 400){ // Server returns an error message regarding the submission.
 					displayError(xhr.response.message);
+					jobDropZone.resetProgress();
 					setEnabled(true);
-					for (let jobDropZoneFile of jobDropZone.files) {
-						jobDropZoneFile.setProgress(0);
-					}
 				}
 			}
-
 		}
 		xhr.send(jobFormData);
 
-	} catch (err) {
+	}catch(err){ // Unknown client-side error.
 		console.err(err);
+		displayError("An error occurred.");
+		jobDropZone.resetProgress();
 		setEnabled(true);
 	}
 };
@@ -405,10 +433,16 @@ jobDropZone.onFileAdded = async (jobDropZoneFile) => {
 	let archive = jobDropZoneFile.file;
 	let files = await extractFiles(archive);
 
+	/**
+	 * Get the extension name of a file.
+	 */
 	function getExtension(name) {
 		return name.split(".").pop();
 	}
 
+	/**
+	 * Quickly determine the most likely programming language for a collection of files.
+	 */
 	function getProgrammingLanguageId(files) {
 		let d = {};
 		for (let key in SUPPORTED_LANGUAGES) {
@@ -441,7 +475,7 @@ jobDropZone.onFileAdded = async (jobDropZoneFile) => {
 				}
 				counter++;
 			}
-			if (counter > maxArchives) break; // Only check three archives
+			if (counter > maxArchives) break; // Stops checking after max archives.
 		}
 	}
 	let languageId = getProgrammingLanguageId(langTestFiles);

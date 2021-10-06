@@ -3,7 +3,7 @@ time-line-event .timeline-event-image{
 }
 
 time-line-event .timeline-event-image[status="Incompleted"]{
-    background-image: url("/static/img/incompleted.svg")
+    background-image: url("/static/img/incompleted.svg"); /* Using background-image instead of content for cross-browser support */
 }
 
 time-line-event .timeline-event-image[status="In Progress"]{
@@ -15,5 +15,5 @@ time-line-event .timeline-event-image[status="Completed"]{
 }
 
 time-line-event .timeline-event-image[status="Failed"]{
-    background-image: url("/static/img/failed.svg")
+    background-image: url("/static/img/failed.svg");
 }

@@ -142,13 +142,13 @@
 						<!-- Base Files -->
 						<div class="mb-3">
 							<label for="job-attach-base-files">Attach base files?</label>
-							<input class="form-check-input ms-1" id="job-attach-base-files" type="checkbox" value="" name="job-attach-base-files" onchange="updateDropZoneTarget();">
+							<input class="form-check-input ms-1" id="job-attach-base-files" type="checkbox" value="" name="job-attach-base-files" onchange="updateForBaseFiles();">
 						</div>
 					</div>
 
 					<!-- Footer -->
 					<div class="modal-footer d-flex justify-content-between p-2 bg-dark text-light">
-						<label id="job-error-message"></label>
+						<label id="job-message"></label>
 						<div style="position: relative; max-height: 50px;">
 							<button id="create-job-button" type="submit" class="btn btn-outline-primary border-2 rounded-pill" disabled>
 								<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-plus" viewBox="4 2.5 13 13">
