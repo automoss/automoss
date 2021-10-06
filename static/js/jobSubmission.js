@@ -23,11 +23,11 @@ function isArchive(fileName) {
  */
 function isSource(fileName, language) {
 	let extensions = [];
-	if (language != null) {
+	if (language) {
 		extensions = SUPPORTED_LANGUAGES[language];
 	} else {
 		for (let key of Object.keys(SUPPORTED_LANGUAGES)) {
-			extensions = extensions.concat(SUPPORTED_LANGUAGES[key][3]);
+			extensions = extensions.concat(SUPPORTED_LANGUAGES[key][2]);
 		}
 	}
 	return hasExtension(fileName, extensions);
@@ -263,8 +263,10 @@ let createJobButton = document.getElementById("create-job-button");
 
 
 function setMessage(message, colour){
-	jobErrorMessage.style.color = colour;
-	jobErrorMessage.textContent = message;
+	if(!isDisplayingError){
+		jobErrorMessage.style.color = colour;
+		jobErrorMessage.textContent = message;
+	}
 }
 
 let isDisplayingError = false;
@@ -300,7 +302,7 @@ createJobForm.onsubmit = async (e) => {
 		// Create a new form (and capture name, language, max matches until ignored and max matches displayed)
 		let jobFormData = new FormData(createJobForm);
 		setEnabled(false);
-		setMessage("Stitching Submissions...", "white");
+		setMessage("Stitching...", "white");
 
 		function appendFilesToForm(name, data, isBaseFile) {
 			jobFormData.append(isBaseFile ? BASE_FILES_NAME : FILES_NAME, new Blob([data]), name);
@@ -330,6 +332,15 @@ createJobForm.onsubmit = async (e) => {
 			jobDropZoneFile.setProgress(1);
 		}
 
+		if(numStudents <= 1){
+			displayError("Must include at least 2 students.");
+			for (let jobDropZoneFile of jobDropZone.files) {
+				jobDropZoneFile.setProgress(0);
+			}
+			setEnabled(true);
+			return;
+		}
+
 		let xhr = new XMLHttpRequest();
 		xhr.responseType = 'json';
 
@@ -339,16 +350,18 @@ createJobForm.onsubmit = async (e) => {
 		// Other events: error, abort, timeout
 
 		xhr.upload.addEventListener('loadstart', e => {
-			setMessage("Uploading...", "white");
+			setMessage("Uploading (0%)", "white");
 		});
 		xhr.upload.addEventListener('progress', e => {
 			let percentage = e.lengthComputable ? (e.loaded / e.total) * 100 : 0;
+			setMessage(`Uploading (${percentage.toFixed(0)}%)`, "white");
+		
 		});
 
 		xhr.upload.addEventListener('load', e => {
 			// The upload completed successfully.
 			// Done uploading, now server is processing upload (writing files to disk)
-			setMessage("Finished Uploading.", "white");
+			setMessage("Waiting for server...", "white");
 		});
 
 		xhr.onreadystatechange = function () { // Call a function when the state changes.
@@ -358,17 +371,23 @@ createJobForm.onsubmit = async (e) => {
 					let json = xhr.response;
 					addJob(json, true);
 					unfinishedJobs.push(json["job_id"]);
-				}
 
-				// Hide and reset the form and dropzone
-				createJobModal.hide();
-				setTimeout(() => {
-					createJobForm.reset();
-					jobDropZone.reset();
-					updateDropZoneTarget();
+					// Hide and reset the form and dropzone
+					createJobModal.hide();
+					setTimeout(() => {
+						createJobForm.reset();
+						jobDropZone.reset();
+						updateDropZoneTarget();
+						setEnabled(true);
+						setMessage("", "white");
+					}, 200);
+				}else if (this.status === 400){
+					displayError(xhr.response.message);
 					setEnabled(true);
-					setMessage("", "white");
-				}, 200);
+					for (let jobDropZoneFile of jobDropZone.files) {
+						jobDropZoneFile.setProgress(0);
+					}
+				}
 			}
 
 		}
