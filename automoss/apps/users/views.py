@@ -23,13 +23,18 @@ from .forms import (
     PasswordForgottenForm,
     PasswordResetForm,
     PasswordUpdateForm,
+    EmailForm,
     UnverifiedError
 )
 from .tokens import (
+    email_confirmation_token,
     confirm_registration_token, 
     password_reset_token,
 )
-from .models import User
+from .models import (
+    User,
+    Email
+)
 
 class Login(View):
     """ Login view """
@@ -87,45 +92,63 @@ class Logout(View):
 class Profile(View):
     """ Profile View """
     template = "users/profile/profile.html"
+    email_html_template = "users/email/confirm-email.html"
+    email_txt_template = "users/email/confirm-email.txt"
+    email_subject_template = "users/email/confirm-email-subject.txt"
 
     def get(self, request):
         """ Get profile view """
-        #form = UserCreationForm() 
         return render(request, self.template, {
-            'mailing_list_form' : request.user.email_set.all()
-        }) #{'form': form})
+            'mailing_list' : request.user.email_set.all(),
+            'user' : request.user
+        })
 
-#     def post(self, request):
-#         """ Post new profile data """
-#         form_type = request.POST.get('form')
+    def post(self, request):
+        """ Post new profile data """
+        form_type = request.POST.get('form')
 
-#         # Password change
-#         if form_type == 'password-change':
-#             change_password_form = PasswordUpdateForm(request.user, request.POST)
-#             if change_password_form.is_valid():
-#                 # Save and update session auth hash (logs out all other user instances except current)
-#                 change_password_form.save()
-#                 update_session_auth_hash(self.request, change_password_form.user)
-#             return render(request, self.template, {'passwordform' : change_password_form})
+        # Password change
+        if form_type == 'password-change':
+            change_password_form = PasswordUpdateForm(request.user, request.POST)
+            if change_password_form.is_valid():
+                # Save and update session auth hash (logs out all other user instances except current)
+                change_password_form.save()
+                update_session_auth_hash(self.request, change_password_form.user)
+            return render(request, self.template, {
+                'passwordform' : change_password_form,
+                'mailing_list' : request.user.email_set.all(),
+                'user' : request.user
+            })
 
-#         # Primary Email change
-#         elif form_type == 'primary-email-change':
-#             pass
-
-#         # Mailing List change
-#         elif form_type == 'mail-list-change':
-#             pass 
-
-#         # Invalid post request
-#         return HttpResponseNotFound()   
-        
-           
-#         change_password_form = PasswordUpdateForm(request.user, request.POST)
-#         if change_password_form.is_valid():
-#             change_password_form.save()
-#             return JsonResponse({ "success" : True })
-#         else:
-#             return JsonResponse({ "success" : False })
+        # Mailing List change
+        elif form_type == 'mail-list-change':
+            clean_emails = []
+            for email in request.POST.get('emails').split(","):
+                email_form = EmailForm({"user" : request.user, "email_address" : email})
+                # Save if valid
+                if email_form.is_valid():
+                    result = email_form.save()
+                    # Send verification email if new email
+                    if result:
+                        result.send_email( 
+                        subject_template=self.email_subject_template, 
+                        body_template=self.email_txt_template, 
+                        html_template=self.email_html_template, 
+                        context={ 
+                            "request" : request,
+                            "user" : request.user,
+                            "email": result,
+                            "token" : email_confirmation_token.make_token(result)
+                            }
+                        )
+                clean_emails.append(email_form.cleaned_data.get("email_address"))
+            # Remove emails not listed in the post request
+            deleted_emails = request.user.email_set.all().exclude(email_address__in=clean_emails)
+            deleted_emails.delete()
+            return JsonResponse({"success" : True })
+        else:
+            # Invalid post request
+            return HttpResponseNotFound()
 
 class Register(View):
     """ User registration view """
@@ -291,6 +314,36 @@ class Confirm(View):
             return render(request, self.template, 
             {
                 "message": "That verification link is either invalid or has expired.\nTo generate a new one, enter your account credentials on the login page.\n An email containing a new link will be sent to you.", 
+                "header" : "Invalid Verification Link", 
+                "action" : "Go to Login"
+            })
+
+class ConfirmEmail(View):
+    """ View for confirming email """
+
+    template = "users/auth/confirm.html"
+
+    def get(self, request, eid, token):
+        """ Attempt to verify email """
+        try:
+            email = Email.objects.get(email_id=eid)
+        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+            email = None
+        if email is not None and email_confirmation_token.check_token(email, token):
+            # Verify user
+            email.is_verified = True
+            email.save()
+            return render(request, self.template, 
+            {
+                "message": "Your email has been successfully verified! You can now receive notifications.",
+                "header" : "Email Verified", 
+                "action" : "Go to Login"
+            })
+        else:
+            # Invalid verification link
+            return render(request, self.template, 
+            {
+                "message": "That verification link is either invalid or has expired.\nAsk the account holder to generate a new one.", 
                 "header" : "Invalid Verification Link", 
                 "action" : "Go to Login"
             })
