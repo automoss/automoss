@@ -327,7 +327,7 @@ class ConfirmEmail(View):
         """ Attempt to verify email """
         try:
             email = Email.objects.get(email_id=eid)
-        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        except(TypeError, ValueError, OverflowError, Email.DoesNotExist):
             email = None
         if email is not None and email_confirmation_token.check_token(email, token):
             # Verify user
