@@ -1,0 +1,5 @@
+{% autoescape off %}
+
+Job {{ job.comment }} has {{ status }}.
+
+{% endautoescape %}

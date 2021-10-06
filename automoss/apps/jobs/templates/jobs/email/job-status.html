@@ -1,0 +1,26 @@
+{% extends "jobs/email/base.html" %}
+{% load static %}
+
+{% block "title" %}
+Job Status Update
+{% endblock %}
+
+{% block "content" %}
+The status of Job <a href="{{host}}{% url "jobs:results:index" job.job_id %}">'{{ job.comment }}'</a> has been updated. 
+<table style="width:100%;border-collapse:collapse;border:0;border-spacing:0;">
+    <tr>
+        <td style="padding:0 0 36px 0;color:#0e162b;">
+            Status: <strong>{{ status }}</strong>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:0 0 0 0;color:#0e162b;">
+        <h3>Event Log</h3>
+        {% for job in job.jobevent_set.all %}
+            <span>{{job}}</span>
+            </br>
+        {% endfor %}
+        </td>
+    </tr>
+</table>
+{% endblock %}
