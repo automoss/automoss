@@ -10,6 +10,30 @@ function isTerminalState(state){
 	return terminalStates.includes(state);
 }
 
+
+function getStatusIndex(status){
+	return { 
+		"INQ": 1,
+		"UPL": 2,
+		"PRO": 3,
+		"PAR": 4,
+		"COM": 6,
+		"FAI": getLastCompletedEvent(jobId)
+	}[status];
+}
+
+function getLastCompletedEvent(jobId){
+	let prevEvents = document.getElementById(`job-logs-${jobId}`).prevEvents;
+	if (prevEvents != undefined){
+		for (let i = prevEvents.length - 1; i >= 0; i--){
+			if (prevEvents[i] != undefined && prevEvents[i] != "FAI"){
+				return getStatusIndex(prevEvents[i]);
+			}
+		}
+	}
+	return 0;
+}
+
 function updateJobStatus(jobId, status){
 	document.querySelector(`tr[job_id="${jobId}"]`).setStatus(status);
 	if(isTerminalState(status)){
@@ -17,29 +41,24 @@ function updateJobStatus(jobId, status){
 	}
 
 	let jobTimeline = document.getElementById(`job-timeline-${jobId}`);
-	let statusIndex = { 
-		"INQ": 1,
-		"UPL": 2,
-		"PRO": 3,
-		"PAR": 4,
-		"COM": 6,
-		"FAI": 0 // TODO: Keep a record of where it failed?
-	};
-	jobTimeline.setCompleted(statusIndex[status]);
+	jobTimeline.setCompleted(eventIndex[status]);
 	if (status == "FAI"){
-		for (let i = 0; i < jobTimeline.events.length; i++){
-			jobTimeline.setFailed(i);
-		}
+		jobTimeline.setFailed(eventIndex[status]);
 	}
 }
 
 function updateJobLogs(jobId, logs){
 	let jobLogs = document.getElementById(`job-logs-${jobId}`);
-	console.log(logs);
+
 	let temp = "";
+	jobLogs.prevEvents = [];
+
 	for (let log in logs){
 		temp += logs[log].str + "\n";
-		jobLogs.prevStatus = logs[log].type;
+
+		if (logs[log].type){
+			jobLogs.prevEvents.push(logs[log].type);
+		}
 	}
 	temp = trimRight(temp, 1);
 
