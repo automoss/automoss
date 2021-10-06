@@ -27,4 +27,5 @@ urlpatterns = [
     path('forgot-password/', views.ForgotPassword.as_view(), name="forgot-password"),
     path('reset-password/<uuid:uid>/<str:token>/', views.ResetPassword.as_view(), name="reset-password"),
     path('confirm/<uuid:uid>/<str:token>/', views.Confirm.as_view(), name="confirm"),
+    path('confirm-email/<uuid:eid>/<str:token>/', views.ConfirmEmail.as_view(), name="confirm-email"),
 ]
