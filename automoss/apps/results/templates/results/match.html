@@ -79,12 +79,12 @@
 </div>
 
 <script>
-	document.onload = () => {
+	(function() {
 		hljs.configure({
 			cssSelector: 'pre'
 		})
 		hljs.highlightAll();
-	};
+	})();
 
 	let colours = {{ colours | js }};
 	let hoverOpacity = 0.5;
