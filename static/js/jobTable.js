@@ -157,13 +157,16 @@ function addJob(job, forceOpen=false){
 let unfinishedJobs = [];
 let result = fetch(GET_JOBS_URL).then(async (response)=>{
 	let json = await response.json();
+	let jobIDs = [];
 	json.forEach(item => {
 		addJob(item);
 		if (!isTerminalState(item.status)){
 			unfinishedJobs.push(item.job_id);
 		}
-		updateJobs([item.job_id]); // Update all jobs on load.
+		jobIDs.push(item.job_id);
 	});
+
+	updateJobs(jobIDs); // Update all jobs on load.
 	if(json.length == 0){
 		noJobsMessage.style.display = 'block';
 	}
