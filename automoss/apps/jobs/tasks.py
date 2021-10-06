@@ -56,7 +56,10 @@ logger = get_task_logger(__name__)
 def process_job(job_id):
     """Basic interface for generating a report from MOSS"""
 
-    job = Job.objects.get(job_id=job_id)
+    try:
+        job = Job.objects.get(job_id=job_id)
+    except Job.DoesNotExist:
+        return
 
     if job.status != INQUEUE_STATUS:
         # A job will only be started if it is in the queue.
