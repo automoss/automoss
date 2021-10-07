@@ -45,8 +45,14 @@ function setupTableSearch(table, searchBar){
 			}
 			if(contains(row, searchBar.value)){
 				show(row);
+				if(row.hasAttribute("ownsNext")){
+					show(row.nextSibling);
+				}
 			}else{
 				hide(row);
+				if(row.hasAttribute("ownsNext")){
+					hide(row.nextSibling);
+				}
 			}
 		}
 	}

@@ -104,7 +104,10 @@ function addJob(job, forceOpen=false){
 	noJobsMessage.style.display = 'none';
 
 	// Info
+	let jobInfoRow = document.createElement("tr");
+
 	let jobInfo = document.createElement("td");
+	jobInfoRow.append(jobInfo);
 	jobInfo.setAttribute("colspan", "6");
 	jobInfo.style = "padding: 0 !important;";
 	jobInfo.setAttribute("ignoreOnSearch", true);
@@ -116,6 +119,7 @@ function addJob(job, forceOpen=false){
 	jobInfoCollapse.classList.add("collapse");
 	jobInfoCollapse.classList.add("p-0");
 	jobInfoCollapse.classList.add("border-bottom");
+	
 
 	let jobInfoWrapper = document.createElement("div");
 	jobInfoCollapse.append(jobInfoWrapper);
@@ -151,8 +155,10 @@ function addJob(job, forceOpen=false){
 	}
 	jobTimeline.setProgress(1, true);
 
-	jobsTableBody.prepend(jobInfo);
-	jobsTableBody.prepend(new Job(job, jobInfo));
+	jobsTableBody.prepend(jobInfoRow);
+	let jobElement = new Job(job, jobInfo);
+	jobElement.setAttribute("ownsNext", true);
+	jobsTableBody.prepend(jobElement);
 }
 
 let unfinishedJobs = [];
