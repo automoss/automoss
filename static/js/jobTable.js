@@ -107,6 +107,7 @@ function addJob(job, forceOpen=false){
 	let jobInfo = document.createElement("td");
 	jobInfo.setAttribute("colspan", "6");
 	jobInfo.style = "padding: 0 !important;";
+	jobInfo.setAttribute("ignoreOnSearch", true);
 
 	// Info > Collapse
 	let jobInfoCollapse = document.createElement("div");

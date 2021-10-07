@@ -40,6 +40,9 @@ function hide(row){
 function setupTableSearch(table, searchBar){
 	searchBar.oninput = function(){
 		for (let row of table.tBodies[0].children){
+			if (row.hasAttribute("ignoreOnSearch")){
+				continue;
+			}
 			if(contains(row, searchBar.value)){
 				show(row);
 			}else{
