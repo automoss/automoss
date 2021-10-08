@@ -34,14 +34,12 @@ HOSTNAME = os.getenv("HOST_NAME")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-if DEBUG:
-    # Specify local/testing servers
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
-    # SECURE_SSL_REDIRECT = False
+# Specify local/testing server hosts
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
-else:
+if not DEBUG:
     # Specify production server hosts
-    ALLOWED_HOSTS = ['automoss.azurewebsites.net']
+    ALLOWED_HOSTS += ['automoss.azurewebsites.net']
 
     # Uncomment this if not proxies being used (causes too many redirects issue)
     # SECURE_SSL_REDIRECT = True
