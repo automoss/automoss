@@ -134,13 +134,13 @@ LOGIN_URL = "/user/login/"
 # Currently returns logged_out.html
 # LOGOUT_REDIRECT_URL = '/accounts/login'
 
-# EMAIL_USE_TLS = True
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 
-DEFAULT_FROM_EMAIL = "noreply@automoss.co.za"
+DEFAULT_FROM_EMAIL = "automossapp@gmail.com"
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
