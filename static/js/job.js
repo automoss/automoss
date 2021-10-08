@@ -80,11 +80,20 @@ class Job extends HTMLTableRowElement{
 		if (isTerminalState(this.status)){
 			completion_date = new Date(this.completion_date);
 		}
-		this.jobDuration.innerHTML = new Date(completion_date - creation_date).toLocaleTimeString('en-GB', {
-			hour: '2-digit', minute: '2-digit', second: '2-digit',
-			timeZone:'Etc/UTC',
-			hour12: false,		
-		});
+
+		// Display in hh:mm:ss format
+		let total_seconds = new Date(completion_date - creation_date) / 1000;
+
+		let hours = Math.floor(total_seconds / 3600);
+		total_seconds %= 3600;
+		let minutes = Math.floor(total_seconds / 60);
+		let seconds = Math.floor(total_seconds % 60);
+
+		minutes = String(minutes).padStart(2, "0");
+		hours = String(hours).padStart(2, "0");
+		seconds = String(seconds).padStart(2, "0");
+
+		this.jobDuration.innerHTML = hours + ":" + minutes + ":" + seconds;
 	}
 
 	/**
