@@ -37,12 +37,14 @@ DEBUG = False
 if DEBUG:
     # Specify local/testing servers
     ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
-    SECURE_SSL_REDIRECT = False
+    # SECURE_SSL_REDIRECT = False
 
 else:
     # Specify production server hosts
     ALLOWED_HOSTS = ['automoss.azurewebsites.net']
-    SECURE_SSL_REDIRECT = True
+
+    # Uncomment this if not proxies being used (causes too many redirects issue)
+    # SECURE_SSL_REDIRECT = True
 
 # Application definition
 
