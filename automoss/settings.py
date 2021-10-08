@@ -30,10 +30,19 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # Hostname
 HOSTNAME = os.getenv("HOST_NAME")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+
+if DEBUG:
+    # Specify local/testing servers
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+    SECURE_SSL_REDIRECT = False
+
+else:
+    # Specify production server hosts
+    ALLOWED_HOSTS = ['automoss.azurewebsites.net']
+    SECURE_SSL_REDIRECT = True
 
 # Application definition
 
