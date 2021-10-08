@@ -39,7 +39,7 @@ function hide(row, onHide){
 /**
  * Setup a table and search bar to allow for searching.
  */
-function setupTableSearch(table, searchBar, onShow, onHide){
+function setupTableSearch(table, searchBar, onShow=()=>{}, onHide=()=>{}){
 	searchBar.oninput = function(){
 		for (let row of table.tBodies[0].children){
 			if (row.hasAttribute("ignoreOnSearch")){
