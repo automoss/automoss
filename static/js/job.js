@@ -3,15 +3,16 @@ class Job extends HTMLTableRowElement{
 		super();
 		Object.assign(this, job);
 
+		this.jobInfo = jobInfo;
 		this.id = `job-${this.job_id}`;
 		this.setAttribute('job_id', this.job_id);
 		this.setAttribute('status', this.status);
 		this.style = "cursor: pointer;";
 
-		let collapse = new bootstrap.Collapse(jobInfo.firstChild, { toggle: false });
+		this.collapse = new bootstrap.Collapse(jobInfo.firstChild, { toggle: false });
 		this.onclick = (e) => {
 			if (!(e.target instanceof HTMLAnchorElement)){ // Prevent collapsible region from toggling when job name is clicked.
-				collapse.toggle();
+				this.collapse.toggle();
 			}
 		};
 
@@ -48,6 +49,22 @@ class Job extends HTMLTableRowElement{
 		
 		this.setStatus(this.status);
 		this.updateDuration();
+	}
+
+	showInfo(isImmediate=false){
+		if (isImmediate){
+			this.jobInfo.firstChild.classList.add("show");	
+		}else{
+			this.collapse.show();
+		}
+	}
+
+	hideInfo(isImmediate=false){
+		if (isImmediate){
+			this.jobInfo.firstChild.classList.remove("show");	
+		}else{
+			this.collapse.hide();
+		}	
 	}
 
 	/**

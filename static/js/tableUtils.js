@@ -23,36 +23,32 @@ function contains(row, text){
 /**
  * Show a table row.
  */
-function show(row){
+function show(row, onShow){
 	row.style.display = "table-row";
+	onShow(row);
 }
 
 /**
  * Hide a table row.
  */
-function hide(row){
+function hide(row, onHide){
 	row.style.display = "none";
+	onHide(row);
 }
 
 /**
  * Setup a table and search bar to allow for searching.
  */
-function setupTableSearch(table, searchBar){
+function setupTableSearch(table, searchBar, onShow, onHide){
 	searchBar.oninput = function(){
 		for (let row of table.tBodies[0].children){
 			if (row.hasAttribute("ignoreOnSearch")){
 				continue;
 			}
 			if(contains(row, searchBar.value)){
-				show(row);
-				if(row.hasAttribute("ownsNext")){
-					show(row.nextSibling);
-				}
+				show(row, onShow);
 			}else{
-				hide(row);
-				if(row.hasAttribute("ownsNext")){
-					hide(row.nextSibling);
-				}
+				hide(row, onHide);
 			}
 		}
 	}
