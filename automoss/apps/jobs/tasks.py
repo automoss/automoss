@@ -34,6 +34,7 @@ from ...settings import (
     FIRST_RETRY_INSTANT,
 
     # Events
+    INQUEUE_EVENT,
     UPLOADING_EVENT,
     PROCESSING_EVENT,
     PARSING_EVENT,
@@ -91,7 +92,9 @@ def process_job(job_id):
         return
 
     job.start_date = now()
-    logger.info(f'Starting job {job_id} with status {job.status}')
+    msg = f'Starting job {job_id} with status {job.status}'
+    logger.info(msg)
+    JobEvent.objects.create(job=job, type=INQUEUE_EVENT, message=msg)
 
     base_dir = JOB_UPLOAD_TEMPLATE.format(
         user_id=job.user.user_id, job_id=job.job_id)
@@ -189,7 +192,7 @@ def process_job(job_id):
             break  # Success, do not retry
 
         except socket.error as e:
-            error = MossConnectionError(e.strerror)
+            error = MossConnectionError(e.strerror or e)
 
         except RecoverableMossException as e:
             error = e  # Handled below

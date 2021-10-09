@@ -13,6 +13,7 @@ from ...settings import (
 )
 
 
+MOSS_SOCKET_TIMEOUT = 3600 * 2  # 2 hours
 MOSS_URL = 'moss.stanford.edu'
 HTTP_MOSS_URL = f'http://{MOSS_URL}'
 SUPPORTED_MOSS_LANGUAGES = [SUPPORTED_LANGUAGES[language][1]
@@ -135,6 +136,7 @@ class MossAPIWrapper:
     def connect(self):
         """Connect to the MOSS server"""
         self.socket.connect((MOSS_URL, 7690))
+        self.socket.settimeout(MOSS_SOCKET_TIMEOUT)
         self._send_string(f'moss {self.user_id}')  # authenticate user
 
     def close(self):
@@ -477,6 +479,8 @@ class MOSS:
             # Double check on server-side that language is accepted
             if data == 'no':
                 raise UnsupportedLanguage(language)  # Unsupported language
+            elif data == '':
+                raise EmptyResponse
             elif data != 'yes':
                 raise InvalidRequest(
                     f'Moss did not understand this request. Response: "{data}"')
