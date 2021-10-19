@@ -2,7 +2,7 @@
 
 {% block "login-content" %}
 
-<div class="animate__animated animate__fadeInUp animate__fast d-flex flex-grow flex-column jusify-content-center align-items-center text-dark bg-light rounded-3 shadow-lg p-4 m-4">
+<form class="animate__animated animate__fadeInUp animate__fast d-flex flex-grow flex-column jusify-content-center align-items-center text-dark bg-light rounded-3 shadow-lg p-4 m-4">
 	<div class="d-flex flex-grow flex-column jusify-content-center align-items-center">
 		<h3 class="mb-3">{{ header }}</h3>
 		<p>
@@ -13,6 +13,6 @@
 		<a class = "btn btn-primary rounded-pill text-light mt-2" href="javascript:void(goTo('{% url "users:login" %}'));">
 			{{ action }}</a>
 	</div>
-</div>
+</form>
 
 {% endblock %}
