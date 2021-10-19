@@ -21,150 +21,149 @@
 {% endblock %}
 
 <!-- Page Title -->
-<h2 class="py-3 px-1 fw-bold">
+<h2 class="py-2 px-1 fw-bold">
 	{{ request.user.course_code }}'s Profile
 </h2>
 
 <div class="d-flex flex-row">
-    <!-- Column One -->
-    <div class="px-4 py-2" style="width: 50%;">
-        <h4 class="pb-3 fw-bold">Account Details</h4> 
-        <div style="max-width: 500px;">
-            <!-- Primary Email -->
-            <div class="d-flex flex-row justify-content-between align-items-center mb-3">
-                <label class="form-label fw-bold d-inline text-nowrap me-3">Primary Email: </label>
-                <div class="d-flex flex-row justify-content-between align-items-center">
-                    {{ user.primary_email_address }}
-                    <span class="badge badge-pill bg-success ms-3">Verified</span>
-                </div>
-            </div>
-            <!-- MOSS ID -->
-            <div class="d-flex flex-row justify-content-between align-items-center mb-3">
-                <label class="form-label fw-bold d-inline text-nowrap me-3">MOSS ID: </label>
-                <div class="d-flex flex-row justify-content-between align-items-center">
-                    {{ user.moss_id }}
-                    <span class="badge badge-pill bg-success ms-3">Verified</span>
-                </div>
-            </div>
-        </div>
-        <h4 class="pb-3 pt-4 fw-bold">Password Change</h4> 
-        <div style="max-width: 500px;">
+	<!-- Column One -->
+	<div class="px-4 py-2" style="width: 50%;">
+		<h4 class="pb-3 fw-bold">Account Details</h4> 
+		<div style="max-width: 500px;">
+			<!-- Primary Email -->
+			<div class="d-flex flex-row justify-content-between align-items-center mb-3">
+				<label class="form-label fw-bold d-inline text-nowrap me-3">Primary Email: </label>
+				<div class="d-flex flex-row justify-content-between align-items-center">
+					{{ user.primary_email_address }}
+					<span class="badge badge-pill bg-success ms-3">Verified</span>
+				</div>
+			</div>
+			<!-- MOSS ID -->
+			<div class="d-flex flex-row justify-content-between align-items-center mb-3">
+				<label class="form-label fw-bold d-inline text-nowrap me-3">MOSS ID: </label>
+				<div class="d-flex flex-row justify-content-between align-items-center">
+					{{ user.moss_id }}
+					<span class="badge badge-pill bg-success ms-3">Verified</span>
+				</div>
+			</div>
+		</div>
+		<h4 class="pb-3 pt-4 fw-bold">Password Change</h4> 
+		<div style="max-width: 500px;">
 
-            {% if passwordform %}
-                {% if not passwordform.errors %}
-                <div class="text-success mb-2">
-                    Password successfully updated!
-                </div>
-                {% else %}
-                <div class="text-danger mb-2">
-                    Could not update password!
-                </div>
-                {% endif %}
-            {% endif %}
+			{% if passwordform %}
+				{% if not passwordform.errors %}
+				<div class="text-success mb-2">
+					Password successfully updated!
+				</div>
+				{% else %}
+				<div class="text-danger mb-2">
+					Could not update password!
+				</div>
+				{% endif %}
+			{% endif %}
 
-            <form id="password-change-form" class="needs-validation" method="post" action="{% url 'users:profile' %}" novalidate>
-                {% csrf_token %}
-                <input type="hidden" name="form" value="password-change">
-                <!-- Old Password -->
-                <div class="mb-3">
-                    <label for="id_old_password" class="form-label fw-bold">Old Password: </label>
-                    <input type="password" name="old_password" class="form-control bg-light border-dark border-2{% if passwordform.errors.old_password %} is-invalid{% endif %}" id="id_old_password" maxlength="150" placeholder="Enter old password" required>
-                    <div id="old_password_invalid" class="invalid-feedback">
-                        {% if passwordform.errors.old_password %}
-                        {{ passwordform.errors.old_password }}
-                        {% endif %}
-                    </div>
-                </div>
-                <!-- New Password -->
-                <div class="mb-3">
-                    <label for="id_new_password1" class="form-label fw-bold">New Password: </label>
-                    <input type="password" name="new_password1" class="form-control bg-light border-dark border-2{% if passwordform.errors.new_password1 %} is-invalid{% endif %}" id="id_new_password1" maxlength="150" placeholder="Enter new password" required>
-                    <div id="new_password1_invalid" class="invalid-feedback">
-                        {% if passwordform.errors.new_password1 %}
-                        {{ passwordform.errors.new_password1 }}
-                        {% endif %}
-                    </div>
-                </div>
-                <!-- Confirm Password -->
-                <div class="mb-3">
-                    <label for="id_new_password2" class="form-label fw-bold">Confirm New Password: </label>
-                    <input type="password" name="new_password2" class="form-control bg-light border-dark border-2{% if passwordform.errors.new_password2 %} is-invalid{% endif %}" id="id_new_password2" maxlength="150" placeholder="Confirm new password" required>
-                    <div id="new_password2_invalid" class="invalid-feedback">
-                        {% if passwordform.errors.new_password2 %}
-                        {{ passwordform.errors.new_password2 }}
-                        {% endif %}
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary mt-2 rounded-pill text-light">
-                    <svg class="me-2" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cloud-arrow-up" viewBox="0 2 16 16">
-                        <path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2z"/>
-                        <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383zm.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/>
-                      </svg>
-                    Update Password</button>
-            </form>
-        </div>
-    </div>
-    <!-- Column Two -->
-    <div class="px-4 py-2" style="width: 50%;">
-        <h4 class="pb-3 fw-bold">Mailing List</h4> 
+			<form id="password-change-form" class="needs-validation" method="post" action="{% url 'users:profile' %}" novalidate>
+				{% csrf_token %}
+				<input type="hidden" name="form" value="password-change">
+				<!-- Old Password -->
+				<div class="mb-3">
+					<label for="id_old_password" class="form-label fw-bold">Old Password: </label>
+					<input type="password" name="old_password" class="form-control bg-light border-dark border-2{% if passwordform.errors.old_password %} is-invalid{% endif %}" id="id_old_password" maxlength="150" placeholder="Enter old password" required>
+					<div id="old_password_invalid" class="invalid-feedback">
+						{% if passwordform.errors.old_password %}
+						{{ passwordform.errors.old_password }}
+						{% endif %}
+					</div>
+				</div>
+				<!-- New Password -->
+				<div class="mb-3">
+					<label for="id_new_password1" class="form-label fw-bold">New Password: </label>
+					<input type="password" name="new_password1" class="form-control bg-light border-dark border-2{% if passwordform.errors.new_password1 %} is-invalid{% endif %}" id="id_new_password1" maxlength="150" placeholder="Enter new password" required>
+					<div id="new_password1_invalid" class="invalid-feedback">
+						{% if passwordform.errors.new_password1 %}
+						{{ passwordform.errors.new_password1 }}
+						{% endif %}
+					</div>
+				</div>
+				<!-- Confirm Password -->
+				<div class="mb-3">
+					<label for="id_new_password2" class="form-label fw-bold">Confirm New Password: </label>
+					<input type="password" name="new_password2" class="form-control bg-light border-dark border-2{% if passwordform.errors.new_password2 %} is-invalid{% endif %}" id="id_new_password2" maxlength="150" placeholder="Confirm new password" required>
+					<div id="new_password2_invalid" class="invalid-feedback">
+						{% if passwordform.errors.new_password2 %}
+						{{ passwordform.errors.new_password2 }}
+						{% endif %}
+					</div>
+				</div>
+				<button type="submit" class="btn btn-primary mt-2 rounded-pill text-light">
+					<svg xmlns="http://www.w3.org/2000/svg" width="22" height="20" fill="currentColor" class="bi bi-key-fill" viewBox="1 1 16 16">
+						<path d="M3.5 11.5a3.5 3.5 0 1 1 3.163-5H14L15.5 8 14 9.5l-1-1-1 1-1-1-1 1-1-1-1 1H6.663a3.5 3.5 0 0 1-3.163 2zM2.5 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+					</svg>
+					Update Password</button>
+			</form>
+		</div>
+	</div>
+	<!-- Column Two -->
+	<div class="px-4 py-2" style="width: 50%;">
+		<h4 class="pb-3 fw-bold">Mailing List</h4> 
 
-        <div style="max-width: 500px;">
+		<div style="max-width: 500px;">
 
-            <div id="id_email_list_invalid" class="text-danger my-2">
-            </div>
+			<div id="id_email_list_invalid" class="text-danger my-2">
+			</div>
 
-            <!-- Emails -->
-            <div id="id_email_list">
-                {% for email in mailing_list %}
-                <div class="d-flex p-2 flex-row justify-content-between align-items-center mb-2 bg-light border border-dark border-2 rounded-3">
-                    <div>
-                        <svg class="mx-2" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope-fill" viewBox="0 1 16 16">
-                            <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555zM0 4.697v7.104l5.803-3.558L0 4.697zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757zm3.436-.586L16 11.801V4.697l-5.803 3.546z"/>
-                        </svg>
-                        <span class="email-span">{{email}}</span>
-                    </div>
-                    <div class="d-flex flex-row justify-content-between align-items-center">
-                        {% if email.is_verified %}
-                        <span class="badge badge-pill bg-success">Verified</span>
-                        {% else %}
-                        <span class="badge badge-pill bg-danger">Unverified</span>
-                        {% endif %}
-                        <button type="button" class="btn-close remove-email ms-3" aria-label="Close"></button>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+			<!-- Emails -->
+			<div id="id_email_list">
+				{% for email in mailing_list %}
+				<div class="d-flex p-2 flex-row justify-content-between align-items-center mb-2 bg-light border border-dark border-2 rounded-3">
+					<div>
+						<svg class="mx-2" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope-fill" viewBox="0 1 16 16">
+							<path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555zM0 4.697v7.104l5.803-3.558L0 4.697zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757zm3.436-.586L16 11.801V4.697l-5.803 3.546z"/>
+						</svg>
+						<span class="email-span">{{email}}</span>
+					</div>
+					<div class="d-flex flex-row justify-content-between align-items-center">
+						{% if email.is_verified %}
+						<span class="badge badge-pill bg-success">Verified</span>
+						{% else %}
+						<span class="badge badge-pill bg-danger">Unverified</span>
+						{% endif %}
+						<button type="button" class="btn-close remove-email ms-3" aria-label="Close"></button>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
 
-            <!-- Enter new email -->
-            <div class="py-3">
-                <label for="id_email5" class="form-label fw-bold">Enter New Email: </label>
-            
-                <form id="id_email_add_form" class="needs-validation" novalidate>
-                    <div class="mb-3">
-                        <input id="id_email_input" type="email" name="email" class="form-control bg-light border-dark me-4 border-2" id="id_new_email" maxlength="150" placeholder="Enter an email" {% if form.email5.value %}value="{{ form.email5.value }}"{% endif %} required>
-                        <div id="id_email_invalid" class="invalid-feedback">
-                        </div>
-                    </div>
-                </form>
+			<!-- Enter new email -->
+			<div class="py-3">
+				<label for="id_email5" class="form-label fw-bold">Enter New Email: </label>
+			
+				<form id="id_email_add_form" class="needs-validation" novalidate>
+					<div class="mb-3">
+						<input id="id_email_input" type="email" name="email" class="form-control bg-light border-dark me-4 border-2" id="id_new_email" maxlength="150" placeholder="Enter an email" {% if form.email5.value %}value="{{ form.email5.value }}"{% endif %} required>
+						<div id="id_email_invalid" class="invalid-feedback">
+						</div>
+					</div>
+				</form>
 
-                <div class="d-flex flex-row justify-content-between align-items-center">
-                    <button id="id_add_email" type="submit" class="btn btn-info rounded-pill text-light text-nowrap" aria-label="Add">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-plus" viewBox="4 2.5 13 13">
-                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"></path>
-                        </svg>
-                        Add Email</button>
-                    <button id="id_update_emails" type="submit" class="btn btn-primary rounded-pill text-light text-nowrap" disabled>
-                        <svg class="me-2" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cloud-arrow-up" viewBox="0 2 16 16">
-                            <path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2z"/>
-                            <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383zm.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/>
-                          </svg>
-                        Update Mailing List</button>
-                </div>
-                
-            </div>
+				<div class="d-flex flex-row justify-content-between align-items-center">
+					<button id="id_add_email" type="submit" class="btn btn-info rounded-pill text-light text-nowrap" aria-label="Add">
+						<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-plus" viewBox="4 2.5 13 13">
+							<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"></path>
+						</svg>
+						Add Email</button>
+					<!-- <button id="id_update_emails" type="submit" class="btn btn-primary rounded-pill text-light text-nowrap" disabled>
+						<svg class="me-2" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cloud-arrow-up" viewBox="0 2 16 16">
+							<path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2z"/>
+							<path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383zm.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/>
+						  </svg>
+						Update Mailing List</button> -->
+				</div>
+				
+			</div>
 
-        </div>
-    </div>
+		</div>
+	</div>
 </div>
 
 {% endblock %}
