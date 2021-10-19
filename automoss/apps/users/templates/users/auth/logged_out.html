@@ -7,8 +7,7 @@
 		<h4 class="mb-4">You have been logged out.</h4>
 	</div>
 	<div class="d-flex justify-content-center">
-		<a class = "btn btn-primary rounded-pill text-light mt-2" href="{% url "users:login" %}">
-			Go to Login</a>
+		<a class = "btn btn-primary rounded-pill text-light mt-2" href="javascript:void(goTo('{% url "users:login" %}'));">Go to Login</a>
 	</div>
 </div>
 

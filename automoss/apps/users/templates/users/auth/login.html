@@ -63,9 +63,9 @@
 
 	<!-- Don't Have An Account -->
 	<div class="d-flex flex-row justify-content-between mb-3">
-		<span>Don't have an account yet? <a href="{% url 'users:register' %}" style="text-decoration: none">Register.</a></span>
-		<a href="{% url 'users:forgot-password' %}" style="text-decoration: none">Forgot Password</a>
-	</div> 
+		<span>Don't have an account yet? <a href="javascript:void(goTo('{% url 'users:register' %}'));" style="text-decoration: none">Register.</a></span>
+		<a href="javascript:void(goTo('{% url 'users:forgot-password' %}'));" style="text-decoration: none">Forgot Password</a>
+	</div>
 	
 </form>
 
