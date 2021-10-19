@@ -25,97 +25,97 @@
 	{{ request.user.course_code }}'s Profile
 </h2>
 
-<div class="d-flex flex-row">
-	<!-- Column One -->
-	<div class="px-4 py-2" style="width: 50%;">
-		<h4 class="pb-3 fw-bold">Account Details</h4> 
-		<div style="max-width: 500px;">
-			<!-- Primary Email -->
-			<div class="d-flex flex-row justify-content-between align-items-center mb-3">
-				<label class="form-label fw-bold d-inline text-nowrap me-3">Primary Email: </label>
-				<div class="d-flex flex-row justify-content-between align-items-center">
-					{{ user.primary_email_address }}
-					<span class="badge badge-pill bg-success ms-3">Verified</span>
+<div class="d-flex flex-row justify-content-around container-fluid shadow-sm bg-white p-4 rounded-3" style="height: calc(100vh - 300px)">
+	<!-- Account -->
+	<div class="mx-3" style="width: 500px;">
+		<div>
+			<h4 class="pb-3 fw-bold">Account Details</h4> 
+			<div>
+				<!-- Primary Email -->
+				<div class="d-flex flex-row justify-content-between align-items-center mb-3">
+					<label class="form-label fw-bold d-inline text-nowrap me-3">Primary Email: </label>
+					<div class="d-flex flex-row justify-content-between align-items-center">
+						{{ user.primary_email_address }}
+						<span class="badge badge-pill bg-success ms-3">Verified</span>
+					</div>
+				</div>
+				<!-- MOSS ID -->
+				<div class="d-flex flex-row justify-content-between align-items-center mb-3">
+					<label class="form-label fw-bold d-inline text-nowrap me-3">MOSS ID: </label>
+					<div class="d-flex flex-row justify-content-between align-items-center">
+						{{ user.moss_id }}
+						<span class="badge badge-pill bg-success ms-3">Verified</span>
+					</div>
 				</div>
 			</div>
-			<!-- MOSS ID -->
-			<div class="d-flex flex-row justify-content-between align-items-center mb-3">
-				<label class="form-label fw-bold d-inline text-nowrap me-3">MOSS ID: </label>
-				<div class="d-flex flex-row justify-content-between align-items-center">
-					{{ user.moss_id }}
-					<span class="badge badge-pill bg-success ms-3">Verified</span>
-				</div>
-			</div>
-		</div>
-		<h4 class="pb-3 pt-4 fw-bold">Password Change</h4> 
-		<div style="max-width: 500px;">
 
-			{% if passwordform %}
-				{% if not passwordform.errors %}
-				<div class="text-success mb-2">
-					Password successfully updated!
-				</div>
-				{% else %}
-				<div class="text-danger mb-2">
-					Could not update password!
-				</div>
+			<h4 class="pb-3 pt-4 fw-bold">Password Change</h4> 
+			<div>
+
+				{% if passwordform %}
+					{% if not passwordform.errors %}
+					<div class="text-success mb-2">
+						Password successfully updated!
+					</div>
+					{% else %}
+					<div class="text-danger mb-2">
+						Could not update password!
+					</div>
+					{% endif %}
 				{% endif %}
-			{% endif %}
 
-			<form id="password-change-form" class="needs-validation" method="post" action="{% url 'users:profile' %}" novalidate>
-				{% csrf_token %}
-				<input type="hidden" name="form" value="password-change">
-				<!-- Old Password -->
-				<div class="mb-3">
-					<label for="id_old_password" class="form-label fw-bold">Old Password: </label>
-					<input type="password" name="old_password" class="form-control bg-light border-dark border-2{% if passwordform.errors.old_password %} is-invalid{% endif %}" id="id_old_password" maxlength="150" placeholder="Enter old password" required>
-					<div id="old_password_invalid" class="invalid-feedback">
-						{% if passwordform.errors.old_password %}
-						{{ passwordform.errors.old_password }}
-						{% endif %}
+				<form id="password-change-form" class="needs-validation" method="post" action="{% url 'users:profile' %}" novalidate>
+					{% csrf_token %}
+					<input type="hidden" name="form" value="password-change">
+					<!-- Old Password -->
+					<div class="mb-3">
+						<label for="id_old_password" class="form-label fw-bold">Old Password: </label>
+						<input type="password" name="old_password" class="form-control border-dark border-2{% if passwordform.errors.old_password %} is-invalid{% endif %}" id="id_old_password" maxlength="150" placeholder="Enter old password" required>
+						<div id="old_password_invalid" class="invalid-feedback">
+							{% if passwordform.errors.old_password %}
+							{{ passwordform.errors.old_password }}
+							{% endif %}
+						</div>
 					</div>
-				</div>
-				<!-- New Password -->
-				<div class="mb-3">
-					<label for="id_new_password1" class="form-label fw-bold">New Password: </label>
-					<input type="password" name="new_password1" class="form-control bg-light border-dark border-2{% if passwordform.errors.new_password1 %} is-invalid{% endif %}" id="id_new_password1" maxlength="150" placeholder="Enter new password" required>
-					<div id="new_password1_invalid" class="invalid-feedback">
-						{% if passwordform.errors.new_password1 %}
-						{{ passwordform.errors.new_password1 }}
-						{% endif %}
+					<!-- New Password -->
+					<div class="mb-3">
+						<label for="id_new_password1" class="form-label fw-bold">New Password: </label>
+						<input type="password" name="new_password1" class="form-control border-dark border-2{% if passwordform.errors.new_password1 %} is-invalid{% endif %}" id="id_new_password1" maxlength="150" placeholder="Enter new password" required>
+						<div id="new_password1_invalid" class="invalid-feedback">
+							{% if passwordform.errors.new_password1 %}
+							{{ passwordform.errors.new_password1 }}
+							{% endif %}
+						</div>
 					</div>
-				</div>
-				<!-- Confirm Password -->
-				<div class="mb-3">
-					<label for="id_new_password2" class="form-label fw-bold">Confirm New Password: </label>
-					<input type="password" name="new_password2" class="form-control bg-light border-dark border-2{% if passwordform.errors.new_password2 %} is-invalid{% endif %}" id="id_new_password2" maxlength="150" placeholder="Confirm new password" required>
-					<div id="new_password2_invalid" class="invalid-feedback">
-						{% if passwordform.errors.new_password2 %}
-						{{ passwordform.errors.new_password2 }}
-						{% endif %}
+					<!-- Confirm Password -->
+					<div class="mb-3">
+						<label for="id_new_password2" class="form-label fw-bold">Confirm New Password: </label>
+						<input type="password" name="new_password2" class="form-control border-dark border-2{% if passwordform.errors.new_password2 %} is-invalid{% endif %}" id="id_new_password2" maxlength="150" placeholder="Confirm new password" required>
+						<div id="new_password2_invalid" class="invalid-feedback">
+							{% if passwordform.errors.new_password2 %}
+							{{ passwordform.errors.new_password2 }}
+							{% endif %}
+						</div>
 					</div>
-				</div>
-				<button type="submit" class="btn btn-primary mt-2 rounded-pill text-light">
-					<svg xmlns="http://www.w3.org/2000/svg" width="22" height="20" fill="currentColor" class="bi bi-key-fill" viewBox="1 1 16 16">
-						<path d="M3.5 11.5a3.5 3.5 0 1 1 3.163-5H14L15.5 8 14 9.5l-1-1-1 1-1-1-1 1-1-1-1 1H6.663a3.5 3.5 0 0 1-3.163 2zM2.5 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
-					</svg>
-					Update Password</button>
-			</form>
+					<button type="submit" class="btn btn-primary mt-2 rounded-pill text-light">
+						<svg xmlns="http://www.w3.org/2000/svg" width="22" height="20" fill="currentColor" class="bi bi-key-fill" viewBox="1 1 16 16">
+							<path d="M3.5 11.5a3.5 3.5 0 1 1 3.163-5H14L15.5 8 14 9.5l-1-1-1 1-1-1-1 1-1-1-1 1H6.663a3.5 3.5 0 0 1-3.163 2zM2.5 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+						</svg>
+						Update Password</button>
+				</form>
+			</div>
 		</div>
 	</div>
 	
-	<!-- Column Two -->
-	<div class="px-4 py-2" style="width: 50%;">
+	<!-- Mailing List -->
+	<div class="mx-3" style="width: 500px;">
 		<h4 class="fw-bold">Mailing List</h4> 
-
-		<div style="max-width: 500px;">
-
+		<div>
 			<!-- <div id="id_email_list_invalid" class="text-danger"></div> -->
-
 			<!-- Emails -->
 			<div id="id_email_list" {% if mailing_list|length > 0 %}class="mt-3"{% endif %}>
 				{% for email in mailing_list %}
-				<div class="d-flex flex-row justify-content-between align-items-center bg-light border border-dark border-2 rounded-3 p-2 mt-2">
+				<div class="d-flex flex-row justify-content-between align-items-center border border-dark border-2 rounded-3 p-2 mt-2">
 					<div>
 						<svg class="mx-2" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope-fill" viewBox="0 1 16 16">
 							<path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555zM0 4.697v7.104l5.803-3.558L0 4.697zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757zm3.436-.586L16 11.801V4.697l-5.803 3.546z"/>
@@ -140,7 +140,7 @@
 
 				<form id="id_email_add_form" class="needs-validation" novalidate>
 					<div class="mb-3">
-						<input id="id_email_input" type="email" name="email" class="form-control bg-light border-dark me-4 border-2" id="id_new_email" maxlength="150" placeholder="Enter an email address" {% if form.email5.value %}value="{{ form.email5.value }}"{% endif %} required>
+						<input id="id_email_input" type="email" name="email" class="form-control border-dark me-4 border-2" id="id_new_email" maxlength="150" placeholder="Enter an email address" {% if form.email5.value %}value="{{ form.email5.value }}"{% endif %} required>
 						<div id="id_email_invalid" class="invalid-feedback"></div>
 					</div>
 				</form>
@@ -154,6 +154,26 @@
 			</div>
 
 		</div>
+	</div>
+
+	<!-- Support -->
+	<div class="mx-3" style="width: 500px;">
+		<h4 class="fw-bold">Support</h4>
+		<form class="mt-3">
+
+			<p class="mb-3">
+				Need help? In the event you are unable to find the information you are looking for in the <a href="{% static "doc/user-manual.pdf" %}" target="_blank" style="text-decoration: none;">User Manual (PDF)</a>, submit a ticket below, and we will get back to you.
+			</p>
+
+			<textarea class="form-control border-dark me-4 border-2 mb-3" style="height: 200px"></textarea>
+
+			<button id="id_submit_ticket" type="submit" class="btn btn-info rounded-pill text-light text-nowrap" aria-label="Add">
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chat-left-fill" viewBox="2 0 16 20">
+					<path d="M8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6-.097 1.016-.417 2.13-.771 2.966-.079.186.074.394.273.362 2.256-.37 3.597-.938 4.18-1.234A9.06 9.06 0 0 0 8 15z"/>
+				</svg>
+				Submit Ticket
+			</button>
+		</form>
 	</div>
 </div>
 
