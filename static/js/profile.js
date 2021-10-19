@@ -49,6 +49,11 @@
 				closeButton.parentElement.parentElement.remove()
 				emailsChanged = true
 				// emailUpdateButton.disabled = false
+				updateMailingList();
+
+				if (emailList.childElementCount == 0){
+					emailList.classList.remove("mt-3")
+				}
 			})
 
 			// Add to div
@@ -59,12 +64,13 @@
 
 			// Surrounding div
 			let outerDiv = document.createElement('div')
-			outerDiv.classList.add("d-flex", "p-2", "flex-row", "justify-content-between", "mb-2", "bg-light", "border", "border-dark", "border-2", "rounded-3")
+			outerDiv.classList.add("d-flex", "p-2", "flex-row", "justify-content-between", "mt-2", "bg-light", "border", "border-dark", "border-2", "rounded-3")
 			outerDiv.appendChild(emailDiv)
 			outerDiv.appendChild(badgeDiv)
 
 			// Add to list
 			emailList.appendChild(outerDiv)
+			emailList.classList.add("mt-3")
 		}
 
 		function getEmails(){
@@ -157,6 +163,10 @@
 				emailsChanged = true
 				// emailUpdateButton.disabled = false
 				updateMailingList();
+
+				if (emailList.childElementCount == 0){
+					emailList.classList.remove("mt-3")
+				}
 			})
 		})
 
