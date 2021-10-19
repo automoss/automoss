@@ -30,8 +30,22 @@
 	<span class="circle bg-danger" style="bottom: -10vw; right: -18vw; height: 35vw; width: 35vw;"></span>
 
 	<div class="d-flex flex-grow-1 flex-column bg-transparent justify-content-center align-items-center" style="min-height: 100vh; position: relative;">
-		<img class="animate__animated animate__fadeInDown animate__fast" src="{% static "/img/automoss.svg" %}" height=60>
+		<img id="logo" class="animate__animated animate__fadeInDown animate__fast" src="{% static "/img/automoss.svg" %}" height=60>
 		{% block "login-content" %}{% endblock %}
 	</div>
+
+	<script>
+		let logo = document.getElementById("logo");
+		function goTo(url){
+			// Fade the logo and form out.
+			logo.classList.add("animate__fadeOutUp");	
+			document.getElementsByTagName("form")[0].classList.add("animate__fadeOutDown");
+
+			// Load the new page.
+			setTimeout(() => {
+				location.href = url;
+			}, 300);
+		}
+	</script>
 
 {% endblock %}
