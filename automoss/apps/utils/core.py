@@ -1,5 +1,6 @@
 
 # Helper methods
+import time
 import os
 import sys
 import inspect
@@ -78,11 +79,10 @@ def retry(min_time, max_time, base, max_retry_duration, first_instant):
         yield attempt_number, 0
         attempt_number += 1
 
-    total_elapsed = 0
-    while total_elapsed < max_retry_duration:
-        time = min(max(base ** attempt_number, min_time),
+    start_time = time.time()
+    while time.time() < start_time + max_retry_duration:
+        time2 = min(max(base ** attempt_number, min_time),
                    max_time)  # Current sleep time
 
-        yield attempt_number, time
+        yield attempt_number, time2
         attempt_number += 1
-        total_elapsed += time

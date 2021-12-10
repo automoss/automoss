@@ -15,7 +15,7 @@
 		let emailInvalid = document.getElementById('id_email_invalid')
 		let emailAddButton = document.getElementById('id_add_email')
 		let emailAddForm = document.getElementById('id_email_add_form')
-		let emailUpdateButton = document.getElementById('id_update_emails')
+		// let emailUpdateButton = document.getElementById('id_update_emails')
 		let emailForm = document.getElementById('id_email_add_form')
 		let emailList = document.getElementById('id_email_list')
 		let emailRemoveButtons = document.querySelectorAll('button.remove-email')
@@ -48,7 +48,12 @@
 			closeButton.addEventListener('click', function(event){
 				closeButton.parentElement.parentElement.remove()
 				emailsChanged = true
-				emailUpdateButton.disabled = false
+				// emailUpdateButton.disabled = false
+				updateMailingList();
+
+				if (emailList.childElementCount == 0){
+					emailList.classList.remove("mt-3")
+				}
 			})
 
 			// Add to div
@@ -59,27 +64,19 @@
 
 			// Surrounding div
 			let outerDiv = document.createElement('div')
-			outerDiv.classList.add("d-flex", "p-2", "flex-row", "justify-content-between", "mb-2", "bg-light", "border", "border-dark", "border-2", "rounded-3")
+			outerDiv.classList.add("d-flex", "p-2", "flex-row", "justify-content-between", "mt-2", "border", "border-dark", "border-2", "rounded-3")
 			outerDiv.appendChild(emailDiv)
 			outerDiv.appendChild(badgeDiv)
 
 			// Add to list
 			emailList.appendChild(outerDiv)
+			emailList.classList.add("mt-3")
 		}
 
 		function getEmails(){
 			// Return list of emails
 			return Array.from(emailList.querySelectorAll('span.email-span'), span => span.innerText)
 		}
-
-		// Remove email element on click
-		emailRemoveButtons.forEach(function(button){
-			button.addEventListener('click', function(event){
-				button.parentElement.parentElement.remove()
-				emailsChanged = true
-				emailUpdateButton.disabled = false
-			})
-		})
 
 		function addEmail(){
 			// Check email form is valid
@@ -97,7 +94,7 @@
 				createEmailComponent(email.value)
 				email.value = ""
 				emailsChanged = true
-				emailUpdateButton.disabled = false
+				// emailUpdateButton.disabled = false
 			}
 		}
 
@@ -112,11 +109,14 @@
 
 		// Add email to list when Add Email clicked
 		emailAddButton.addEventListener('click', function(event){
-			addEmail()
+			addEmail();
+			updateMailingList();
 		})
 
 		// POST data when Update List clicked
-		emailUpdateButton.addEventListener('click', async function(event){
+		// emailUpdateButton.addEventListener('click',
+		async function updateMailingList(){
+
 			// List has changed/been modified
 			if(emailsChanged){
 				let emails = getEmails()
@@ -139,21 +139,35 @@
 				}
 				// Reset changed to false
 				emailsChanged = false
-				emailUpdateButton.disabled = true
+				// emailUpdateButton.disabled = true
 				// Add status to status div
-				emailFeedback.innerText = "Email list updated!"
-				emailFeedback.classList.remove("text-danger")
-				emailFeedback.classList.add("text-success")
-				// Remove feedback after 2 seconds
-				setTimeout(function(){
-					emailFeedback.innerText = ""
-					emailFeedback.classList.add("text-danger")
-					emailFeedback.classList.remove("text-success")
-				}, 2000)
+				// emailFeedback.innerText = "Email list updated!"
+				// emailFeedback.classList.remove("text-danger")
+				// emailFeedback.classList.add("text-success")
+				// // Remove feedback after 2 seconds
+				// setTimeout(function(){
+				// 	emailFeedback.innerText = ""
+				// 	emailFeedback.classList.add("text-danger")
+				// 	emailFeedback.classList.remove("text-success")
+				// }, 2000)
 			}
 			else{
-				emailFeedback.innerText = "The email list hasn't changed!"
+				// emailFeedback.innerText = "The email list hasn't changed!"
 			}
+		}
+
+		// Remove email element on click
+		emailRemoveButtons.forEach(function(button){
+			button.addEventListener('click', function(event){
+				button.parentElement.parentElement.remove()
+				emailsChanged = true
+				// emailUpdateButton.disabled = false
+				updateMailingList();
+
+				if (emailList.childElementCount == 0){
+					emailList.classList.remove("mt-3")
+				}
+			})
 		})
 
 

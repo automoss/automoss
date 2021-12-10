@@ -13,4 +13,4 @@ Automate the process of detecting similarities between code for a collection of 
 
 ## Running With Docker
 1. Build: `docker build . -t automoss`
-2. Run: `docker run -p 8000:8000 --rm -it automoss`
+2. Run: `docker run -p 8000:80 --rm -it automoss`

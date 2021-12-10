@@ -3,15 +3,16 @@ class Job extends HTMLTableRowElement{
 		super();
 		Object.assign(this, job);
 
+		this.jobInfo = jobInfo;
 		this.id = `job-${this.job_id}`;
 		this.setAttribute('job_id', this.job_id);
 		this.setAttribute('status', this.status);
 		this.style = "cursor: pointer;";
 
-		let collapse = new bootstrap.Collapse(jobInfo.firstChild, { toggle: false });
+		this.collapse = new bootstrap.Collapse(jobInfo.firstChild, { toggle: false });
 		this.onclick = (e) => {
 			if (!(e.target instanceof HTMLAnchorElement)){ // Prevent collapsible region from toggling when job name is clicked.
-				collapse.toggle();
+				this.collapse.toggle();
 			}
 		};
 
@@ -50,6 +51,22 @@ class Job extends HTMLTableRowElement{
 		this.updateDuration();
 	}
 
+	showInfo(isImmediate=false){
+		if (isImmediate){
+			this.jobInfo.firstChild.classList.add("show");	
+		}else{
+			this.collapse.show();
+		}
+	}
+
+	hideInfo(isImmediate=false){
+		if (isImmediate){
+			this.jobInfo.firstChild.classList.remove("show");	
+		}else{
+			this.collapse.hide();
+		}	
+	}
+
 	/**
 	 * Update the duration of the job depending on whether the job is in a terminal state or not. If in a terminal
 	 * state, the completion date will be set to the completion date's date and time. Else, the current date and
@@ -63,11 +80,20 @@ class Job extends HTMLTableRowElement{
 		if (isTerminalState(this.status)){
 			completion_date = new Date(this.completion_date);
 		}
-		this.jobDuration.innerHTML = new Date(completion_date - creation_date).toLocaleTimeString('en-GB', {
-			hour: '2-digit', minute: '2-digit', second: '2-digit',
-			timeZone:'Etc/UTC',
-			hour12: false,		
-		});
+
+		// Display in hh:mm:ss format
+		let total_seconds = new Date(completion_date - creation_date) / 1000;
+
+		let hours = Math.floor(total_seconds / 3600);
+		total_seconds %= 3600;
+		let minutes = Math.floor(total_seconds / 60);
+		let seconds = Math.floor(total_seconds % 60);
+
+		minutes = String(minutes).padStart(2, "0");
+		hours = String(hours).padStart(2, "0");
+		seconds = String(seconds).padStart(2, "0");
+
+		this.jobDuration.innerHTML = hours + ":" + minutes + ":" + seconds;
 	}
 
 	/**

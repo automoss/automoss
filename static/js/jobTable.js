@@ -1,7 +1,14 @@
+function onJobShow(job){
+}
+
+function onJobHide(job){
+	job.hideInfo(true);
+}
+
 // Setup the jobs table for searching.
 let jobsTable = document.getElementById('job-table');
 let jobsSearchBar = document.getElementById('job-search-bar');
-setupTableSearch(jobsTable, jobsSearchBar);
+setupTableSearch(jobsTable, jobsSearchBar, onJobShow, onJobHide);
 
 let jobsTableBody = jobsTable.getElementsByTagName('tbody')[0];
 let noJobsMessage = document.getElementById('no-jobs-message');
@@ -106,6 +113,7 @@ function addJob(job, forceOpen=false){
 	// Info
 	let jobInfo = document.createElement("td");
 	jobInfo.setAttribute("colspan", "6");
+	jobInfo.setAttribute("ignoreOnSearch", true);
 	jobInfo.style = "padding: 0 !important;";
 
 	// Info > Collapse
@@ -115,7 +123,7 @@ function addJob(job, forceOpen=false){
 	jobInfoCollapse.classList.add("collapse");
 	jobInfoCollapse.classList.add("p-0");
 	jobInfoCollapse.classList.add("border-bottom");
-
+	
 	let jobInfoWrapper = document.createElement("div");
 	jobInfoCollapse.append(jobInfoWrapper);
 	jobInfoWrapper.style.height = "200px";
@@ -144,14 +152,14 @@ function addJob(job, forceOpen=false){
 	jobTimeline.addEvent("Processing");
 	jobTimeline.addEvent("Parsing");
 	jobTimeline.addEvent("Completed");
-
-	if (forceOpen){
-		jobInfoCollapse.classList.add("show");
-	}
 	jobTimeline.setProgress(1, true);
 
+	let jobRow = new Job(job, jobInfo);
+	if (forceOpen){
+		jobRow.showInfo(true)
+	}
 	jobsTableBody.prepend(jobInfo);
-	jobsTableBody.prepend(new Job(job, jobInfo));
+	jobsTableBody.prepend(jobRow);
 }
 
 let unfinishedJobs = [];

@@ -7,7 +7,7 @@
 
 {% block "login-content" %}
 
-<form id="login" class="animate__animated animate__fadeInUp animate__fast d-flex flex-grow flex-column text-dark bg-light rounded-3 shadow-lg p-4 m-5" method="post" action="{% url 'users:login' %}" style="min-width: 550px; max-width: 30%;" novalidate>
+<form id="login" class="animate__animated animate__fadeInUp animate__fast d-flex flex-grow flex-column text-dark bg-light rounded-3 shadow-lg p-4 m-4" method="post" action="{% url 'users:login' %}" style="min-width: 550px; max-width: 30%;" novalidate>
 	{% csrf_token %}
 	
 	<h3 class="mb-4 bg-light"><b>Login</b></h3>
@@ -63,9 +63,9 @@
 
 	<!-- Don't Have An Account -->
 	<div class="d-flex flex-row justify-content-between mb-3">
-		<span>Don't have an account yet? <a href="{% url 'users:register' %}" style="text-decoration: none">Register.</a></span>
-		<a href="{% url 'users:forgot-password' %}" style="text-decoration: none">Forgot Password</a>
-	</div> 
+		<span>Don't have an account yet? <a href="javascript:void(goTo('{% url 'users:register' %}'));" style="text-decoration: none">Register.</a></span>
+		<span><a href="javascript:void(goTo('{% url 'users:forgot-password' %}'));" style="text-decoration: none">Forgot password?</a></span>
+	</div>
 	
 </form>
 

@@ -30,10 +30,19 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # Hostname
 HOSTNAME = os.getenv("HOST_NAME")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
+
+# Specify local/testing server hosts
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+
+if not DEBUG:
+    # Specify production server hosts
+    ALLOWED_HOSTS += ['automoss.azurewebsites.net']
+
+    # Uncomment this if not proxies being used (causes too many redirects issue)
+    # SECURE_SSL_REDIRECT = True
 
 # Application definition
 
@@ -134,13 +143,13 @@ LOGIN_URL = "/user/login/"
 # Currently returns logged_out.html
 # LOGOUT_REDIRECT_URL = '/accounts/login'
 
-# EMAIL_USE_TLS = True
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 
-DEFAULT_FROM_EMAIL = "noreply@automoss.co.za"
+DEFAULT_FROM_EMAIL = "automossapp@gmail.com"
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
@@ -153,7 +162,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = False
+USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)

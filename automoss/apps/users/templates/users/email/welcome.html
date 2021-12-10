@@ -6,5 +6,5 @@ Welcome to AutoMOSS!
 {% endblock %}
 
 {% block "content" %}
-An account for {{ user.course_code }} has been created. </br> Please verify your account by clicking <a href="{{request.scheme}}://{{request.META.HTTP_HOST}}{% url "users:confirm" user.user_id token %}">here</a>
+An account for {{ user.course_code }} has been created. </br> Please verify your account by clicking <a href="{{request.scheme}}://{{request.META.HTTP_HOST}}{% url "users:confirm" user.user_id token %}">here</a>.
 {% endblock %}

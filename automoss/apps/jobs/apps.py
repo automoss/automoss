@@ -1,7 +1,5 @@
 from django.apps import AppConfig
 
-from ...settings import COMPLETED_STATUS, FAILED_STATUS
-
 
 class JobsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
@@ -13,7 +11,7 @@ class JobsConfig(AppConfig):
         from .models import Job
         from ..utils.core import is_main_thread
         from ...celery import app
-        from ...settings import INQUEUE_STATUS
+        from ...settings import INQUEUE_STATUS, COMPLETED_STATUS, FAILED_STATUS
 
         if is_main_thread():  # pragma: no cover
             num_purged = app.control.purge()
