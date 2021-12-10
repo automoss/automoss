@@ -14,3 +14,15 @@ Automate the process of detecting similarities between code for a collection of 
 ## Running With Docker
 1. Build: `docker build . -t automoss`
 2. Run: `docker run -p 8000:80 --rm -it automoss`
+
+## TODO List
+- [ ] Refactor to comply with current versions of Django and Celery
+- [ ] Separate database and file storage from main application container
+- [ ] Restrict user permissions in Docker container
+- [ ] Use credentials from .env when accessing database
+- [ ] Add cancel/delete functionality for jobs
+- [ ] Paginate jobs and job results
+- [ ] Add map files for js libraries (some versions of Safari cause issues without these)
+- [ ] Change email account to UCT-based email (instead of Gmail)
+- [ ] Fix timezone issues (when using Docker container)
+- [ ] Improve responsiveness for smaller screens/breakpoints
