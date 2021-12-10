@@ -1,8 +1,8 @@
-django
+django==3.2.10
 python-dotenv
 requests
 whitenoise
-celery
+celery==4.4.2
 redis
 pymysql[rsa]
 asyncio
