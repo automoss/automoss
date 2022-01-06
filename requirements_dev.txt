@@ -2,7 +2,7 @@ django==3.2.10
 python-dotenv
 requests
 whitenoise
-celery==4.4.2
+celery==5.2.2
 redis
 pymysql[rsa]
 asyncio
