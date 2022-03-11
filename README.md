@@ -16,11 +16,14 @@ Automate the process of detecting similarities between code for a collection of 
 2. Run: `docker run -p 8000:80 --rm -it automoss`
 
 ## TODO List
+### High Priority
 - [ ] Refactor to comply with current versions of Django and Celery
 - [ ] Separate database and file storage from main application container
-- [ ] Restrict user permissions in Docker container
-- [ ] Use credentials from .env when accessing database
 - [ ] Add cancel/delete functionality for jobs
+- [ ] Use credentials from .env when accessing database
+- [ ] Update archive processing logic to comply with current Vula assignment structure
+### Low Priority
+- [ ] Restrict user permissions in Docker container
 - [ ] Paginate jobs and job results
 - [ ] Add map files for js libraries (some versions of Safari cause issues without these)
 - [ ] Change email account to UCT-based email (instead of Gmail)
