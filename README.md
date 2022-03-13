@@ -22,6 +22,7 @@ Automate the process of detecting similarities between code for a collection of 
 - [ ] Add cancel/delete functionality for jobs
 - [ ] Use credentials from .env when accessing database
 - [ ] Update archive processing logic to comply with current Vula assignment structure
+- [ ] Account for "tar+1.gz" edge case
 ### Low Priority
 - [ ] Restrict user permissions in Docker container
 - [ ] Paginate jobs and job results
