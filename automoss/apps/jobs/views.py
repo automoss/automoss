@@ -10,6 +10,7 @@ from django.http.response import JsonResponse
 from django.core.serializers import serialize
 from django.utils.safestring import mark_safe
 from django.views import View
+from django.utils.timezone import now
 
 from .tasks import process_job
 
@@ -36,8 +37,12 @@ from ...settings import (
     FILES_NAME,
 
     MAX_UNTIL_IGNORED_RANGE,
-    MAX_DISPLAYED_MATCHES_RANGE
+    MAX_DISPLAYED_MATCHES_RANGE,
+
+    CANCELLED_STATUS,
+    CANCELLED_EVENT
 )
+from ...celery import app
 from ..utils.core import in_range
 
 
@@ -143,6 +148,46 @@ class New(View):
 
         data = json.loads(serialize('json', [new_job]))[0]['fields']
         return JsonResponse(data, status=200, safe=False)
+
+
+@method_decorator(login_required, name='dispatch')
+class Cancel(View):
+    """ JSON view of Jobs """
+
+    def post(self, request):
+        """ Cancel a user's job """
+        job_id = request.POST.get('job_id')
+
+        try:
+            job = Job.objects.user_jobs(request.user).get(job_id=job_id)
+        except Job.DoesNotExist:
+            data = {
+                'message': f'Job does not exist ({job_id})'
+            }
+            return JsonResponse(data, status=404, safe=False)
+
+        def get_task_id(job_id):  # Find task currently being processed by celery
+            i = app.control.inspect()
+            for job_list in (i.active, i.scheduled, i.reserved):
+                for jobs in job_list().values():
+                    for job in jobs:
+                        if job['args'][0] == job_id:
+                            return job['id']
+            return None
+
+        task_id = get_task_id(job_id)
+
+        if task_id is not None:
+            app.control.revoke(task_id, terminate=True)
+
+        job.status = CANCELLED_STATUS
+        job.completion_date = now()
+        job.save()
+
+        JobEvent.objects.create(
+            job=job, type=CANCELLED_EVENT, message='Job cancelled by user')
+
+        return JsonResponse(job.job_id, status=200, safe=False)
 
 
 @method_decorator(login_required, name='dispatch')

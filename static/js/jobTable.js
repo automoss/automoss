@@ -13,7 +13,7 @@ setupTableSearch(jobsTable, jobsSearchBar, onJobShow, onJobHide);
 let jobsTableBody = jobsTable.getElementsByTagName('tbody')[0];
 let noJobsMessage = document.getElementById('no-jobs-message');
 
-const terminalStates = [completedStatus, failedStatus];
+const terminalStates = [completedStatus, failedStatus, cancelledStatus];
 const timelineEventMapping = {
 	"INQ": 1,
 	"UPL": 2,
@@ -55,10 +55,10 @@ function updateJobStatus(jobId, status){
 	}
 	// Timeline
 	let jobTimeline = document.getElementById(`job-timeline-${jobId}`);
-	if (status != "FAI"){
-		jobTimeline.setProgress(timelineEventMapping[status], true);
-	}else{
+	if (status == "FAI" || status == "CAN"){
 		jobTimeline.setProgress(getLastCompletedEvent(jobId), false);
+	}else{
+		jobTimeline.setProgress(timelineEventMapping[status], true);
 	}
 }
 
