@@ -105,14 +105,12 @@ function getRootIndex(files) {
 		var pathWithName = file.name;
 		var name = getFileNameFromPath(pathWithName);
 		var path = trimRight(pathWithName, name.length);
-		if (prevPath != "") {
-			if (path != prevPath) {
+		if (isArchive(name)) {
+			if (prevPath != "" && path != prevPath) {
 				var diff = findFirstDiffIndex(path, prevPath);
 				var same = path.substring(0, diff);
 				return same.lastIndexOf("/") + 1; // shift left in path to beginning of contained folder
 			}
-		}
-		if (isArchive(name)) {
 			prevPath = path;
 		}
 	}
