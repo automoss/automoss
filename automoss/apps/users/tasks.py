@@ -1,10 +1,10 @@
-from celery.decorators import task
+from ...celery import app
 from celery.utils.log import get_task_logger
 from django.core.mail import EmailMultiAlternatives
 logger = get_task_logger(__name__)
 
 
-@task(name='Email')
+@app.task(name='Email')
 def send_emails(from_email, recipients, subject, body, html):
     """ Send list of emails """
 

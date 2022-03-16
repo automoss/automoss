@@ -7,7 +7,7 @@ from django.contrib.auth import (
 )
 from django.views import View
 from django.utils.decorators import method_decorator
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.http import (
     JsonResponse,
     HttpResponseNotFound,
@@ -57,7 +57,7 @@ class Login(View):
             redirect_url = request.POST.get(
                 'next') or settings.LOGIN_REDIRECT_URL
             # Redirect
-            if is_safe_url(redirect_url, settings.ALLOWED_HOSTS, require_https=request.is_secure()):
+            if url_has_allowed_host_and_scheme(redirect_url, settings.ALLOWED_HOSTS, require_https=request.is_secure()):
                 return redirect(redirect_url)
             return redirect(settings.LOGIN_REDIRECT_URL)
 

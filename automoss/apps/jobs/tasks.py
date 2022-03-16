@@ -49,7 +49,7 @@ import os
 import json
 import time
 import socket
-from celery.decorators import task
+from ...celery import app
 from celery.utils.log import get_task_logger
 logger = get_task_logger(__name__)
 
@@ -75,7 +75,7 @@ def send_email_notification(job):
     )
 
 
-@task(name='Upload')
+@app.task(name='Upload')
 def process_job(job_id):
     """Process a job, given its ID"""
 
