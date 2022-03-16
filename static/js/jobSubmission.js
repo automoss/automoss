@@ -118,6 +118,23 @@ function getRootIndex(files) {
 }
 
 /**
+ * Counts the number of students in a batch.
+ */
+function countStudentsInBatch(files){
+	let rootIndex = getRootIndex(files);
+	var prevStudent = "";
+	var numStudents = 0;
+	for (let file of files) {
+		let student = file.name.substring(rootIndex, file.name.indexOf("/", rootIndex));
+		if (student != prevStudent){
+			numStudents++;
+			prevStudent = student;
+		}
+	}
+	return numStudents;
+}
+
+/**
  * Reads the data from a file and returns it.
  */
 async function readFileData(file) {
@@ -484,7 +501,7 @@ jobDropZone.onFileAdded = async (jobDropZoneFile) => {
 		jobDropZoneFile.addTag("Base", "var(--bs-dark)");
 		jobDropZoneFile.isBaseFile = true;
 	} else {
-		jobDropZoneFile.addTag(isSingle ? "Single" : `Batch (${files.length})`, "var(--bs-dark)");
+		jobDropZoneFile.addTag(isSingle ? "Single" : `Batch (${countStudentsInBatch(files)})`, "var(--bs-dark)");
 	}
 
 	if (jobDropZone.files.length >= 1) {
