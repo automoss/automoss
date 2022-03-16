@@ -263,6 +263,7 @@ with capture_in(STATUS_CONTEXT):
     PARSING_STATUS = 'PAR'
     COMPLETED_STATUS = 'COM'
     FAILED_STATUS = 'FAI'
+    CANCELLED_STATUS = 'CAN'
 
     STATUSES = {
         # 'Code': 'Name',
@@ -271,7 +272,8 @@ with capture_in(STATUS_CONTEXT):
         PROCESSING_STATUS: 'Processing',
         PARSING_STATUS: 'Parsing',
         COMPLETED_STATUS: 'Completed',
-        FAILED_STATUS: 'Failed'
+        FAILED_STATUS: 'Failed',
+        CANCELLED_STATUS: 'Cancelled'
     }
 
 SUBMISSION_CONTEXT = {}
@@ -326,6 +328,7 @@ with capture_in(JOB_EVENT_CONTEXT):
     PARSING_EVENT = 'PAR'
     COMPLETED_EVENT = 'COM'
     FAILED_EVENT = 'FAI'
+    CANCELLED_EVENT = 'CAN'
     RETRY_EVENT = 'RET'
 
 # UI Defaults

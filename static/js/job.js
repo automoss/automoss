@@ -115,6 +115,7 @@ class Job extends HTMLTableRowElement{
         statusMapping[parsingStatus] = 'bg-dark';
         statusMapping[completedStatus] = 'bg-success';
         statusMapping[failedStatus] = 'bg-danger';
+        statusMapping[cancelledStatus] = 'bg-danger';
 
         let classes = ['badge', statusMapping[newStatus]];
         this.jobStatus.classList.add(...classes);

@@ -7,6 +7,7 @@ app_name = 'jobs'
 urlpatterns = [
     # Submit new job
     path('new', views.New.as_view(), name='new'),
+    path('cancel', views.Cancel.as_view(), name='cancel'),
 
     # Results
     path('<uuid:job_id>/result/',
