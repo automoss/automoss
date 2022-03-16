@@ -23,3 +23,6 @@ htmlcov/
 
 # Log files
 *.log
+
+# Env files
+.env
