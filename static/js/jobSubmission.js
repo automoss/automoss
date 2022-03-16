@@ -145,6 +145,10 @@ async function readFileData(file) {
 	});
 }
 
+function preProcessFile(file){
+	file.name = file.name.replace(/(.*)(\..*)(\+\d+)(\..*)$/gm, "$1$3$2$4");
+}
+
 /**
  * Extracts all the source files from a single student's archive, and "stitches" them together.
  */
@@ -224,6 +228,7 @@ async function extractBatch(files, language, onExtract) {
 	var rootIndex = getRootIndex(files);
 	var studentArchives = [];
 	for (var file of files) {
+		preProcessFile(file);
 		if (isArchive(file.name)) {
 			var pathFromStudent = file.name.substring(rootIndex);
 			var pathSepIndex = pathFromStudent.indexOf("/");
@@ -435,7 +440,7 @@ createJobForm.onsubmit = async (e) => {
 		xhr.send(jobFormData);
 
 	}catch(err){ // Unknown client-side error.
-		console.err(err);
+		console.error(err);
 		displayError("An error occurred.");
 		jobDropZone.resetProgress();
 		setEnabled(true);
