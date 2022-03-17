@@ -135,6 +135,11 @@ function updateRemoveJobModal(job){
  * Cancel a job.
  */
 function cancelJob(job){
+
+	let cancelButton = document.getElementById(`job-cancel-button-${job.job_id}`);
+	cancelButton.disabled = true;
+	isCancelling = true;
+
 	fetch(CANCEL_JOB_URL, {
 		method: "POST",
 		body: JSON.stringify({'job_id': `${job.job_id}`}),
@@ -143,6 +148,8 @@ function cancelJob(job){
 			'X-CSRFToken': csrftoken
 		}
 	}).then(() => {
+		cancelButton.disabled = false;
+		isCancelling = false;	
 		updateJobs(unfinishedJobs);
 	});
 }
@@ -269,9 +276,11 @@ let result = fetch(GET_JOBS_URL).then(async (response)=>{
 	}
 });
 
+var isCancelling = false;
+
 // Update the status and event logs of all unfinished jobs in the table.
 setInterval(async function(){
-	if(unfinishedJobs.length != 0){		
+	if(unfinishedJobs.length != 0 && !isCancelling){		
 		updateJobs(unfinishedJobs);
 	}
 }, POLLING_TIME);
