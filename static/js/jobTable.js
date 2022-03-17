@@ -60,6 +60,23 @@ function updateJobStatus(jobId, status){
 	}else{
 		jobTimeline.setProgress(timelineEventMapping[status], true);
 	}
+	// Options
+	updateJobOptions(jobId, status);
+}
+
+function updateJobOptions(jobId, status){
+	var showCancel = false, showRetry = false, showRemove = false;
+	if (isTerminalState(status)){
+		if (status != completedStatus){
+			showRetry = true;
+		}
+		showRemove = true;
+	}else{
+		showCancel = true;
+	}
+	document.getElementById(`job-cancel-button-${jobId}`).hidden = !showCancel;
+	document.getElementById(`job-remove-button-${jobId}`).hidden = !showRemove;
+	document.getElementById(`job-retry-button-${jobId}`).hidden  = !showRetry;
 }
 
 /**
@@ -104,6 +121,35 @@ async function updateJobs(jobs){
 }
 
 /**
+ * Remove a job.
+ */
+function removeJob(job){
+	console.log(`REMOVE: ${job.job_id}`);
+}
+
+/**
+ * Update the remove job modal.
+ */
+function updateRemoveJobModal(job){
+	document.getElementById("remove-job-modal-label").innerHTML = `${job.comment}`;
+	document.getElementById("remove-job-modal-button").onclick = () => removeJob(job);
+}
+
+/**
+ * Cancel a job.
+ */
+function cancelJob(job){
+	console.log(`CANCEL: ${job.job_id}`);
+}
+
+/**
+ * Retry a job (remove and re-add).
+ */
+function retryJob(job){
+	console.log(`RETRY: ${job.job_id}`);
+}
+
+/**
  * Add a job to the jobs table. If force open is set, the job's info collapsible will be toggled
  * open by default. (Necessary when creating the job using the job submission modal).
  */
@@ -120,9 +166,7 @@ function addJob(job, forceOpen=false){
 	let jobInfoCollapse = document.createElement("div");
 	jobInfo.append(jobInfoCollapse);
 	jobInfoCollapse.id = `job-info-${job.job_id}`;
-	jobInfoCollapse.classList.add("collapse");
-	jobInfoCollapse.classList.add("p-0");
-	jobInfoCollapse.classList.add("border-bottom");
+	jobInfoCollapse.classList.add("collapse", "p-0", "border-bottom");
 	
 	let jobInfoWrapper = document.createElement("div");
 	jobInfoCollapse.append(jobInfoWrapper);
@@ -139,12 +183,42 @@ function addJob(job, forceOpen=false){
 	let jobLogs = document.createElement("textarea");
 	jobInfoWrapper.append(jobLogs);
 	jobLogs.id = `job-logs-${job.job_id}`;
-	jobLogs.classList.add("my-4");
-	jobLogs.classList.add("me-4");
-	jobLogs.classList.add("container");
+	jobLogs.classList.add("my-4", "me-4", "container");
 	jobLogs.style = "resize: none; background-color: white; border-radius: 10px; padding: 6px 10px; border-color: var(--bs-gray-300)";
-	jobLogs.style.width = "50%";
+	jobLogs.style.width = "40%";
 	jobLogs.setAttribute("readonly", true);
+
+	// Info > Collapse > Options
+	let jobOptions = document.createElement("div");
+	jobInfoWrapper.append(jobOptions);
+	jobOptions.classList.add("my-4", "me-4", "container");
+	jobOptions.style.width = "10%";
+
+	// Info > Collapse > Options > Cancel
+	let cancelButton = document.createElement("button");
+	jobOptions.append(cancelButton);
+	cancelButton.id = `job-cancel-button-${job.job_id}`;
+	cancelButton.innerHTML = "Cancel";
+	cancelButton.onclick = () => cancelJob(job);
+
+	// Info > Collapse > Options > Retry
+	let retryButton = document.createElement("button");
+	jobOptions.append(retryButton);
+	retryButton.id = `job-retry-button-${job.job_id}`;
+	retryButton.innerHTML = "Retry";
+	retryButton.hidden = true;
+	retryButton.onclick = () => retryJob(job);
+
+	// Info > Collapse > Options > Remove
+	let removeButton = document.createElement("button");
+	jobOptions.append(removeButton);	
+	removeButton.id = `job-remove-button-${job.job_id}`;
+	removeButton.innerHTML = "Remove";
+	removeButton.hidden = true;
+	removeButton.setAttribute("data-bs-toggle", "modal");
+	removeButton.setAttribute("data-bs-target", "#remove-job-modal");
+	removeButton.onclick = () => updateRemoveJobModal(job);
+
 
 	jobTimeline.addEvent("Created");
 	jobTimeline.addEvent("In Queue");
@@ -156,7 +230,7 @@ function addJob(job, forceOpen=false){
 
 	let jobRow = new Job(job, jobInfo);
 	if (forceOpen){
-		jobRow.showInfo(true)
+		jobRow.showInfo(true);
 	}
 	jobsTableBody.prepend(jobInfo);
 	jobsTableBody.prepend(jobRow);
