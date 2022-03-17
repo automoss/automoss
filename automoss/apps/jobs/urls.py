@@ -9,6 +9,7 @@ urlpatterns = [
     path('new', views.New.as_view(), name='new'),
     path('cancel', views.Cancel.as_view(), name='cancel'),
     path('remove', views.Remove.as_view(), name='remove'),
+    path('retry', views.Retry.as_view(), name='retry'),
 
     # Results
     path('<uuid:job_id>/result/',

@@ -152,7 +152,6 @@ class New(View):
 
 @method_decorator(login_required, name='dispatch')
 class Cancel(View):
-    """ JSON view of Jobs """
 
     def post(self, request):
         """ Cancel a user's job """
@@ -191,10 +190,9 @@ class Cancel(View):
 
 @method_decorator(login_required, name='dispatch')
 class Remove(View):
-    """ Remove a user's job """
 
     def post(self, request):
-        """ Cancel a user's job """
+        """ Remove a user's job """
         job_id = json.loads(request.body.decode("UTF-8")).get('job_id')
 
         try:
@@ -206,6 +204,28 @@ class Remove(View):
             return JsonResponse(data, status=404, safe=False)
 
         job.delete()
+        return JsonResponse({
+            'message': 'Success'
+        }, status=200, safe=False)
+
+
+@method_decorator(login_required, name='dispatch')
+class Retry(View):
+
+    def post(self, request):
+        """ Retry a user's job """
+        job_id = json.loads(request.body.decode("UTF-8")).get('job_id')
+
+        try:
+            job = Job.objects.user_jobs(request.user).get(job_id=job_id)
+        except Job.DoesNotExist:
+            data = {
+                'message': f'Job does not exist ({job_id})'
+            }
+            return JsonResponse(data, status=404, safe=False)
+
+        process_job.delay(job_id)
+
         return JsonResponse({
             'message': 'Success'
         }, status=200, safe=False)
