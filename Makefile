@@ -34,10 +34,16 @@ migrations:
 	$(PYTHON) $(MAIN) makemigrations && $(PYTHON) $(MAIN) migrate --run-syncdb
 
 create-db:
-	$(PYTHON) automoss/db.py fresh
+	$(PYTHON) automoss/db.py
 
 # https://simpleisbetterthancomplex.com/tutorial/2016/07/26/how-to-reset-migrations.html
 db: start-mysql clean create-db migrations
+
+docker-start:
+	docker-compose up -d
+
+docker-stop:
+	docker-compose down
 
 admin:
 	$(PYTHON) $(MAIN) createsuperuser
