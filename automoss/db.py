@@ -7,10 +7,6 @@ from dotenv import load_dotenv
 
 def main():
     """Method to create/set database"""
-
-    # Action to perform
-    fresh = 'fresh' in sys.argv[1:]
-
     load_dotenv()
 
     DB_HOST = os.getenv('DB_HOST')
@@ -35,9 +31,6 @@ def main():
 
     with connection:
         with connection.cursor() as cursor:
-            if fresh:
-                cursor.execute(f"DROP DATABASE IF EXISTS {DB_NAME}")
-
             cursor.execute(
                 f"CREATE DATABASE IF NOT EXISTS {DB_NAME} CHARACTER SET utf8mb4;")
 
