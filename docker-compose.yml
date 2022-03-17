@@ -1,0 +1,13 @@
+version: '3.9'
+services:
+  app:
+    build: .
+    volumes:
+      - media_data:/app/media
+      - sql_data:/var/lib/mysql
+    ports:
+      - 8000:80
+volumes:
+  media_data:
+  sql_data:
+  
