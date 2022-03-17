@@ -12,8 +12,13 @@ Automate the process of detecting similarities between code for a collection of 
 4. Open a web browser and go to the WebApp (e.g., http://localhost:8000).
 
 ## Running With Docker
-1. Build: `docker build . -t automoss`
-2. Run: `docker run -p 8000:80 --rm -it automoss`
+1. Install `docker` on your local system
+2. Run `make docker-start` or `docker-compose up -d` to start the application
+3. Open a web browser and go to the WebApp (e.g., http://localhost:8000). 
+4. Run `make docker-stop` or `docker-compose down` to stop the application
+
+## Help
+There is a user manual `docs/user-manual.pdf` that contains basic instructions for operating the app (please ignore its running instructions). This can also be accessed via the help menu in the app.
 
 ## TODO List
 - [ ] Restrict user permissions in Docker container
@@ -21,3 +26,4 @@ Automate the process of detecting similarities between code for a collection of 
 - [ ] Add map files for js libraries (some versions of Safari cause issues without these)
 - [ ] Change email account to UCT-based email (instead of Gmail)
 - [ ] Improve responsiveness for smaller screens/breakpoints
+- [ ] Update user-manual
