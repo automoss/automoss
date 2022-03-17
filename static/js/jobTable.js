@@ -138,7 +138,6 @@ function cancelJob(job){
 
 	let cancelButton = document.getElementById(`job-cancel-button-${job.job_id}`);
 	cancelButton.disabled = true;
-	isCancelling = true;
 
 	fetch(CANCEL_JOB_URL, {
 		method: "POST",
@@ -149,7 +148,6 @@ function cancelJob(job){
 		}
 	}).then(() => {
 		cancelButton.disabled = false;
-		isCancelling = false;	
 		updateJobs(unfinishedJobs);
 	});
 }
@@ -305,11 +303,9 @@ let result = fetch(GET_JOBS_URL).then(async (response)=>{
 	}
 });
 
-var isCancelling = false;
-
 // Update the status and event logs of all unfinished jobs in the table.
 setInterval(async function(){
-	if(unfinishedJobs.length != 0 && !isCancelling){		
+	if(unfinishedJobs.length != 0){		
 		updateJobs(unfinishedJobs);
 	}
 }, POLLING_TIME);
