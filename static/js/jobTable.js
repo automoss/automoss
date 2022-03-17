@@ -166,8 +166,6 @@ function retryJob(job){
  function removeJob(job){
 	document.getElementById(`job-info-${job.job_id}`).remove();
 	document.getElementById(`job-${job.job_id}`).remove();
-
-	// TODO: Send POST to remove job
 }
 
 /**
@@ -213,29 +211,32 @@ function addJob(job, forceOpen=false){
 	// Info > Collapse > Options
 	let jobOptions = document.createElement("div");
 	jobInfoWrapper.append(jobOptions);
-	jobOptions.classList.add("my-4", "me-4", "container");
+	jobOptions.classList.add("d-flex", "flex-column", "my-4", "me-4");
 	jobOptions.style.width = "10%";
 
 	// Info > Collapse > Options > Cancel
 	let cancelButton = document.createElement("button");
 	jobOptions.append(cancelButton);
+	cancelButton.classList.add("btn", "btn-warning", "text-white", "rounded-pill", "mb-1");
 	cancelButton.id = `job-cancel-button-${job.job_id}`;
-	cancelButton.innerHTML = "Cancel";
+	cancelButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-octagon-fill" viewBox="0 0 19 19"> <path d="M11.46.146A.5.5 0 0 0 11.107 0H4.893a.5.5 0 0 0-.353.146L.146 4.54A.5.5 0 0 0 0 4.893v6.214a.5.5 0 0 0 .146.353l4.394 4.394a.5.5 0 0 0 .353.146h6.214a.5.5 0 0 0 .353-.146l4.394-4.394a.5.5 0 0 0 .146-.353V4.893a.5.5 0 0 0-.146-.353L11.46.146zm-6.106 4.5L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708z"/> </svg> Cancel`;
 	cancelButton.onclick = () => cancelJob(job);
 
 	// Info > Collapse > Options > Retry
 	let retryButton = document.createElement("button");
 	jobOptions.append(retryButton);
+	retryButton.classList.add("btn", "btn-success", "text-white", "rounded-pill", "mb-1");
 	retryButton.id = `job-retry-button-${job.job_id}`;
-	retryButton.innerHTML = "Retry";
+	retryButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 1 16 16"> <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/> <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/> </svg> Retry`;
 	retryButton.hidden = true;
 	retryButton.onclick = () => retryJob(job);
 
 	// Info > Collapse > Options > Remove
 	let removeButton = document.createElement("button");
 	jobOptions.append(removeButton);	
+	removeButton.classList.add("btn", "btn-danger", "text-white", "rounded-pill");
 	removeButton.id = `job-remove-button-${job.job_id}`;
-	removeButton.innerHTML = "Remove";
+	removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16"> <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/> </svg> Remove`;
 	removeButton.hidden = true;
 	removeButton.setAttribute("data-bs-toggle", "modal");
 	removeButton.setAttribute("data-bs-target", "#remove-job-modal");
