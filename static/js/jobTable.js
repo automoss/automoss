@@ -158,6 +158,26 @@ function cancelJob(job){
  * Retry a job.
  */
 function retryJob(job){
+
+	let retryButton = document.getElementById(`job-retry-button-${job.job_id}`);
+	retryButton.disabled = true;
+
+	fetch(RETRY_JOB_URL, {
+		method: "POST",
+		body: JSON.stringify({'job_id': `${job.job_id}`}),
+		headers:{
+			'Content-Type': 'application/json',
+			'X-CSRFToken': csrftoken
+		}
+	}).then((d) => {
+		if (d.status == 200){
+			unfinishedJobs.push(job.job_id)
+			updateJobs(unfinishedJobs);
+		}else{
+			console.error(d)
+		}
+		retryButton.disabled = false;
+	});
 }
 
 /**
@@ -166,6 +186,14 @@ function retryJob(job){
  function removeJob(job){
 	document.getElementById(`job-info-${job.job_id}`).remove();
 	document.getElementById(`job-${job.job_id}`).remove();
+	fetch(REMOVE_JOB_URL, {
+		method: "POST",
+		body: JSON.stringify({'job_id': `${job.job_id}`}),
+		headers:{
+			'Content-Type': 'application/json',
+			'X-CSRFToken': csrftoken
+		}
+	})
 }
 
 /**

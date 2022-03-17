@@ -216,6 +216,8 @@
 	let GET_JOB_LOGS_URL = "{% url "api:jobs:get_logs" %}";
 	
 	let CANCEL_JOB_URL = "{% url "jobs:cancel" %}";
+	let REMOVE_JOB_URL = "{% url "jobs:remove" %}";
+	let RETRY_JOB_URL = "{% url "jobs:retry" %}";
 
 	let POLLING_TIME = {{ POLLING_TIME | js }};
 	let DEFAULT_MOSS_SETTINGS = {{ DEFAULT_MOSS_SETTINGS | js }};

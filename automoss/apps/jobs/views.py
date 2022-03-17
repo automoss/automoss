@@ -40,6 +40,7 @@ from ...settings import (
     MAX_DISPLAYED_MATCHES_RANGE,
 
     CANCELLED_STATUS,
+    INQUEUE_STATUS,
     CANCELLED_EVENT
 )
 from ...celery import app
@@ -223,7 +224,11 @@ class Retry(View):
                 'message': f'Job does not exist ({job_id})'
             }
             return JsonResponse(data, status=404, safe=False)
-
+     
+        job.status = INQUEUE_STATUS
+        job.save()
+        JobEvent.objects.create(
+            job=job, type=INQUEUE_EVENT, message='Restarting... Placed in processing queue')
         process_job.delay(job_id)
 
         return JsonResponse({
