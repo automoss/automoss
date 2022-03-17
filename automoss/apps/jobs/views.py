@@ -156,8 +156,7 @@ class Cancel(View):
 
     def post(self, request):
         """ Cancel a user's job """
-        job_id = request.POST.get('job_id')
-
+        job_id = json.loads(request.body.decode("UTF-8")).get('job_id')
         try:
             job = Job.objects.user_jobs(request.user).get(job_id=job_id)
         except Job.DoesNotExist:

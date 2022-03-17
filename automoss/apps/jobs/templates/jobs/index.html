@@ -181,7 +181,7 @@
 
 			<!-- Footer -->
 			<div class="modal-footer d-flex p-2 bg-dark text-light">
-				<button id="remove-job-modal-button" type="submit" class="btn btn-outline-primary border-2 rounded-pill ml-auto">
+				<button id="remove-job-modal-button" type="submit" class="btn btn-outline-primary border-2 rounded-pill ml-auto" data-bs-dismiss="modal">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
 						<path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
 					</svg>
@@ -214,6 +214,8 @@
 	let GET_JOBS_URL = "{% url "api:jobs:get_jobs" %}";
 	let GET_JOB_STATUSES_URL = "{% url "api:jobs:get_statuses" %}";
 	let GET_JOB_LOGS_URL = "{% url "api:jobs:get_logs" %}";
+	
+	let CANCEL_JOB_URL = "{% url "jobs:cancel" %}";
 
 	let POLLING_TIME = {{ POLLING_TIME | js }};
 	let DEFAULT_MOSS_SETTINGS = {{ DEFAULT_MOSS_SETTINGS | js }};

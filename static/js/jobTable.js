@@ -64,6 +64,9 @@ function updateJobStatus(jobId, status){
 	updateJobOptions(jobId, status);
 }
 
+/**
+ * Update the options for a job in the table.
+ */
 function updateJobOptions(jobId, status){
 	var showCancel = false, showRetry = false, showRemove = false;
 	if (isTerminalState(status)){
@@ -121,13 +124,6 @@ async function updateJobs(jobs){
 }
 
 /**
- * Remove a job.
- */
-function removeJob(job){
-	console.log(`REMOVE: ${job.job_id}`);
-}
-
-/**
  * Update the remove job modal.
  */
 function updateRemoveJobModal(job){
@@ -139,14 +135,32 @@ function updateRemoveJobModal(job){
  * Cancel a job.
  */
 function cancelJob(job){
-	console.log(`CANCEL: ${job.job_id}`);
+	fetch(CANCEL_JOB_URL, {
+		method: "POST",
+		body: JSON.stringify({'job_id': `${job.job_id}`}),
+		headers:{
+			'Content-Type': 'application/json',
+			'X-CSRFToken': csrftoken
+		}
+	}).then(() => {
+		updateJobs(unfinishedJobs);
+	});
 }
 
 /**
- * Retry a job (remove and re-add).
+ * Retry a job.
  */
 function retryJob(job){
-	console.log(`RETRY: ${job.job_id}`);
+}
+
+/**
+ * Remove a job.
+ */
+ function removeJob(job){
+	document.getElementById(`job-info-${job.job_id}`).remove();
+	document.getElementById(`job-${job.job_id}`).remove();
+
+	// TODO: Send POST to remove job
 }
 
 /**
@@ -158,6 +172,7 @@ function addJob(job, forceOpen=false){
 
 	// Info
 	let jobInfo = document.createElement("td");
+	jobInfo.id = `job-info-${job.job_id}`;
 	jobInfo.setAttribute("colspan", "6");
 	jobInfo.setAttribute("ignoreOnSearch", true);
 	jobInfo.style = "padding: 0 !important;";
