@@ -95,6 +95,7 @@ def process_job(job_id):
     msg = f'Starting job {job_id} with status {job.status}'
     logger.info(msg)
     JobEvent.objects.create(job=job, type=INQUEUE_EVENT, message=msg)
+    job.save()
 
     base_dir = JOB_UPLOAD_TEMPLATE.format(
         user_id=job.user.user_id, job_id=job.job_id)
@@ -237,7 +238,8 @@ def process_job(job_id):
             logger.error(f'Unknown error: {e}')
             break  # Will be handled below (result is None)
 
-        msg = f'(Attempt {attempt + 1}) Error: {error} | Retrying in {time_to_sleep} seconds'
+        msg = f'(Attempt {attempt + 1}) Error: {error} | Retrying in {round(time_to_sleep, 2)} seconds'
+
 
         # We can retry
         logger.warning(msg)

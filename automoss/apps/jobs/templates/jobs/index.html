@@ -81,83 +81,111 @@
 	<tbody></tbody>
 
 </table>
-<div id="no-jobs-message" class="container text-center" style="display: none">No jobs have been created yet!</div>
+<div id="no-jobs-message" class="container text-center" style="display: none">No jobs have been created yet!</div></div>
 
-	<!-- Modal -->
-	<div class="modal fade" id="create-job-modal" tabindex="-1" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered">
-			<div class="modal-content">
-				<form id="create-job-form">
+<!-- Create Job Modal -->
+<div class="modal fade" id="create-job-modal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<form id="create-job-form">
 
-					{% csrf_token %}
+				{% csrf_token %}
 
-					<!-- Header -->
-					<div class="modal-header bg-dark text-light">
-						<h5 class="modal-title"><b>Create Job</b></h5>
-						<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+				<!-- Header -->
+				<div class="modal-header bg-dark text-light">
+					<h5 class="modal-title"><b>Create Job</b></h5>
+					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+
+				<!-- Body -->
+				<div class="modal-body">
+
+					<!-- Drop Zone -->
+					<div class="mb-3">
+						<drop-zone id="job-drop-zone" filetypes="rar,tar,tar.bz2,tar.gz,tar.xz,zip" text="Drag and drop <b>student</b> files here!"></drop-zone>
 					</div>
 
-					<!-- Body -->
-					<div class="modal-body">
+					<!-- Name -->
+					<div class="mb-3">
+						<label for="job-name">Name:</label>
+						<input class="form-control" id="job-name" type="text" name="job-name" autocomplete="off" data-lpignore="true" data-form-type="text">
+					</div>
 
-						<!-- Drop Zone -->
-						<div class="mb-3">
-							<drop-zone id="job-drop-zone" filetypes="rar,tar,tar.bz2,tar.gz,tar.xz,zip" text="Drag and drop <b>student</b> files here!"></drop-zone>
-						</div>
+					<!-- Language -->
+					<div class="mb-3">
+						<label for="job-language">Language:</label>
+						<select class="form-select" id="job-language" name="job-language" data-form-type="other">
+							{% for language, info in SUPPORTED_LANGUAGES.items %}
+								<option language-id={{language}}>{{info.0}} </option>
+							{% endfor %}
+						</select>
+					</div>
 
-						<!-- Name -->
-						<div class="mb-3">
-							<label for="job-name">Name:</label>
-							<input class="form-control" id="job-name" type="text" name="job-name" autocomplete="off" data-lpignore="true" data-form-type="text">
-						</div>
-
-						<!-- Language -->
-						<div class="mb-3">
-							<label for="job-language">Language:</label>
-							<select class="form-select" id="job-language" name="job-language" data-form-type="other">
-								{% for language, info in SUPPORTED_LANGUAGES.items %}
-									<option language-id={{language}}>{{info.0}} </option>
-								{% endfor %}
-							</select>
-						</div>
-
-						<!-- Max Matches Until Ignored -->
-						<div class="mb-3">
-							<label for="job-max-until-ignored" class="form-label">Max matches until ignored:</label>
-							<div class="d-flex">
-								<input type="range" class="form-range" min="{{MAX_UNTIL_IGNORED_RANGE.0}}" step="1" max="{{MAX_UNTIL_IGNORED_RANGE.1}}" id="job-max-until-ignored" name="job-max-until-ignored" value="{{DEFAULT_MOSS_SETTINGS.max_until_ignored}}" oninput="this.nextElementSibling.value = this.value">
-								<output style="width: 50px; text-align: right;">{{DEFAULT_MOSS_SETTINGS.max_until_ignored}}</output>
-							</div>
-						</div>
-
-						<!-- Max Matches Displayed -->
-						<div class="mb-3">
-							<label for="job-max-displayed-matches" class="form-label">Max matches displayed:</label>
-							<div class="d-flex">
-								<input type="range" class="form-range" min="{{MAX_DISPLAYED_MATCHES_RANGE.0}}" step="1" max="{{MAX_DISPLAYED_MATCHES_RANGE.1}}" id="job-max-displayed-matches" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}" oninput="this.nextElementSibling.value = this.value">
-								<output style="width: 50px; text-align: right;">{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}</output>
-							</div>
-						</div>
-
-						<!-- Base Files -->
-						<div class="mb-3">
-							<label for="job-attach-base-files">Attach base files?</label>
-							<input class="form-check-input ms-1" id="job-attach-base-files" type="checkbox" value="" name="job-attach-base-files" onchange="updateForBaseFiles();">
+					<!-- Max Matches Until Ignored -->
+					<div class="mb-3">
+						<label for="job-max-until-ignored" class="form-label">Max matches until ignored:</label>
+						<div class="d-flex">
+							<input type="range" class="form-range" min="{{MAX_UNTIL_IGNORED_RANGE.0}}" step="1" max="{{MAX_UNTIL_IGNORED_RANGE.1}}" id="job-max-until-ignored" name="job-max-until-ignored" value="{{DEFAULT_MOSS_SETTINGS.max_until_ignored}}" oninput="this.nextElementSibling.value = this.value">
+							<output style="width: 50px; text-align: right;">{{DEFAULT_MOSS_SETTINGS.max_until_ignored}}</output>
 						</div>
 					</div>
 
-					<!-- Footer -->
-					<div class="modal-footer d-flex justify-content-between p-2 bg-dark text-light">
-						<label id="job-message"></label>
-						<div style="position: relative; max-height: 50px;">
-							<button id="create-job-button" type="submit" class="btn btn-outline-primary border-2 rounded-pill" disabled>
-								<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-plus" viewBox="4 2.5 13 13">
-									<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-								</svg>
-							Create</button>
+					<!-- Max Matches Displayed -->
+					<div class="mb-3">
+						<label for="job-max-displayed-matches" class="form-label">Max matches displayed:</label>
+						<div class="d-flex">
+							<input type="range" class="form-range" min="{{MAX_DISPLAYED_MATCHES_RANGE.0}}" step="1" max="{{MAX_DISPLAYED_MATCHES_RANGE.1}}" id="job-max-displayed-matches" name="job-max-displayed-matches" value="{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}" oninput="this.nextElementSibling.value = this.value">
+							<output style="width: 50px; text-align: right;">{{DEFAULT_MOSS_SETTINGS.max_displayed_matches}}</output>
 						</div>
 					</div>
-				</form>
+
+					<!-- Base Files -->
+					<div class="mb-3">
+						<label for="job-attach-base-files">Attach base files?</label>
+						<input class="form-check-input ms-1" id="job-attach-base-files" type="checkbox" value="" name="job-attach-base-files" onchange="updateForBaseFiles();">
+					</div>
+				</div>
+
+				<!-- Footer -->
+				<div class="modal-footer d-flex justify-content-between p-2 bg-dark text-light">
+					<label id="job-message"></label>
+					<div style="position: relative; max-height: 50px;">
+						<button id="create-job-button" type="submit" class="btn btn-outline-primary border-2 rounded-pill" disabled>
+							<svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-plus" viewBox="4 2.5 13 13">
+								<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+							</svg>
+						Create</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Remove Job Modal -->
+<div class="modal fade" id="remove-job-modal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+
+			<!-- Header -->
+			<div class="modal-header bg-dark text-light">
+				<h5 class="modal-title"><b>Remove Job</b></h5>
+				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+
+			<!-- Body -->
+			<div class="modal-body text-center">
+				<label>Are you sure you want to remove the following job:</label>
+				<label class="fw-bold" id="remove-job-modal-label"></label>
+			</div>
+
+			<!-- Footer -->
+			<div class="modal-footer d-flex p-2 bg-dark text-light">
+				<button id="remove-job-modal-button" type="submit" class="btn btn-outline-primary border-2 rounded-pill ml-auto" data-bs-dismiss="modal">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+						<path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+					</svg>
+				Remove</button>
 			</div>
 		</div>
 	</div>
@@ -186,6 +214,10 @@
 	let GET_JOBS_URL = "{% url "api:jobs:get_jobs" %}";
 	let GET_JOB_STATUSES_URL = "{% url "api:jobs:get_statuses" %}";
 	let GET_JOB_LOGS_URL = "{% url "api:jobs:get_logs" %}";
+	
+	let CANCEL_JOB_URL = "{% url "jobs:cancel" %}";
+	let REMOVE_JOB_URL = "{% url "jobs:remove" %}";
+	let RETRY_JOB_URL = "{% url "jobs:retry" %}";
 
 	let POLLING_TIME = {{ POLLING_TIME | js }};
 	let DEFAULT_MOSS_SETTINGS = {{ DEFAULT_MOSS_SETTINGS | js }};
