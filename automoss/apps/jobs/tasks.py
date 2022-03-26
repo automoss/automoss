@@ -208,15 +208,18 @@ def process_job(job_id):
             ping_message = f'({ping} vs. {average_ping})'
 
             if load_status == LoadStatus.NORMAL:
-                if attempt >= MIN_RETRIES_COUNT - 1:  # Retry job a minimum number of times
-                    msg = f'Moss is not under load {ping_message} - job ({job_id}) will never finish'
-                    error = FatalMossException(
-                        f"MOSS returned no response at least {MIN_RETRIES_COUNT - 1} times, but isn't under load. The job will never finish.")
-                    logger.debug(msg)
-                    break
+                # This will terminate if MOSS is not under load and already tried MIN_RETRIES_COUNT times
+                #
+                # if attempt >= MIN_RETRIES_COUNT - 1:  # Retry job a minimum number of times
+                #     msg = f'Moss is not under load {ping_message} - job ({job_id}) will never finish'
+                #     error = FatalMossException(
+                #         f"MOSS returned no response at least {MIN_RETRIES_COUNT - 1} times, but isn't under load. The job will never finish.")
+                #     logger.debug(msg)
+                #     break
 
-                else:
-                    msg = f'MOSS returned no response but is not under load. Will retry {MIN_RETRIES_COUNT - 1 - attempt} more times'
+                # else:
+                #     msg = f'MOSS returned no response but is not under load. Will retry {MIN_RETRIES_COUNT - 1 - attempt} more times'
+                msg = f'Moss is not under load {ping_message}, retrying job ({job_id})'
 
             elif load_status in (LoadStatus.UNDER_LOAD, LoadStatus.UNDER_SEVERE_LOAD):
                 msg = f'Moss is under load {ping_message}, retrying job ({job_id})'
