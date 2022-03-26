@@ -39,6 +39,10 @@ create-db:
 # https://simpleisbetterthancomplex.com/tutorial/2016/07/26/how-to-reset-migrations.html
 db: start-mysql clean create-db migrations
 
+docker-rebuild:
+	docker-compose build
+	$(MAKE) docker-start
+
 docker-start:
 	docker-compose up -d
 
