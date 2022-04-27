@@ -280,6 +280,8 @@ let jobMaxMatchesDisplayed = document.getElementById("job-max-displayed-matches"
 let jobAttachBaseFiles = document.getElementById("job-attach-base-files");
 let jobMessage = document.getElementById("job-message");
 let createJobButton = document.getElementById("create-job-button");
+let sizeExceededModalElement = document.getElementById("size-exceeded-modal");
+let sizeExceededModal = new bootstrap.Modal(sizeExceededModalElement);
 
 let timedMessage = undefined;
 let isShowingTimedMessage = false;
@@ -346,6 +348,13 @@ function setEnabled(isEnabled) {
 		= jobMaxMatchesDisplayed.disabled
 		= jobAttachBaseFiles.disabled
 		= !isEnabled;
+}
+
+/**
+ * Downloads the python script to perform pre-processing locally.
+ */
+function downloadPythonScript(){
+	console.log("download python script");
 }
 
 createJobForm.onsubmit = async (e) => {
@@ -528,4 +537,10 @@ jobDropZone.onFileRemoved = () => {
 
 jobDropZone.onFileRejected = (reason) => {
 	displayError(reason);
+	
+	setTimeout(() => {
+		if (reason.startsWith("File size exceeds")){
+			sizeExceededModal.show();
+		}
+	}, 1000)
 }

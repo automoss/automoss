@@ -102,7 +102,7 @@
 
 					<!-- Drop Zone -->
 					<div class="mb-3">
-						<drop-zone id="job-drop-zone" filetypes="rar,tar,tar.bz2,tar.gz,tar.xz,zip" text="Drag and drop <b>student</b> files here!"></drop-zone>
+						<drop-zone id="job-drop-zone" filetypes="rar,tar,tar.bz2,tar.gz,tar.xz,zip" maxfilesize="{{MAX_FILE_SIZE}}" text="Drag and drop <b>student</b> files here!"></drop-zone>
 					</div>
 
 					<!-- Name -->
@@ -186,6 +186,40 @@
 						<path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
 					</svg>
 				Remove</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Size Exceeded Modal -->
+<div class="modal fade" id="size-exceeded-modal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+
+			<!-- Header -->
+			<div class="modal-header bg-dark text-light">
+				<h5 class="modal-title"><b>Maximum File Size Exceeded</b></h5>
+				<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+
+			<!-- Body -->
+			<div class="modal-body text-center">
+				<label>The file you uploaded is larger than {% widthratio MAX_FILE_SIZE 1000000 1 %}MB! Please download and use the following Python script to perform pre-processing on your local device:</label>
+				<code>python preprocess.py &lt;fileName&gt;<br></code>
+				<span><br></span>
+				<label>Then, drag and drop the output files into the dropzone.</label>
+				<label class="fw-bold" id="remove-job-modal-label"></label>
+			</div>
+
+			<!-- Footer -->
+			<div class="modal-footer d-flex p-2 bg-dark text-light">
+				<button class="btn btn-outline-primary border-2 rounded-pill" onclick="downloadPythonScript();">
+					<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" class="bi bi-download pb-1 me-1" viewBox="0 0 16 16">
+						<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"></path>
+						<path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
+					</svg>
+					Download
+				</button>
 			</div>
 		</div>
 	</div>
