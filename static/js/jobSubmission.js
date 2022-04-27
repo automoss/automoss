@@ -354,7 +354,7 @@ function setEnabled(isEnabled) {
  * Downloads the python script to perform pre-processing locally.
  */
 function downloadPythonScript(){
-	console.log("download python script");
+	location.href = PYTHON_SCRIPT_URL;
 }
 
 createJobForm.onsubmit = async (e) => {
