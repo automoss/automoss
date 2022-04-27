@@ -122,10 +122,13 @@ class DropZone extends HTMLElement {
 	 */
 	isValidFile(file) {
 		if (!this.hasExtension(file.name, this.getAttribute("filetypes").split(","))) {
-			this.onFileRejected("You must upload an archive.");
+			this.onFileRejected("File must be an archive.");
 			return false;
 		} else if (this.files.find(x => x.file.name == file.name)) {
-			this.onFileRejected("That file has already been uploaded.");
+			this.onFileRejected("File has already been uploaded.");
+			return false;
+		} else if (file.size > this.getAttribute("maxfilesize")) {
+			this.onFileRejected("File size exceeds " + (this.getAttribute("maxfilesize") / 1000000) + "MB.");
 			return false;
 		} else {
 			return true;
