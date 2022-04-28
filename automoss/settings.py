@@ -336,7 +336,7 @@ UI_CONTEXT = {}
 with capture_in(UI_CONTEXT):
     POLLING_TIME = 2000  # in milliseconds
     MOSS_POLLING_TIME = 30000  # in milliseconds
-    MAX_FILE_SIZE = 100 # in bytes
+    MAX_FILE_SIZE = 100000000 # in bytes
 
 # Misc Constants
 UUID_LENGTH = 36
