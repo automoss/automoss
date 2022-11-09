@@ -25,6 +25,4 @@ There is a user manual `docs/user-manual.pdf` that contains basic instructions f
 - [ ] Restrict user permissions in Docker container
 - [ ] Paginate jobs and job results
 - [ ] Add map files for js libraries (some versions of Safari cause issues without these)
-- [ ] Change email account to UCT-based email (instead of Gmail)
 - [ ] Improve responsiveness for smaller screens/breakpoints
-- [ ] Update user-manual
