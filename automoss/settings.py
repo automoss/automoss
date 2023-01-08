@@ -35,7 +35,7 @@ HOSTNAME = os.getenv("HOST_NAME")
 DEBUG = True
 
 # Specify local/testing server hosts
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0','moss.dakantz.at', HOSTNAME]
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', HOSTNAME]
 CSRF_TRUSTED_ORIGINS= [ HOSTNAME ]
 if not DEBUG:
     # Specify production server hosts

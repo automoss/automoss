@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-print("AutoMoss Starting...")
 import os
 import sys
 import atexit
