@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-"""Django's command-line utility for administrative tasks."""
+#!/usr/bin/python3
+print("AutoMoss Starting...")
 import os
 import sys
 import atexit
@@ -87,4 +87,5 @@ def main():
 
 
 if __name__ == '__main__':
+    print("AutoMoss Starting...")
     main()

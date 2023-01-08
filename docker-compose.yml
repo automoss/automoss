@@ -1,13 +1,43 @@
-version: '3.9'
+version: '3'
 services:
   app:
     build: .
+    depends_on: 
+      - sql
+      - redis
     volumes:
-      - media_data:/app/media
-      - sql_data:/var/lib/mysql
-    ports:
-      - 8000:80
-volumes:
-  media_data:
-  sql_data:
+      - $PWD/media:/app/media
+    labels:
+      # Traefik configuration, Hostname needs to be changed
+      - traefik.http.routers.moss-http.rule=Host(`moss.dakantz.at`)
+      - traefik.http.routers.moss-http.entrypoints=http
+      - traefik.http.routers.moss-http.middlewares=redirect
+      - traefik.http.routers.moss-https.rule=Host(`moss.dakantz.at`)
+      - traefik.http.routers.moss-https.entrypoints=https
+      - traefik.http.routers.moss-https.tls=true
+      - traefik.http.routers.moss-https.tls.certresolver=letsencrypt
+      - traefik.http.services.moss.loadbalancer.server.port=80
+      - traefik.http.middlewares.redirect.redirectscheme.scheme=https
+    networks:
+      - mossnet
+      - web
+  sql:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ALLOW_EMPTY_PASSWORD=TRUE
+    volumes:
+      - $PWD/sql:/var/lib/mysql
   
+    networks:
+      - mossnet
+  redis:
+    image: redis
+    networks:
+      - mossnet
+
+networks:
+  web:
+    external: true
+  mossnet:
+    external: false
