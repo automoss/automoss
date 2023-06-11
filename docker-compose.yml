@@ -1,13 +1,20 @@
-version: '3.9'
+version: '3'
 services:
   app:
     build: .
+    depends_on: 
+      - sql
+      - redis
     volumes:
-      - media_data:/app/media
-      - sql_data:/var/lib/mysql
-    ports:
-      - 8000:80
-volumes:
-  media_data:
-  sql_data:
-  
+      - $PWD/media:/app/media
+    port:
+      - 8080:80
+  sql:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ALLOW_EMPTY_PASSWORD=TRUE
+    volumes:
+      - $PWD/sql:/var/lib/mysql
+  redis:
+    image: redis

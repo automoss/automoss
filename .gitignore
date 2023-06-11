@@ -26,3 +26,5 @@ htmlcov/
 
 # Env files
 .env
+
+sql

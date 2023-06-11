@@ -11,3 +11,4 @@ coverage
 lxml
 bs4
 flake8
+tzdata

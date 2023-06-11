@@ -1,16 +1,18 @@
 FROM ubuntu
 
-WORKDIR /app
-COPY . .
 
-ENV DEBIAN_FRONTEND="noninteractive" TZ="Africa/Johannesburg"
+ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/Vienna"
 
 # Install necessary dependencies for starting mysql
-RUN apt-get -y update && apt-get -y install make sudo mysql-server libmysqlclient-dev
-RUN service mysql start && mysql mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH caching_sha2_password BY '';FLUSH PRIVILEGES;"
+WORKDIR /app
+RUN apt-get -y update && apt-get -y install make sudo libmysqlclient-dev redis python3-pip
 
-# Install remaining dependencies
-RUN make install
+COPY requirements_dev.txt requirements_dev.txt
+RUN pip3 install -r requirements_dev.txt --upgrade
+EXPOSE 80
+
+COPY . .
+
 
 # Make start script executable
 RUN chmod +x start.sh

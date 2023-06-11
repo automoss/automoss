@@ -19,15 +19,10 @@ COVERAGE_DIR  := htmlcov
 MAIN          := manage.py
 
 install:
-	sudo apt-get -y update
-	sudo apt-get -y install redis mysql-server libmysqlclient-dev python3-pip
-	pip3 install -r requirements_dev.txt --upgrade
 	$(MAKE) db
 
-start-mysql:
-	@[ "$(shell ps aux | grep mysqld | grep -v grep)" ] && echo "MySQL already running" || (sudo service mysql start)
 
-run: start-mysql
+run:
 	$(PYTHON) $(MAIN) runserver
 
 migrations:
@@ -37,7 +32,7 @@ create-db:
 	$(PYTHON) automoss/db.py
 
 # https://simpleisbetterthancomplex.com/tutorial/2016/07/26/how-to-reset-migrations.html
-db: start-mysql clean create-db migrations
+db: clean create-db migrations
 
 docker-rebuild:
 	docker-compose build

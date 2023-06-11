@@ -32,11 +32,11 @@ HOSTNAME = os.getenv("HOST_NAME")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # Specify local/testing server hosts
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', HOSTNAME]
+CSRF_TRUSTED_ORIGINS= [ HOSTNAME ]
 if not DEBUG:
     # Specify production server hosts
     ALLOWED_HOSTS += ['automoss.azurewebsites.net']
@@ -156,7 +156,7 @@ DEFAULT_FROM_EMAIL = "automossapp@gmail.com"
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Africa/Johannesburg'
+TIME_ZONE = 'Europe/Vienna'
 
 USE_I18N = True
 
