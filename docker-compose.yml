@@ -7,7 +7,13 @@ services:
       - sql_data:/var/lib/mysql
     ports:
       - 8000:80
+    depends_on:
+      - redis
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
 volumes:
   media_data:
   sql_data:
-  
